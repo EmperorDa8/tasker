@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tasker - Settings & Options</title>
+  <link rel="stylesheet" href="options.css">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+</head>
+<body>
+  <div class="options-container">
+    <header class="header">
+      <div class="logo-box">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+        </svg>
+      </div>
+      <div>
+        <h1>Tasker Settings</h1>
+        <p>Configure Google Drive authentication, privacy rules, and AI summarization.</p>
+      </div>
+    </header>
+
+    <main class="main-form">
+      <!-- Quick Info Banner for Non-Technical Users -->
+      <section class="banner-card">
+        <div class="banner-icon">⚡</div>
+        <div class="banner-text">
+          <strong>Zero Configuration Needed!</strong>
+          <p>Tasker works automatically out of the box. Adjust settings below only if you want custom Google Drive folders or domain exclusions.</p>
+        </div>
+      </section>
+
+      <!-- Section 1: Google Drive Sync -->
+      <section class="card">
+        <div class="card-header">
+          <h2>☁️ Google Drive Cloud Backup</h2>
+        </div>
+        <div class="card-body">
+          <div class="form-group">
+            <label for="driveFolderName">Google Drive Storage Folder Name:</label>
+            <input type="text" id="driveFolderName" class="text-input" value="Tasker Activity Logs">
+            <span class="help-text">Your daily logs and monthly accomplishment reports will be saved in this folder on your Google Drive.</span>
+          </div>
+
+          <div class="form-group">
+            <label for="autoSyncDrive">Automatic Drive Sync:</label>
+            <div class="toggle-switch">
+              <input type="checkbox" id="autoSyncDrive">
+              <label for="autoSyncDrive">Automatically sync daily notes & monthly recaps to Google Drive</label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 2: AI Summarization Key -->
+      <section class="card">
+        <div class="card-header">
+          <h2>🤖 AI Monthly Summaries</h2>
+        </div>
+        <div class="card-body">
+          <div class="form-group">
+            <label for="aiSummariesEnabled">Written monthly summary:</label>
+            <div class="toggle-switch">
+              <input type="checkbox" id="aiSummariesEnabled" checked>
+              <label for="aiSummariesEnabled">Let Tasker write a short narrative summary for each monthly recap</label>
+            </div>
+            <span class="help-text">
+              No API key or account needed. When you open a monthly recap, Tasker sends only
+              <strong>totals</strong> &mdash; the month, your total tracked hours, how many days were active,
+              and time per category. Your URLs, page titles, notes and milestones never leave this device.
+              Turn this off and recaps are generated entirely offline. Fair-use limit: 3 AI summaries per month.
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Privacy & Blacklist -->
+      <section class="card">
+        <div class="card-header">
+          <h2>🛡️ Privacy & Excluded Websites</h2>
+        </div>
+        <div class="card-body">
+          <div class="form-group">
+            <label for="blacklistedDomains">Excluded Domain Patterns (comma-separated):</label>
+            <textarea id="blacklistedDomains" class="textarea-input" rows="3" placeholder="bank, paypal, passwords, accounts.google.com"></textarea>
+            <span class="help-text">Websites matching these keywords are ignored and will <strong>never be tracked</strong>.</span>
+          </div>
+
+          <!-- 1-Click Privacy Presets -->
+          <div class="presets-box">
+            <span class="presets-title">1-Click Exclusion Presets:</span>
+            <div class="preset-buttons">
+              <button type="button" class="preset-btn" id="presetBankingBtn">🏦 Add Banking & Financial Sites</button>
+              <button type="button" class="preset-btn" id="presetAuthBtn">🔑 Add Password Managers & Auth</button>
+              <button type="button" class="preset-btn" id="presetPrivacyBtn">✉️ Add Email & Personal Health</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 4: Web Store Privacy Notice -->
+      <section class="card">
+        <div class="card-header">
+          <h2>🔒 User Data & Privacy Notice</h2>
+        </div>
+        <div class="card-body">
+          <p style="font-size:12px; color:#544145; line-height:1.6;">
+            <strong>Tasker is privacy-first and local by default.</strong> All tracked activity durations, daily notes, and monthly recaps are stored strictly on your local browser using <code>chrome.storage.local</code>. Your browsing history never leaves this device. Only two things are ever sent out, both optional and controlled by you above: your own reports uploaded to your own Google Drive when you enable sync, and — if written monthly summaries are on — category totals only, with no URLs, page titles or notes attached.
+          </p>
+        </div>
+      </section>
+
+      <!-- Section 5: Save & Data Management -->
+      <div class="actions-row">
+        <button id="saveSettingsBtn" class="btn-primary">Save Settings</button>
+        <button id="resetDefaultsBtn" class="btn-secondary">Reset to Recommended</button>
+        <button id="exportDataBtn" class="btn-secondary">Export History (JSON)</button>
+        <button id="clearDataBtn" class="btn-danger">Clear Local History</button>
+      </div>
+
+      <div id="saveToast" class="toast hidden">Settings saved successfully!</div>
+    </main>
+  </div>
+
+  <script src="../utils/formatters.js"></script>
+  <script src="../utils/storage.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

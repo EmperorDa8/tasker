@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../../popup/popup.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Figtree:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>body{max-height:none;min-height:0;overflow:hidden;}</style>
+</head>
+<body>
+<div class="app-container">
+  <header class="header">
+    <div class="brand">
+      <div class="logo-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg></div>
+      <div class="brand-text"><span class="brand-name">Tasker</span><span class="brand-tag">Activity Log</span></div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn help-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></button>
+      <button class="status-btn active"><span class="status-dot"></span><span>Recording</span></button>
+      <button class="icon-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg></button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <section class="summary-card">
+      <div class="summary-main">
+        <div class="time-block">
+          <span class="label">Today's Focus Time</span>
+          <div class="time-display">6h 42m</div>
+        </div>
+        <div class="score-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+          <span>82/100</span>
+        </div>
+      </div>
+      <div class="current-site-bar">
+        <div class="site-info"><span class="site-pulse"></span><span class="site-domain">github.com</span></div>
+        <span class="category-pill">Development</span>
+      </div>
+    </section>
+
+    <section class="action-bar">
+      <button class="primary-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline></svg>
+        <span>Sync Drive</span>
+      </button>
+      <button class="secondary-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+        <span>Copy</span>
+      </button>
+      <button class="secondary-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+        <span>Recap</span>
+      </button>
+    </section>
+
+    <section class="categories-section">
+      <div class="section-header">
+        <span class="section-title">Today's Categories</span>
+        <span class="section-subtitle">5 active</span>
+      </div>
+      <div class="category-list">
+        <div class="category-item">
+          <div class="cat-top">
+            <div class="cat-name-group"><span class="cat-color-dot" style="background-color:#5F44E6"></span><span>Development</span></div>
+            <span class="cat-time">3h 10m (47%)</span>
+          </div>
+          <div class="cat-progress-bg"><div class="cat-progress-fill" style="width:47%;background-color:#5F44E6;"></div></div>
+        </div>
+        <div class="category-item">
+          <div class="cat-top">
+            <div class="cat-name-group"><span class="cat-color-dot" style="background-color:#3E7A5E"></span><span>Research</span></div>
+            <span class="cat-time">1h 38m (24%)</span>
+          </div>
+          <div class="cat-progress-bg"><div class="cat-progress-fill" style="width:24%;background-color:#3E7A5E;"></div></div>
+        </div>
+        <div class="category-item">
+          <div class="cat-top">
+            <div class="cat-name-group"><span class="cat-color-dot" style="background-color:#C96A47"></span><span>Communication</span></div>
+            <span class="cat-time">52m (13%)</span>
+          </div>
+          <div class="cat-progress-bg"><div class="cat-progress-fill" style="width:13%;background-color:#C96A47;"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="highlights-section">
+      <div class="section-header">
+        <span class="section-title">Key Accomplishments</span>
+        <span class="section-badge">3 logged</span>
+      </div>
+      <div class="highlight-input-group">
+        <input type="text" placeholder="Add milestone (e.g. Finished report)...">
+        <button class="add-btn">Log</button>
+      </div>
+      <ul class="highlights-list">
+        <li class="highlight-item">
+          <span class="highlight-text">Shipped checkout redesign</span>
+          <button class="delete-hl-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+        </li>
+        <li class="highlight-item">
+          <span class="highlight-text">Reviewed 4 pull requests</span>
+          <button class="delete-hl-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+        </li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="drive-status"><span class="status-icon-dot green"></span><span>Drive Synced</span></div>
+    <button class="footer-link">Settings</button>
+  </footer>
+</div>
+</body>
+</html>

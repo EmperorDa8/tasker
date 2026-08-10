@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tasker — Know where your time goes</title>
+<meta name="description" content="Tasker is a local-first Chrome extension that automatically tracks your browsing time, scores your focus, and writes your daily and monthly recaps — all on your device.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='12' fill='%232A0F14'/%3E%3Cpolyline points='22 12 18 12 15 21 9 3 6 12 2 12' fill='none' stroke='%23FAE261' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' transform='translate(3.6,3.6) scale(0.7)'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600&family=Figtree:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F8FAF7;
+    --surface: #F0F2EF;
+    --card: #FFFFFF;
+    --ink: #2A0F14;
+    --body: #544145;
+    --muted: #766E70;
+    --pink: #FFDCEF;
+    --soft-yellow: #FDF1B0;
+    --bright-yellow: #FAE261;
+    --peach: #FFAB8D;
+    --sage: #DDEEE4;
+    --lilac: #EAE5FC;
+    --purple: #5F44E6;
+    --radius: 20px;
+    --display: 'Bricolage Grotesque', sans-serif;
+    --sans: 'Figtree', sans-serif;
+    --mono: 'DM Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--body);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  img, svg { display: block; max-width: 100%; }
+  a { color: inherit; }
+
+  .wrap {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 16px;
+  }
+
+  h1, h2, h3 {
+    font-family: var(--display);
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--mono);
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    border-radius: 9999px;
+    padding: 14px 26px;
+    transition: transform .15s ease, opacity .15s ease;
+    white-space: nowrap;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+  .btn-primary { background: var(--ink); color: var(--bg); }
+  .btn-secondary { background: var(--surface); color: var(--ink); }
+
+  /* ---------- Nav ---------- */
+  header.nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(248, 250, 247, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    max-width: 1120px;
+    margin: 0 auto;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 20px;
+    color: var(--ink);
+  }
+  .logo-mark {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--ink);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    font-family: var(--mono);
+    font-size: 13.5px;
+    letter-spacing: 0.04em;
+  }
+  .nav-links a:not(.btn) {
+    text-decoration: none;
+    color: var(--body);
+    transition: color .15s ease;
+  }
+  .nav-links a:not(.btn):hover { color: var(--ink); }
+  .nav-links .btn { padding: 11px 22px; font-size: 13px; }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    padding: 88px 0 72px;
+    text-align: center;
+  }
+  .hero h1 {
+    font-size: clamp(42px, 7vw, 72px);
+    font-weight: 600;
+    max-width: 15ch;
+    margin: 0 auto 24px;
+  }
+  .hero h1 .accent {
+    display: inline-block;
+    background: var(--bright-yellow);
+    border-radius: 14px;
+    padding: 0 0.22em;
+    color: var(--ink);
+  }
+  .hero p.sub {
+    max-width: 56ch;
+    margin: 0 auto 36px;
+    font-size: 19px;
+  }
+  .hero-ctas {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+  }
+  .trust-line {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+  }
+
+  /* hero stat strip */
+  .hero-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 64px;
+    text-align: left;
+  }
+  .stat-card {
+    border-radius: var(--radius);
+    padding: 26px 26px 22px;
+  }
+  .stat-card .num {
+    font-family: var(--mono);
+    font-size: 32px;
+    color: var(--ink);
+    line-height: 1.1;
+    margin-bottom: 6px;
+  }
+  .stat-card .lbl {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    color: var(--body);
+  }
+
+  /* ---------- Sections ---------- */
+  section { padding: 72px 0; }
+  .section-head {
+    max-width: 620px;
+    margin-bottom: 48px;
+  }
+  .section-head h2 {
+    font-size: clamp(30px, 4.4vw, 44px);
+    margin-bottom: 14px;
+  }
+
+  /* ---------- Features ---------- */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+  .feature {
+    border-radius: var(--radius);
+    padding: 34px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .feature .icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    background: rgba(42, 15, 20, 0.08);
+    display: grid;
+    place-items: center;
+    margin-bottom: 8px;
+  }
+  .feature h3 {
+    font-size: 23px;
+    font-weight: 600;
+  }
+  .feature p { color: var(--body); font-size: 16px; }
+  .feature .tag {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    letter-spacing: 0.04em;
+    color: var(--ink);
+    opacity: 0.65;
+  }
+
+  /* ---------- Privacy ---------- */
+  .privacy-panel {
+    background: var(--ink);
+    border-radius: 24px;
+    padding: 64px 56px;
+    color: #E9DFE1;
+  }
+  .privacy-panel .eyebrow { color: var(--bright-yellow); }
+  .privacy-panel h2 {
+    color: var(--bg);
+    font-size: clamp(30px, 4.4vw, 46px);
+    max-width: 16ch;
+    margin-bottom: 18px;
+  }
+  .privacy-panel p.lede {
+    max-width: 58ch;
+    font-size: 18px;
+    margin-bottom: 40px;
+    color: #CBB9BD;
+  }
+  .privacy-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-bottom: 40px;
+  }
+  .privacy-item {
+    background: rgba(248, 250, 247, 0.06);
+    border-radius: 16px;
+    padding: 20px 22px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .privacy-item .check {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--bright-yellow);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .privacy-item strong {
+    display: block;
+    color: var(--bg);
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 3px;
+  }
+  .privacy-item span { font-size: 14.5px; color: #CBB9BD; }
+  .privacy-actions {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    flex-wrap: wrap;
+  }
+  .privacy-actions .btn-light {
+    background: var(--bg);
+    color: var(--ink);
+  }
+  .privacy-actions a.text-link {
+    font-family: var(--mono);
+    font-size: 13.5px;
+    letter-spacing: 0.04em;
+    color: var(--bright-yellow);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(250, 226, 97, 0.4);
+    padding-bottom: 2px;
+  }
+  .privacy-actions a.text-link:hover { border-bottom-color: var(--bright-yellow); }
+
+  /* ---------- How it works ---------- */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+  .step {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 32px 30px;
+  }
+  .step .num {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    color: var(--purple);
+    display: block;
+    margin-bottom: 18px;
+  }
+  .step h3 { font-size: 21px; margin-bottom: 8px; }
+  .step p { font-size: 15.5px; }
+
+  /* ---------- Bottom CTA ---------- */
+  .bottom-cta {
+    text-align: center;
+    background: var(--sage);
+    border-radius: 24px;
+    padding: 72px 32px;
+  }
+  .bottom-cta h2 {
+    font-size: clamp(30px, 4.4vw, 46px);
+    max-width: 18ch;
+    margin: 0 auto 16px;
+  }
+  .bottom-cta p {
+    max-width: 48ch;
+    margin: 0 auto 32px;
+  }
+
+  /* ---------- Footer ---------- */
+  footer {
+    padding: 48px 0 56px;
+  }
+  .footer-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    border-top: 1px solid var(--surface);
+    padding-top: 36px;
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+  }
+  .footer-inner a {
+    color: var(--body);
+    text-decoration: none;
+  }
+  .footer-inner a:hover { color: var(--ink); }
+  .footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
+  .footer-brand { display: flex; align-items: center; gap: 10px; }
+  .footer-brand .logo-mark { width: 28px; height: 28px; }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 860px) {
+    .feature-grid, .privacy-grid { grid-template-columns: 1fr; }
+    .steps { grid-template-columns: 1fr; }
+    .hero-cards { grid-template-columns: 1fr; }
+    .privacy-panel { padding: 44px 28px; }
+    .nav-links a.nav-hide { display: none; }
+    section { padding: 56px 0; }
+    .hero { padding: 64px 0 56px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<header class="nav">
+  <div class="nav-inner">
+    <a class="logo" href="#top" aria-label="Tasker home">
+      <span class="logo-mark">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FAE261" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </span>
+      Tasker
+    </a>
+    <nav class="nav-links">
+      <a class="nav-hide" href="#features">Features</a>
+      <a class="nav-hide" href="#privacy">Privacy</a>
+      <a class="nav-hide" href="#how">How it works</a>
+      <a class="btn btn-primary" href="https://chromewebstore.google.com/detail/tasker-activity-tracker-g/nfdjclnanladapnhofbmnhclkhlndeak" target="_blank" rel="noopener">Add to Chrome</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">A Chrome extension for people who lose track of the day</span>
+      <h1>Know where your <span class="accent">time</span> actually goes.</h1>
+      <p class="sub">Tasker quietly tracks the time you spend in your browser tabs, sorts it into categories, scores your focus, and writes your daily and monthly recaps for you. All of it stays on your device.</p>
+      <div class="hero-ctas">
+        <a class="btn btn-primary" href="https://chromewebstore.google.com/detail/tasker-activity-tracker-g/nfdjclnanladapnhofbmnhclkhlndeak" target="_blank" rel="noopener">Add to Chrome — it's free</a>
+        <a class="btn btn-secondary" href="#privacy">Read the privacy pitch</a>
+      </div>
+      <p class="trust-line">history stays local &middot; no account &middot; your Drive, your data</p>
+
+      <div class="hero-cards">
+        <div class="stat-card" style="background: var(--soft-yellow);">
+          <div class="num">6h 42m</div>
+          <div class="lbl">tracked today, automatically</div>
+        </div>
+        <div class="stat-card" style="background: var(--pink);">
+          <div class="num">82 / 100</div>
+          <div class="lbl">daily focus score</div>
+        </div>
+        <div class="stat-card" style="background: var(--lilac);">
+          <div class="num">0 URLs</div>
+          <div class="lbl">of your history ever leave your device</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">What Tasker does</span>
+        <h2>Your work diary, written while you work.</h2>
+        <p>No timers to start, no forms to fill in at 5pm. Tasker watches your active tab and turns the day into something you can actually read.</p>
+      </div>
+
+      <div class="feature-grid">
+        <div class="feature" style="background: var(--sage);">
+          <div class="icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2A0F14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg>
+          </div>
+          <h3>Automatic time tracking</h3>
+          <p>Tasker tracks time on your active browser tab and categorizes it as you go — Development, Research, Productivity, and more. Switch tabs, it keeps up.</p>
+          <span class="tag">runs in the background · Manifest V3</span>
+        </div>
+
+        <div class="feature" style="background: var(--pink);">
+          <div class="icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2A0F14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <h3>Focus score &amp; accomplishments</h3>
+          <p>A daily focus score computed from how you actually browsed — plus a quick way to log accomplishments and milestones so wins don't disappear by Friday.</p>
+          <span class="tag">one number, honest answer</span>
+        </div>
+
+        <div class="feature" style="background: var(--soft-yellow);">
+          <div class="icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2A0F14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="14 3 14 9 20 9"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+          </div>
+          <h3>Daily logs &amp; monthly recaps</h3>
+          <p>Every day becomes a clean Markdown log; every month becomes a recap report — with an AI-written summary included, no API key or account to set up.</p>
+          <span class="tag">markdown you own forever</span>
+        </div>
+
+        <div class="feature" style="background: var(--lilac);">
+          <div class="icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2A0F14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0-1.6-8.7 6 6 0 1 0-11.2 3A3.5 3.5 0 0 0 6 19z"/></svg>
+          </div>
+          <h3>Sync to your own Drive</h3>
+          <p>Connect your Google account and Tasker files logs into a folder in <em>your</em> Google Drive — via Google OAuth, only when you say so. No middleman, no mystery bucket.</p>
+          <span class="tag">your drive · your folder · your files</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Privacy -->
+  <section id="privacy">
+    <div class="wrap">
+      <div class="privacy-panel">
+        <span class="eyebrow">Privacy, by architecture</span>
+        <h2>Local-first. No backend. Nothing to leak.</h2>
+        <p class="lede">A time tracker sees your whole day, so we built Tasker to keep it to itself. Your history lives in <code style="font-family: var(--mono); font-size: 0.9em;">chrome.storage.local</code> on your device and stays there — no account, no login, no analytics. Sync to your own Google Drive when you choose. The AI monthly summary sends category totals only ("Development: 58 hours"), never a single URL, page title or note.</p>
+
+        <div class="privacy-grid">
+          <div class="privacy-item">
+            <span class="check"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2A0F14" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Your history stays put</strong><span>Sites, page titles and times live in local browser storage and never leave it.</span></div>
+          </div>
+          <div class="privacy-item">
+            <span class="check"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2A0F14" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>No selling, no sharing</strong><span>No account, no analytics, no ads. Your browsing history is yours alone.</span></div>
+          </div>
+          <div class="privacy-item">
+            <span class="check"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2A0F14" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Exclude sensitive sites</strong><span>Tell Tasker which sites to ignore and it never records a second on them.</span></div>
+          </div>
+          <div class="privacy-item">
+            <span class="check"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2A0F14" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Delete anytime</strong><span>Wipe your data whenever you like — it's on your machine, so deleting means deleted.</span></div>
+          </div>
+        </div>
+
+        <div class="privacy-actions">
+          <a class="btn btn-light" href="./privacy-policy.html">Read the full privacy policy</a>
+          <a class="text-link" href="#how">See how it works &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section id="how">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">How it works</span>
+        <h2>Three steps. Zero habit changes.</h2>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <span class="num">step 01 — install</span>
+          <h3>Add Tasker to Chrome</h3>
+          <p>One click. Optionally connect your Google Drive and mark any sites you'd rather keep off the record.</p>
+        </div>
+        <div class="step">
+          <span class="num">step 02 — browse normally</span>
+          <h3>Just do your work</h3>
+          <p>Tasker tracks active-tab time in the background, categorizes it, and computes your focus score. Log an accomplishment when something ships.</p>
+        </div>
+        <div class="step">
+          <span class="num">step 03 — get your recap</span>
+          <h3>Read the story of your day</h3>
+          <p>Daily Markdown logs and a monthly recap report land in your Drive folder — with an AI-written summary of the month included.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Bottom CTA -->
+  <section>
+    <div class="wrap">
+      <div class="bottom-cta">
+        <span class="eyebrow">Free · local · yours</span>
+        <h2>Stop guessing where the day went.</h2>
+        <p>Install Tasker, browse like you always do, and get your first daily recap tonight — without your data ever leaving your machine.</p>
+        <a class="btn btn-primary" href="https://chromewebstore.google.com/detail/tasker-activity-tracker-g/nfdjclnanladapnhofbmnhclkhlndeak" target="_blank" rel="noopener">Add to Chrome</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Footer -->
+<footer>
+  <div class="wrap">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="logo-mark">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FAE261" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </span>
+        <span>&copy; 2026 Tasker</span>
+      </div>
+      <div class="footer-links">
+        <a href="./privacy-policy.html">Privacy policy</a>
+        <a href="mailto:uabdul88@gmail.com">uabdul88@gmail.com</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,21 @@
+# Build artifacts — published as GitHub Releases, not committed
+*.zip
+
+# Dependencies
+node_modules/
+
+# Environment / secrets — never commit the Gemini API key
+.env
+.env.*
+!.env.example
+
+# Python build helpers
+__pycache__/
+*.pyc
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/

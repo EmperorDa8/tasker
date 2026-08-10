@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tasker - Analytics & Monthly Recap Dashboard</title>
+  <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- Left Navigation Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+        </div>
+        <div class="sidebar-title">
+          <h2>Tasker</h2>
+          <span>Activity & Recaps</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="overview">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          <span>Overview</span>
+        </button>
+
+        <button class="nav-item" data-tab="monthly-recap">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="8" r="7"></circle>
+            <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+          </svg>
+          <span>Monthly Recap</span>
+          <span class="badge-new">Recap</span>
+        </button>
+
+        <button class="nav-item" data-tab="daily-logs">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+          </svg>
+          <span>Daily Activity Logs</span>
+        </button>
+
+        <button class="nav-item" data-tab="drive-sync">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>
+          <span>Google Drive Sync</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-drive-card">
+          <div class="drive-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+            </svg>
+          </div>
+          <div class="drive-details">
+            <span class="drive-label">Google Drive</span>
+            <span class="drive-status-sub" id="sidebarDriveFolder">Tasker Activity Logs</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-area">
+      <!-- Top Bar Header -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <h1 id="pageTitle">Overview</h1>
+          <p id="pageSubtitle">Track your browsing activities, accomplishments, and summaries.</p>
+        </div>
+        <div class="topbar-right">
+          <button id="quickSyncBtn" class="btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+            </svg>
+            <span>Sync Today to Drive</span>
+          </button>
+          <button id="optionsPageBtn" class="btn-icon" title="Settings">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- TAB 1: OVERVIEW -->
+      <section id="tab-overview" class="tab-content active">
+        <!-- Quick Start Guide Banner for Non-Technical Users -->
+        <div class="card banner-card" style="margin-bottom: 20px; background: #FFDCEF;">
+          <div style="display:flex; align-items:center; gap:14px;">
+            <div style="font-size:24px;">💡</div>
+            <div>
+              <strong style="color:#2A0F14; font-size:15px; font-family:'Bricolage Grotesque','Figtree',sans-serif; font-weight:600;">How Tasker Works</strong>
+              <p style="font-size:12px; color:#544145; margin-top:2px;">
+                Tasker automatically measures active focus time across tabs, categorizes web activities, and calculates your daily productivity score. All data is saved strictly on your local device for 100% privacy.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stat Cards Grid -->
+        <div class="stats-grid">
+          <div class="stat-card" title="Total active time spent on tabs today">
+            <div class="stat-icon indigo">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Today's Focus Time</span>
+              <span class="stat-value" id="overviewTodayTime">0h 0m</span>
+            </div>
+          </div>
+
+          <div class="stat-card" title="Focus score calculated from productive work vs distractive browsing">
+            <div class="stat-icon emerald">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                <polyline points="17 6 23 6 23 12"></polyline>
+              </svg>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Productivity Index</span>
+              <span class="stat-value" id="overviewProductivity">—</span>
+            </div>
+          </div>
+
+          <div class="stat-card" title="Key milestones or accomplishment notes added by you">
+            <div class="stat-icon amber">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Accomplishments Logged</span>
+              <span class="stat-value" id="overviewHighlightsCount">0 items</span>
+            </div>
+          </div>
+
+          <div class="stat-card" title="Google Drive Cloud Sync status">
+            <div class="stat-icon sky">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              </svg>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Google Drive Status</span>
+              <span class="stat-value" id="overviewDriveStatus">Ready</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="dashboard-row">
+          <div class="card flex-2">
+            <div class="card-header">
+              <h3>Today's Category Time Allocation</h3>
+              <span class="card-subtitle">Breakdown across activity sectors</span>
+            </div>
+            <div class="card-body">
+              <div class="chart-container" id="categoryChartContainer">
+                <!-- Dynamic SVG Bars -->
+              </div>
+            </div>
+          </div>
+
+          <div class="card flex-1">
+            <div class="card-header">
+              <h3>Top Visited Platforms</h3>
+              <span class="card-subtitle">Highest duration websites</span>
+            </div>
+            <div class="card-body">
+              <div class="domain-list-group" id="topDomainsGroup">
+                <!-- Dynamic Domain List -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- What You Worked On -->
+        <div class="dashboard-row">
+          <div class="card flex-2">
+            <div class="card-header">
+              <h3>What You Worked On</h3>
+              <span class="card-subtitle">Specific activities, longest first</span>
+            </div>
+            <div class="card-body">
+              <div class="activity-list-group" id="todayActivityGroup">
+                <!-- Dynamic Activity List -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: MONTHLY RECAP -->
+      <section id="tab-monthly-recap" class="tab-content">
+        <div class="recap-control-bar card">
+          <div class="recap-control-left">
+            <label for="monthSelect">Select Month:</label>
+            <select id="monthSelect" class="select-input">
+              <!-- Dynamic Months -->
+            </select>
+          </div>
+          <div class="recap-control-right">
+            <button id="syncMonthToDriveBtn" class="btn-primary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <span>Sync to Drive</span>
+            </button>
+            <button id="copyMonthMarkdownBtn" class="btn-secondary" title="Copy markdown to clipboard">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span>Copy Report</span>
+            </button>
+            <button id="downloadMonthMarkdownBtn" class="btn-secondary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Download</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Monthly Recap Hero Summary Box -->
+        <div class="recap-hero-box">
+          <div class="recap-hero-left">
+            <span class="recap-tag">Monthly Accomplishments</span>
+            <h2 id="recapMonthTitle">August 2026 Recap</h2>
+            <p id="recapExecutiveSummary">
+              During August 2026, you dedicated significant focus time toward high-impact development and research workflows. Your top productivity area was Development & Code, maintaining an overall monthly focus score of 91%.
+            </p>
+          </div>
+          <div class="recap-hero-stats">
+            <div class="recap-stat-pill">
+              <span class="label">Total Focus Time</span>
+              <span class="value" id="recapTotalTime">0h 0m</span>
+            </div>
+            <div class="recap-stat-pill">
+              <span class="label">Days Active</span>
+              <span class="value" id="recapDaysCount">0 days</span>
+            </div>
+            <div class="recap-stat-pill">
+              <span class="label">Monthly Score</span>
+              <span class="value" id="recapScore">91%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Monthly Recap Detailed Sections Grid -->
+        <div class="dashboard-row">
+          <div class="card flex-1">
+            <div class="card-header">
+              <h3>🏆 Major Monthly Accomplishments & Highlights</h3>
+              <span class="card-subtitle">Key achievements automatically distilled or added by you</span>
+            </div>
+            <div class="card-body">
+              <ul class="milestones-timeline" id="monthlyMilestonesList">
+                <!-- Dynamic Milestones -->
+              </ul>
+            </div>
+          </div>
+
+          <div class="card flex-1">
+            <div class="card-header">
+              <h3>📊 Monthly Category Distribution</h3>
+              <span class="card-subtitle">Where your time was allocated this month</span>
+            </div>
+            <div class="card-body">
+              <div id="monthlyCategoryBars" class="category-bars-group">
+                <!-- Dynamic Monthly Category Bars -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- What You Worked On (month) -->
+        <div class="card">
+          <div class="card-header">
+            <h3>🔍 What You Worked On This Month</h3>
+            <span class="card-subtitle">Specific activities across the month, longest first</span>
+          </div>
+          <div class="card-body">
+            <div class="activity-list-group" id="monthlyActivityGroup">
+              <!-- Dynamic Activity List -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Full Markdown Report Preview -->
+        <div class="card">
+          <div class="card-header">
+            <h3>📄 Raw Monthly Recap Report Preview (Markdown)</h3>
+          </div>
+          <div class="card-body">
+            <pre id="monthlyMarkdownPreview" class="markdown-preview-box"></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: DAILY ACTIVITY LOGS -->
+      <section id="tab-daily-logs" class="tab-content">
+        <div class="date-picker-bar card">
+          <div class="date-picker-group">
+            <label for="dailyDatePicker">Select Date:</label>
+            <input type="date" id="dailyDatePicker" class="date-input">
+          </div>
+          <button id="syncDayToDriveBtn" class="btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            </svg>
+            <span>Sync Day to Google Drive</span>
+          </button>
+        </div>
+
+        <div class="dashboard-row">
+          <div class="card flex-1">
+            <div class="card-header">
+              <h3>Daily Focus Overview</h3>
+            </div>
+            <div class="card-body" id="dailyFocusDetails">
+              <!-- Dynamic Daily Details -->
+            </div>
+          </div>
+
+          <div class="card flex-1">
+            <div class="card-header">
+              <h3>Custom Journal & Notes</h3>
+            </div>
+            <div class="card-body">
+              <div class="note-add-box">
+                <textarea id="dailyNoteInput" placeholder="Add custom note or journal entry for this date..." rows="3"></textarea>
+                <button id="addDailyNoteBtn" class="btn-secondary" style="align-self: flex-end; margin-top: 8px;">Save Note</button>
+              </div>
+              <ul class="notes-timeline" id="dailyNotesList" style="margin-top: 14px;">
+                <!-- Dynamic Notes List -->
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: GOOGLE DRIVE SYNC -->
+      <section id="tab-drive-sync" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <h3>Google Drive Cloud Integration</h3>
+            <span class="card-subtitle">Automatically backup and sync your notes, summaries, and monthly recaps.</span>
+          </div>
+          <div class="card-body">
+            <div class="drive-settings-panel">
+              <div class="info-banner">
+                <div class="info-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                  </svg>
+                </div>
+                <div class="info-text">
+                  <strong>Seamless Google Ecosystem Sync</strong>
+                  <p>Tasker creates a dedicated folder <code>Tasker Activity Logs</code> in your Google Drive to store all daily logs and monthly accomplishment recap markdown documents.</p>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Target Google Drive Folder Name:</label>
+                <input type="text" id="driveFolderNameInput" class="text-input" value="Tasker Activity Logs">
+              </div>
+
+              <div class="form-group">
+                <label>Automatic Drive Sync Frequency:</label>
+                <select id="autoSyncFreqSelect" class="select-input">
+                  <option value="6">Every 6 hours</option>
+                  <option value="24" selected>Daily (Every 24 hours)</option>
+                  <option value="disabled">Manual Sync Only</option>
+                </select>
+              </div>
+
+              <div class="form-actions">
+                <button id="saveDriveSettingsBtn" class="btn-primary">Save Settings</button>
+                <button id="testDriveConnBtn" class="btn-secondary">Test Connection & Create Folder</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="../utils/formatters.js"></script>
+  <script src="../utils/storage.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>

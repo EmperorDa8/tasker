@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "Tasker - Activity Tracker & Google Drive Recap",
+  "version": "1.1.0",
+  "description": "Local-first browsing activity tracker with daily summaries, monthly recaps, and optional sync to your own Google Drive.",
+  "permissions": [
+    "tabs",
+    "storage",
+    "idle",
+    "identity",
+    "alarms",
+    "unlimitedStorage"
+  ],
+  "host_permissions": [
+    "https://tasker-extension.onrender.com/*"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; img-src 'self' data:;"
+  },
+  "oauth2": {
+    "client_id": "141484094117-9hnj10hh530mivabuoqjv7574tnmgu5m.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/drive.file"
+    ]
+  },
+  "background": {
+    "service_worker": "background/service-worker.js"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Tasker Activity Tracker",
+    "default_icon": {
+      "16": "assets/icon16.png",
+      "48": "assets/icon48.png",
+      "128": "assets/icon128.png"
+    }
+  },
+  "options_page": "options/options.html",
+  "icons": {
+    "16": "assets/icon16.png",
+    "48": "assets/icon48.png",
+    "128": "assets/icon128.png"
+  }
+}

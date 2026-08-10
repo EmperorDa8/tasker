@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Tasker — Marquee Promo Tile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Figtree:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:1400px;height:560px;overflow:hidden;}
+  body{
+    background:#2A0F14;font-family:'Figtree',system-ui,sans-serif;
+    display:flex;align-items:center;position:relative;
+  }
+  .wash{
+    position:absolute;right:-160px;top:-200px;width:820px;height:820px;border-radius:50%;
+    background:radial-gradient(circle, rgba(250,226,97,0.16) 0%, rgba(250,226,97,0) 68%);
+  }
+  .wash2{
+    position:absolute;left:-220px;bottom:-300px;width:700px;height:700px;border-radius:50%;
+    background:radial-gradient(circle, rgba(255,220,239,0.10) 0%, rgba(255,220,239,0) 70%);
+  }
+
+  .left{
+    position:relative;z-index:2;padding-left:96px;width:760px;flex-shrink:0;
+  }
+  .brand{display:flex;align-items:center;gap:14px;margin-bottom:30px;}
+  .mark{width:46px;height:46px;border-radius:50%;background:#FAE261;display:grid;place-items:center;}
+  .brand-name{
+    font-family:'Bricolage Grotesque','Figtree',sans-serif;font-weight:600;
+    font-size:26px;color:#F8FAF7;letter-spacing:-0.2px;
+  }
+  h1{
+    font-family:'Bricolage Grotesque','Figtree',sans-serif;font-weight:600;
+    font-size:64px;line-height:1.02;letter-spacing:-1.4px;color:#F8FAF7;margin-bottom:22px;
+  }
+  h1 .hl{color:#FAE261;}
+  p{font-size:21px;line-height:1.5;color:#CBB9BD;max-width:590px;margin-bottom:30px;}
+  .pills{display:flex;gap:9px;flex-wrap:wrap;}
+  .pill{
+    background:rgba(248,250,247,0.09);border-radius:9999px;padding:9px 17px;
+    font-family:'DM Mono',monospace;font-size:13px;letter-spacing:0.03em;color:#EDE2E4;
+  }
+
+  .right{
+    position:relative;z-index:2;flex:1;height:560px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .device{
+    width:360px;height:408px;border-radius:22px;overflow:hidden;
+    box-shadow:0 40px 80px -24px rgba(0,0,0,0.6);background:#F8FAF7;
+    transform:rotate(-3deg);
+  }
+  iframe{width:360px;height:620px;border:0;display:block;}
+</style>
+</head>
+<body>
+  <div class="wash"></div>
+  <div class="wash2"></div>
+
+  <div class="left">
+    <div class="brand">
+      <span class="mark">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2A0F14" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </span>
+      <span class="brand-name">Tasker</span>
+    </div>
+    <h1>Never rebuild a<br>timesheet from <span class="hl">memory</span>.</h1>
+    <p>Tasker tracks your browser time automatically and writes your daily log and monthly recap — saved to your own Google Drive.</p>
+    <div class="pills">
+      <span class="pill">no timers to start</span>
+      <span class="pill">history stays on your device</span>
+      <span class="pill">free</span>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="device"><iframe src="popup-inner.html" scrolling="no"></iframe></div>
+  </div>
+</body>
+</html>

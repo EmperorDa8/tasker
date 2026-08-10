@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tasker - Activity Tracker & Drive Recap</title>
+  <link rel="stylesheet" href="popup.css">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Header -->
+    <header class="header">
+      <div class="brand">
+        <div class="logo-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">Tasker</span>
+          <span class="brand-tag">Activity Log</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="quickHelpToggleBtn" class="icon-btn help-btn" title="Quick Help & FAQ">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        </button>
+        <button id="toggleTrackingBtn" class="status-btn active" title="Toggle Recording">
+          <span class="status-dot"></span>
+          <span id="statusText">Recording</span>
+        </button>
+        <button id="openDashboardBtn" class="icon-btn" title="Open Full Dashboard">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Welcome Onboarding Card (For New Users) -->
+      <section id="onboardingCard" class="onboarding-card">
+        <div class="onboarding-header">
+          <div class="onboarding-title">
+            <span class="sparkle-icon">✨</span>
+            <strong>Welcome to Tasker!</strong>
+          </div>
+          <button id="dismissOnboardingBtn" class="close-onboarding" title="Dismiss">&times;</button>
+        </div>
+        <p class="onboarding-desc">
+          Tasker automatically tracks active browsing time and organizes it into categories. All data is saved <strong>100% privately</strong> on your device.
+        </p>
+        <div class="onboarding-tips">
+          <span class="tip-pill">🔒 Private & Local</span>
+          <span class="tip-pill">☁️ Syncs to Drive</span>
+          <span class="tip-pill">⚡ Zero Setup Required</span>
+        </div>
+      </section>
+
+      <!-- Time & Score Summary Card -->
+      <section class="summary-card">
+        <div class="summary-main">
+          <div class="time-block">
+            <span class="label">Today's Focus Time</span>
+            <div class="time-display" id="todayTimeDisplay">0h 0m</div>
+          </div>
+          <div class="score-badge" title="Daily Focus & Productivity Index (Calculated from active research & work browsing)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+              <polyline points="17 6 23 6 23 12"></polyline>
+            </svg>
+            <span id="productivityScore">—</span>
+          </div>
+        </div>
+
+        <div class="current-site-bar">
+          <div class="site-info">
+            <span class="site-pulse"></span>
+            <span class="site-domain" id="activeDomain">Detecting site...</span>
+          </div>
+          <span class="category-pill" id="activeCategoryPill">General</span>
+        </div>
+      </section>
+
+      <!-- Sync Actions Bar -->
+      <section class="action-bar">
+        <button id="syncDriveBtn" class="primary-btn" title="Upload daily log to Google Drive">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>
+          <span>Sync Drive</span>
+        </button>
+        <button id="copySummaryBtn" class="secondary-btn" title="Copy today's summary text to clipboard">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          <span>Copy</span>
+        </button>
+        <button id="monthlyRecapBtn" class="secondary-btn" title="Open full monthly recap dashboard">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="8" r="7"></circle>
+            <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+          </svg>
+          <span>Recap</span>
+        </button>
+      </section>
+
+      <!-- Category Time Breakdown -->
+      <section class="categories-section">
+        <div class="section-header">
+          <span class="section-title">Today's Categories</span>
+          <span class="section-subtitle" id="categoriesTotalCount">0 categories</span>
+        </div>
+        <div class="category-list" id="categoryList">
+          <!-- Dynamic Category Items -->
+        </div>
+      </section>
+
+      <!-- Quick Accomplishment & Highlight Input -->
+      <section class="highlights-section">
+        <div class="section-header">
+          <span class="section-title">Key Accomplishments</span>
+          <span class="section-badge" id="highlightBadge">0 logged</span>
+        </div>
+        <div class="highlight-input-group">
+          <input type="text" id="highlightInput" placeholder="Add milestone (e.g. Finished report)..." autocomplete="off">
+          <button id="addHighlightBtn" class="add-btn">Log</button>
+        </div>
+        
+        <!-- Quick Suggestion Chips for Non-Technical Users -->
+        <div class="suggestion-chips">
+          <span class="chip-label">Quick Log:</span>
+          <button class="chip-btn" data-text="Finished project task">+ Task Done</button>
+          <button class="chip-btn" data-text="Team sync meeting">+ Meeting</button>
+          <button class="chip-btn" data-text="Reviewed documentation">+ Code Review</button>
+          <button class="chip-btn" data-text="Completed client research">+ Research</button>
+        </div>
+
+        <ul class="highlights-list" id="highlightsList">
+          <!-- Dynamic Highlight List Items -->
+        </ul>
+      </section>
+
+      <!-- Quick Help & FAQ Drawer (Collapsible) -->
+      <section id="helpDrawer" class="help-drawer hidden">
+        <div class="help-header">
+          <strong>❓ Quick Help & Tips</strong>
+          <button id="closeHelpDrawer" class="close-help">&times;</button>
+        </div>
+        <div class="faq-list">
+          <div class="faq-item">
+            <strong>How does tracking work?</strong>
+            <p>Tasker logs time spent on active browser tabs. It automatically pauses when you switch away or go idle.</p>
+          </div>
+          <div class="faq-item">
+            <strong>Is my data private?</strong>
+            <p>Yes, 100%! All logs stay locally in Chrome. Data is only sent to your personal Google Drive when you click Sync.</p>
+          </div>
+          <div class="faq-item">
+            <strong>How do I exclude sensitive websites?</strong>
+            <p>Click <strong>Settings</strong> at the bottom to exclude banking, email, or password manager sites with 1 click.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer Bar -->
+    <footer class="footer">
+      <div class="drive-status" id="driveStatusIndicator" title="Click to test Drive Sync">
+        <span class="status-icon-dot green"></span>
+        <span id="driveStatusText">Drive Ready</span>
+      </div>
+      <button id="openOptionsBtn" class="footer-link">Settings</button>
+    </footer>
+
+    <!-- Global Toast Banner -->
+    <div id="popupToast" class="popup-toast hidden">Copied to clipboard!</div>
+  </div>
+
+  <script src="../utils/formatters.js"></script>
+  <script src="../utils/storage.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Tasker — Popup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Figtree:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:1280px;height:800px;overflow:hidden;}
+  body{
+    background:#FDF1B0;
+    font-family:'Figtree',system-ui,sans-serif;
+    display:flex;align-items:center;justify-content:center;gap:72px;
+  }
+  .copy{max-width:430px;}
+  .eyebrow{
+    font-family:'DM Mono',monospace;font-size:14px;letter-spacing:0.05em;
+    color:#766E70;display:block;margin-bottom:18px;
+  }
+  h1{
+    font-family:'Bricolage Grotesque','Figtree',sans-serif;font-weight:600;
+    font-size:52px;line-height:1.05;letter-spacing:-0.8px;color:#2A0F14;margin-bottom:20px;
+  }
+  p{font-size:19px;line-height:1.55;color:#544145;}
+  .pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px;}
+  .pill{
+    background:rgba(255,255,255,0.75);border-radius:9999px;padding:7px 15px;
+    font-family:'DM Mono',monospace;font-size:12.5px;letter-spacing:0.03em;color:#2A0F14;
+  }
+  .device{
+    width:360px;height:620px;border-radius:22px;overflow:hidden;
+    box-shadow:0 30px 60px -20px rgba(42,15,20,0.35);background:#F8FAF7;flex-shrink:0;
+  }
+  iframe{width:360px;height:620px;border:0;display:block;}
+</style>
+</head>
+<body>
+  <div class="copy">
+    <span class="eyebrow">One click, from any tab</span>
+    <h1>Your day so far, at a glance.</h1>
+    <p>See today's focus time, what you're on right now, and where the hours went — then log a win the moment it happens.</p>
+    <div class="pills">
+      <span class="pill">no timers to start</span>
+      <span class="pill">pauses when you're away</span>
+      <span class="pill">history stays on your device</span>
+    </div>
+  </div>
+  <div class="device"><iframe src="popup-inner.html" scrolling="no"></iframe></div>
+</body>
+</html>

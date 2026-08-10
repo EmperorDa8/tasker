@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Tasker — Small Promo Tile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Figtree:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:440px;height:280px;overflow:hidden;}
+  body{
+    background:#FAE261;
+    font-family:'Figtree',system-ui,sans-serif;
+    display:flex;flex-direction:column;justify-content:center;
+    padding:0 36px;position:relative;
+  }
+  /* soft radial depth so the flat yellow does not read as a blank swatch */
+  .wash{
+    position:absolute;right:-120px;top:-150px;width:430px;height:430px;border-radius:50%;
+    background:radial-gradient(circle, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 70%);
+  }
+  .wash2{
+    position:absolute;left:-130px;bottom:-170px;width:380px;height:380px;border-radius:50%;
+    background:radial-gradient(circle, rgba(42,15,20,0.09) 0%, rgba(42,15,20,0) 70%);
+  }
+  .inner{position:relative;z-index:2;}
+  .row{display:flex;align-items:center;gap:13px;margin-bottom:20px;}
+  .mark{
+    width:44px;height:44px;border-radius:50%;background:#2A0F14;
+    display:grid;place-items:center;flex-shrink:0;
+  }
+  .wordmark{
+    font-family:'Bricolage Grotesque','Figtree',sans-serif;font-weight:600;
+    font-size:23px;color:#2A0F14;letter-spacing:-0.3px;
+  }
+  h1{
+    font-family:'Bricolage Grotesque','Figtree',sans-serif;font-weight:600;
+    font-size:38px;line-height:1.02;letter-spacing:-0.9px;color:#2A0F14;margin-bottom:14px;
+  }
+  p{
+    font-family:'DM Mono',monospace;font-size:12.5px;letter-spacing:0.03em;
+    line-height:1.5;color:#6E5F26;
+  }
+</style>
+</head>
+<body>
+  <div class="wash"></div>
+  <div class="wash2"></div>
+  <div class="inner">
+    <div class="row">
+      <span class="mark">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#FAE261" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </span>
+      <span class="wordmark">Tasker</span>
+    </div>
+    <h1>Know where<br>your time went.</h1>
+    <p>automatic tracking &middot; monthly recaps<br>your history stays on your device</p>
+  </div>
+</body>
+</html>
