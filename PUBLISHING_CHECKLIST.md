@@ -41,8 +41,8 @@ Note: the manifest `oauth2` block + `chrome.identity.getAuthToken` is the only a
 - [ ] Single-purpose statement (from `STORE_LISTING.md`).
 - [ ] One justification per permission: tabs, storage, unlimitedStorage, idle, identity, alarms (all pre-written in `STORE_LISTING.md`), plus the host-permission justification for the summary-service origin.
 - [ ] Data-usage disclosures: check **Web history** and **User activity**; certify not sold / not transferred for unrelated purposes / not for creditworthiness; not used for ads.
-- [x] **Privacy policy URL** — LIVE at `https://emperorda8.github.io/tasker-extension/privacy-policy.html`. Mandatory field; paste it in.
-- [x] **Homepage URL** — LIVE at `https://emperorda8.github.io/tasker-extension/` (Store listing tab).
+- [x] **Privacy policy URL** — LIVE at `https://tasker-landing-liard.vercel.app/privacy-policy.html`. Mandatory field; paste it in.
+- [x] **Homepage URL** — LIVE at `https://tasker-landing-liard.vercel.app/` (Store listing tab).
 
 ## 6. Submit for review — expectations
 - The `<all_urls>` host permission was **removed** (the `tabs` permission alone covers time attribution), which avoids the in-depth review that broad host access triggers. Reviews are typically faster as a result, but `tabs` + a Web-history disclosure can still draw scrutiny — plan for days, not hours.
@@ -58,4 +58,4 @@ Note: the manifest `oauth2` block + `chrome.identity.getAuthToken` is the only a
 1. Pay the $5 fee / register the developer account.
 2. Upload the draft to get the item ID, then replace placeholder `oauth2.client_id` with the real one (step 3) and re-zip.
 3. Take 1280x800 (or 640x400) screenshots.
-4. ~~Host the privacy policy~~ — done, live on GitHub Pages.
+4. ~~Host the privacy policy~~ — done, live on Vercel (`tasker-landing`).

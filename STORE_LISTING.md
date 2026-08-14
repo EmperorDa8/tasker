@@ -87,7 +87,7 @@ Note on "host permission": the extension declares one narrow host permission for
 Paste this into the "Privacy policy" field in the Privacy practices tab:
 
 ```
-https://emperorda8.github.io/tasker-extension/privacy-policy.html
+https://tasker-landing-liard.vercel.app/privacy-policy.html
 ```
 
 A privacy policy URL is mandatory because this extension declares collection of Web history / User activity.
@@ -97,9 +97,11 @@ A privacy policy URL is mandatory because this extension declares collection of 
 Paste this into the "Homepage URL" field in the Store listing tab:
 
 ```
-https://emperorda8.github.io/tasker-extension/
+https://tasker-landing-liard.vercel.app/
 ```
 
-Both pages are served from the public repo `EmperorDa8/tasker-extension` via GitHub Pages. To update them, edit `index.html` / `privacy-policy.html` in that repo and push — Pages rebuilds automatically.
+Both pages are hosted on Vercel (project `tasker-landing`, team `emperorda8s-projects`), deployed from `index.html` / `privacy-policy.html` in this repo. To update them, edit those files and redeploy with `vercel deploy --prod` from a directory containing the two files.
+
+The old GitHub Pages URLs (`https://emperorda8.github.io/tasker-extension/…`) are still live. Keep them until the Chrome Web Store listing fields above have been switched to the Vercel URLs, then they can be retired.
 
 **After the extension is published**, replace the placeholder `href="#"` on the "Add to Chrome" buttons in `index.html` with the real Chrome Web Store listing URL.
