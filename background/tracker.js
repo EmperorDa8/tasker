@@ -20,8 +20,20 @@ const MAX_PAGE_KEYS_PER_DAY = 200;
 // still bounded so a day object cannot grow without limit.
 const MAX_ACTIVITY_KEYS_PER_DAY = 300;
 
-// Flush cadence. Bounds worst-case data loss on worker death to one interval.
-const TICK_INTERVAL_MS = 60000;
+// Flush cadence, driven by chrome.alarms rather than setInterval.
+//
+// An MV3 service worker is torn down after roughly 30 seconds of inactivity, so
+// a setInterval tick stops firing on a quiet tab - exactly the case it exists to
+// cover. An alarm wakes the worker back up, so a long uninterrupted read is
+// banked in 30-second increments instead of being lost when restoreSession()
+// later finds the session stale.
+//
+// 0.5 is the shortest period Chrome honours, and only from Chrome 120 - hence
+// the minimum_chrome_version in the manifest. Earlier releases silently clamp
+// to 60s, and unpacked extensions bypass the clamp entirely, so local testing
+// will not show you the difference.
+const HEARTBEAT_ALARM = 'tasker_tick';
+const HEARTBEAT_PERIOD_MINUTES = 0.5;
 
 // Cumulative seconds on one domain in a day before it earns an auto-highlight.
 const AUTO_HIGHLIGHT_SECONDS = 1800;
@@ -31,37 +43,54 @@ class ActivityTracker {
     this.activeTab = null; // { tabId, url, title, domain, category, startTime, lastActiveAt }
     this.isIdle = false;
     this.trackingPaused = false;
-    this.timerInterval = null;
     this.blacklistedDomains = [];
     this.carryMs = 0; // sub-second remainder, carried so short visits are not lost
   }
 
   async init() {
     const settings = await TaskerStorage.getSettings();
+    // Domain overrides decide what category a tab is filed under, so they must
+    // be in force before the first switchTab() call, not merely before scoring.
+    Formatters.applyPreferences(settings);
     this.trackingPaused = settings.isTrackingPaused;
     this.blacklistedDomains = settings.blacklistedDomains || [];
 
-    // Restore active session state across service worker restarts
-    await this.restoreSession();
+    // Establish whether the machine is actually idle BEFORE restoring anything.
+    //
+    // A fresh tracker starts with isIdle = false, and the heartbeat alarm now
+    // builds a fresh tracker every 30 seconds all night. Without asking Chrome
+    // what the real state is, each of those wakes would happily re-adopt the
+    // last tab and start crediting time to someone who went home hours ago.
+    const idleState = await this.queryIdleState();
+    this.isIdle = (idleState === 'idle' || idleState === 'locked');
 
-    // Register listeners if in Chrome Extension runtime
-    if (typeof chrome !== 'undefined' && chrome.tabs) {
-      chrome.tabs.onActivated.addListener(this.handleTabActivated.bind(this));
-      chrome.tabs.onUpdated.addListener(this.handleTabUpdated.bind(this));
-      if (chrome.windows) {
-        chrome.windows.onFocusChanged.addListener(this.handleWindowFocus.bind(this));
-      }
-      if (chrome.idle) {
-        chrome.idle.onStateChanged.addListener(this.handleIdleState.bind(this));
-        chrome.idle.setDetectionInterval(60); // 1 minute idle threshold
-      }
+    if (this.isIdle) {
+      // No observed activity, so there is nothing to credit. Drop the session
+      // rather than restore it - restoring would flush the gap since it stopped.
+      await TaskerStorage.clearActiveSession();
+      this.activeTab = null;
+    } else {
+      // Restore active session state across service worker restarts
+      await this.restoreSession();
+    }
 
-      // Sync active tab state initially
+    // The tab, window and idle listeners are NOT registered here. MV3 only wakes
+    // a suspended worker for events whose listeners were registered synchronously
+    // during the worker's first turn - registering them inside this async method
+    // means an event arriving during a cold start has nothing to wake. The
+    // service worker owns that registration and delegates back into the handlers
+    // below. Setting the idle threshold is a plain call, so it stays here.
+    if (typeof chrome !== 'undefined' && chrome.idle) {
+      chrome.idle.setDetectionInterval(60); // 1 minute idle threshold
+    }
+
+    // Sync active tab state initially - but only when someone is actually there.
+    if (!this.isIdle && typeof chrome !== 'undefined' && chrome.tabs) {
       this.syncCurrentTab();
     }
 
-    // Start 5-second tick interval to record active time smoothly
-    this.startTickInterval();
+    // Start the heartbeat that banks active time even while the worker sleeps
+    await this.startHeartbeat();
   }
 
   /**
@@ -87,6 +116,26 @@ class ActivityTracker {
     this.activeTab = restored;
     this.carryMs = restored.carryMs || 0;
     await this.flushActiveTime();
+  }
+
+  /**
+   * Ask Chrome whether the machine is idle right now.
+   *
+   * `chrome.idle.onStateChanged` only reports transitions, which a worker that
+   * was asleep at the time never heard. Falls back to 'active' wherever the API
+   * is unavailable, so a missing answer can never silently stop tracking.
+   */
+  async queryIdleState() {
+    if (typeof chrome === 'undefined' || !chrome.idle || !chrome.idle.queryState) {
+      return 'active';
+    }
+    return new Promise((resolve) => {
+      try {
+        chrome.idle.queryState(60, state => resolve(state || 'active'));
+      } catch (e) {
+        resolve('active');
+      }
+    });
   }
 
   async setPausedState(isPaused) {
@@ -139,6 +188,10 @@ class ActivityTracker {
       this.isIdle = true;
       await this.flushActiveTime();
       await TaskerStorage.clearActiveSession();
+      // Every other stop path (window blur, pause) drops the tab as well as the
+      // stored session. Leaving it set here kept a live handle on the tab the
+      // user walked away from.
+      this.activeTab = null;
     } else if (newState === 'active') {
       this.isIdle = false;
       this.syncCurrentTab();
@@ -230,56 +283,65 @@ class ActivityTracker {
    * Add recorded seconds to one calendar day's totals.
    */
   async applyToDay(dateKey, seconds, tabMeta, session, isNewVisit = false) {
-    const dayData = await TaskerStorage.getDayData(dateKey);
+    // Read, mutate and write as one section. Without the lock an overlapping
+    // flush reads the same starting totals and the later write drops the
+    // earlier one's seconds. The auto-highlight check deliberately runs after
+    // the section closes - addHighlight takes the same lock, and nesting it
+    // here would deadlock.
+    const domainSeconds = await TaskerStorage.serialize(async () => {
+      const dayData = await TaskerStorage.getDayData(dateKey);
 
-    dayData.totalSeconds = (dayData.totalSeconds || 0) + seconds;
+      dayData.totalSeconds = (dayData.totalSeconds || 0) + seconds;
 
-    dayData.categories = dayData.categories || {};
-    dayData.categories[tabMeta.category] = (dayData.categories[tabMeta.category] || 0) + seconds;
+      dayData.categories = dayData.categories || {};
+      dayData.categories[tabMeta.category] = (dayData.categories[tabMeta.category] || 0) + seconds;
 
-    dayData.domains = dayData.domains || {};
-    dayData.domains[tabMeta.domain] = (dayData.domains[tabMeta.domain] || 0) + seconds;
+      dayData.domains = dayData.domains || {};
+      dayData.domains[tabMeta.domain] = (dayData.domains[tabMeta.domain] || 0) + seconds;
 
-    // Bounded page map: once the cap is reached, keep updating known pages but
-    // stop minting new keys so a single tab cannot grow the day object forever.
-    dayData.pages = dayData.pages || {};
-    const pageKey = this.buildPageKey(tabMeta);
-    if (dayData.pages[pageKey] !== undefined) {
-      dayData.pages[pageKey] += seconds;
-    } else if (Object.keys(dayData.pages).length < MAX_PAGE_KEYS_PER_DAY) {
-      dayData.pages[pageKey] = seconds;
-    }
+      // Bounded page map: once the cap is reached, keep updating known pages but
+      // stop minting new keys so a single tab cannot grow the day object forever.
+      dayData.pages = dayData.pages || {};
+      const pageKey = this.buildPageKey(tabMeta);
+      if (dayData.pages[pageKey] !== undefined) {
+        dayData.pages[pageKey] += seconds;
+      } else if (Object.keys(dayData.pages).length < MAX_PAGE_KEYS_PER_DAY) {
+        dayData.pages[pageKey] = seconds;
+      }
 
-    // What was actually done, not just where. Same cap logic as pages: keep
-    // updating activities already known, stop minting new keys past the limit.
-    dayData.activities = dayData.activities || {};
-    const activityKey = tabMeta.activityKey ||
-      this.buildActivityKey(tabMeta.domain, { action: 'Visited', label: tabMeta.title || tabMeta.domain });
-    const existing = dayData.activities[activityKey];
+      // What was actually done, not just where. Same cap logic as pages: keep
+      // updating activities already known, stop minting new keys past the limit.
+      dayData.activities = dayData.activities || {};
+      const activityKey = tabMeta.activityKey ||
+        this.buildActivityKey(tabMeta.domain, { action: 'Visited', label: tabMeta.title || tabMeta.domain });
+      const existing = dayData.activities[activityKey];
 
-    if (existing) {
-      existing.seconds += seconds;
-      existing.lastAt = Date.now();
-      // A visit is a fresh arrival, not a flush. Consecutive flushes of one
-      // sitting share a key and must not each count as a separate visit.
-      if (isNewVisit) existing.visits += 1;
-    } else if (Object.keys(dayData.activities).length < MAX_ACTIVITY_KEYS_PER_DAY) {
-      dayData.activities[activityKey] = {
-        action: tabMeta.action || 'Visited',
-        label: tabMeta.label || tabMeta.title || tabMeta.domain,
-        domain: tabMeta.domain,
-        category: tabMeta.category,
-        seconds,
-        visits: 1,
-        firstAt: Date.now(),
-        lastAt: Date.now()
-      };
-    }
+      if (existing) {
+        existing.seconds += seconds;
+        existing.lastAt = Date.now();
+        // A visit is a fresh arrival, not a flush. Consecutive flushes of one
+        // sitting share a key and must not each count as a separate visit.
+        if (isNewVisit) existing.visits += 1;
+      } else if (Object.keys(dayData.activities).length < MAX_ACTIVITY_KEYS_PER_DAY) {
+        dayData.activities[activityKey] = {
+          action: tabMeta.action || 'Visited',
+          label: tabMeta.label || tabMeta.title || tabMeta.domain,
+          domain: tabMeta.domain,
+          category: tabMeta.category,
+          seconds,
+          visits: 1,
+          firstAt: Date.now(),
+          lastAt: Date.now()
+        };
+      }
 
-    // Day totals and the active session go out in a single storage write.
-    await TaskerStorage.saveDayAndSession(dateKey, dayData, session);
+      // Day totals and the active session go out in a single storage write.
+      await TaskerStorage.saveDayAndSession(dateKey, dayData, session);
 
-    if ((dayData.domains[tabMeta.domain] || 0) >= AUTO_HIGHLIGHT_SECONDS) {
+      return dayData.domains[tabMeta.domain] || 0;
+    });
+
+    if (domainSeconds >= AUTO_HIGHLIGHT_SECONDS) {
       await this.autoGenerateHighlight(dateKey, tabMeta);
     }
   }
@@ -332,6 +394,43 @@ class ActivityTracker {
     }
   }
 
+  /**
+   * Record whatever is on screen right now as a win.
+   *
+   * Deliberately takes no input. The point of a shortcut is to catch the thing
+   * the moment it happens - a prompt for a title would put a text box between
+   * the user and their own train of thought, which is the reason nobody logs
+   * anything until Friday. describeActivity() already knows the work is
+   * "Reviewed PR #12 in dan/tasker", so use that and let the user edit it later
+   * from the popup if the wording matters.
+   *
+   * @returns {{ok: boolean, reason?: string, highlight?: object}}
+   */
+  async logCurrentWin() {
+    if (this.trackingPaused) return { ok: false, reason: 'Tracking is paused' };
+    if (!this.activeTab) return { ok: false, reason: 'Nothing is being tracked right now' };
+
+    // Bank the time first, so a win logged at the end of a stretch of work is
+    // filed against a day total that already includes that stretch.
+    await this.flushActiveTime();
+
+    const meta = this.activeTab;
+    const title = meta.action && meta.label ? `${meta.action}: ${meta.label}` : (meta.title || meta.domain);
+    const dateKey = Formatters.getDateKey();
+
+    const existing = await TaskerStorage.getHighlights(dateKey);
+    const duplicate = existing.find(h => h.title === title);
+    if (duplicate) return { ok: false, reason: 'Already logged', highlight: duplicate };
+
+    const highlight = await TaskerStorage.addHighlight(dateKey, {
+      title,
+      description: `Logged from ${meta.domain} with the keyboard shortcut`,
+      category: meta.category
+    });
+
+    return { ok: true, highlight };
+  }
+
   async autoGenerateHighlight(dateKey, tabMeta) {
     const title = `Focused on ${tabMeta.domain}`;
     const existing = await TaskerStorage.getHighlights(dateKey);
@@ -343,13 +442,44 @@ class ActivityTracker {
     });
   }
 
-  startTickInterval() {
-    if (this.timerInterval) clearInterval(this.timerInterval);
-    this.timerInterval = setInterval(() => {
-      if (!this.trackingPaused && !this.isIdle && this.activeTab) {
-        this.flushActiveTime();
+  /**
+   * (Re)register the heartbeat alarm.
+   *
+   * Called on every init, not just on install, so a cleared or missing alarm is
+   * restored rather than silently leaving the tracker without a pulse. Creating
+   * an alarm that already exists replaces it, so this is safe to repeat.
+   */
+  async startHeartbeat() {
+    if (typeof chrome === 'undefined' || !chrome.alarms) return;
+
+    // Create it only when it is genuinely missing. Creating an alarm that
+    // already exists RESTARTS its countdown, and init() runs on every cold
+    // wake - so a user switching tabs every 20 seconds would reset the 30
+    // second timer forever and the heartbeat would never fire at all.
+    const existing = await new Promise((resolve) => {
+      try {
+        chrome.alarms.get(HEARTBEAT_ALARM, alarm => resolve(alarm || null));
+      } catch (e) {
+        resolve(null);
       }
-    }, TICK_INTERVAL_MS);
+    });
+
+    if (!existing) {
+      chrome.alarms.create(HEARTBEAT_ALARM, { periodInMinutes: HEARTBEAT_PERIOD_MINUTES });
+    }
+  }
+
+  /**
+   * One heartbeat: bank whatever the active tab has accrued since the last flush.
+   *
+   * The alarm firing is itself what wakes the worker, so by the time this runs
+   * init() has usually already re-adopted and flushed the session. Flushing again
+   * is harmless - the second call finds under a second of elapsed time and carries
+   * it - and it covers the case where the worker was alive all along.
+   */
+  async handleTick() {
+    if (this.trackingPaused || this.isIdle || !this.activeTab) return;
+    await this.flushActiveTime();
   }
 }
 
