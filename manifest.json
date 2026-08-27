@@ -1,7 +1,8 @@
 {
   "manifest_version": 3,
+  "minimum_chrome_version": "120",
   "name": "Tasker - Activity Tracker & Google Drive Recap",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Local-first browsing activity tracker with daily summaries, monthly recaps, and optional sync to your own Google Drive.",
   "permissions": [
     "tabs",
@@ -33,6 +34,14 @@
       "16": "assets/icon16.png",
       "48": "assets/icon48.png",
       "128": "assets/icon128.png"
+    }
+  },
+  "commands": {
+    "log_win": {
+      "suggested_key": {
+        "default": "Alt+Shift+L"
+      },
+      "description": "Log what you're doing right now as a win"
     }
   },
   "options_page": "options/options.html",

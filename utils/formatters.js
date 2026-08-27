@@ -199,6 +199,10 @@ const Formatters = {
     const domain = this.getDomain(url).toLowerCase();
     const lowerTitle = (title || '').toLowerCase();
 
+    // The user's own rule wins over every built-in guess below.
+    const override = this.lookupDomainOverride(domain);
+    if (override) return override;
+
     if (domain.includes('github') || domain.includes('gitlab') || domain.includes('stackoverflow') || 
         domain.includes('localhost') || domain.includes('codepen') || domain.includes('replit') ||
         domain.includes('npm') || domain.includes('developer.') || lowerTitle.includes('stack overflow')) {
@@ -260,7 +264,7 @@ const Formatters = {
    * 'Other' sits at the midpoint deliberately: uncategorised time is unknown,
    * not unproductive, and scoring it as either extreme would be a guess.
    */
-  CATEGORY_WEIGHTS: {
+  DEFAULT_CATEGORY_WEIGHTS: {
     'Development': 1.0,
     'Productivity': 1.0,
     'Research': 0.9,
@@ -271,6 +275,69 @@ const Formatters = {
     'Shopping': 0.2,
     'Entertainment': 0.1,
     'Social': 0.1
+  },
+
+  // The weights actually in force: defaults with the user's overrides applied.
+  // Replaced wholesale by applyPreferences(); scoring only ever reads this.
+  CATEGORY_WEIGHTS: null,
+
+  // domain -> category, e.g. { 'linkedin.com': 'Productivity' }. Consulted
+  // before the built-in rules, so a user can settle what a site means to them
+  // rather than argue with a substring match.
+  DOMAIN_CATEGORY_OVERRIDES: {},
+
+  // Display order for the settings UI, most productive default first.
+  CATEGORY_KEYS: [
+    'Development', 'Productivity', 'Research', 'Design', 'Communication',
+    'Other', 'News', 'Social', 'Shopping', 'Entertainment'
+  ],
+
+  /**
+   * Adopt the user's scoring preferences.
+   *
+   * Overrides are stored sparsely - only categories the user actually moved -
+   * so a category left alone keeps following its default, including if that
+   * default changes in a later version.
+   */
+  applyPreferences(settings) {
+    const prefs = settings || {};
+    const weights = { ...this.DEFAULT_CATEGORY_WEIGHTS };
+
+    Object.keys(prefs.categoryWeights || {}).forEach((name) => {
+      const value = Number(prefs.categoryWeights[name]);
+      if (!Number.isFinite(value)) return;
+      weights[name] = Math.min(1, Math.max(0, value));
+    });
+
+    this.CATEGORY_WEIGHTS = weights;
+
+    const overrides = {};
+    Object.keys(prefs.domainCategories || {}).forEach((domain) => {
+      const category = prefs.domainCategories[domain];
+      const key = String(domain || '').trim().toLowerCase().replace(/^www\./, '');
+      if (key && this.CATEGORY_KEYS.indexOf(category) !== -1) {
+        overrides[key] = category;
+      }
+    });
+    this.DOMAIN_CATEGORY_OVERRIDES = overrides;
+  },
+
+  /**
+   * The user's own ruling on what a domain is, if they made one.
+   * Matches subdomains too, so 'linkedin.com' also covers 'www.linkedin.com'
+   * and 'business.linkedin.com'.
+   */
+  lookupDomainOverride(domain) {
+    const host = String(domain || '').toLowerCase();
+    if (!host) return null;
+    const keys = Object.keys(this.DOMAIN_CATEGORY_OVERRIDES);
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      if (host === key || host.endsWith('.' + key)) {
+        return this.DOMAIN_CATEGORY_OVERRIDES[key];
+      }
+    }
+    return null;
   },
 
   // Below this much tracked time, the mix is too small to mean anything - ten
@@ -293,15 +360,93 @@ const Formatters = {
     names.forEach((name) => {
       const seconds = Number(cats[name]) || 0;
       if (seconds <= 0) return;
-      const weight = this.CATEGORY_WEIGHTS[name] !== undefined
-        ? this.CATEGORY_WEIGHTS[name]
-        : this.CATEGORY_WEIGHTS['Other'];
+      // Falls back to the defaults when preferences have not been hydrated yet,
+      // so a score is never computed against an empty weight table.
+      const weights = this.CATEGORY_WEIGHTS || this.DEFAULT_CATEGORY_WEIGHTS;
+      const weight = weights[name] !== undefined ? weights[name] : weights['Other'];
       weighted += weight * seconds;
       total += seconds;
     });
 
     if (total < this.MIN_SCORE_SECONDS) return null;
     return Math.round((weighted / total) * 100);
+  },
+
+  // Below this span there is nothing meaningful to reconcile - a 20-minute
+  // stretch with a 5-minute gap says nothing about a working day.
+  MIN_COVERAGE_SPAN_SECONDS: 3600,
+
+  /**
+   * How much of the day Tasker could actually see.
+   *
+   * Tasker only observes Chrome, so its total is not a working day - time in an
+   * editor, on calls, or in desktop apps is invisible to it. The activity map
+   * already carries first/last timestamps, so the elapsed span between the first
+   * and last tracked thing can be compared against the time actually recorded.
+   * The difference is time spent somewhere Tasker cannot follow, or away from the
+   * machine entirely. Naming that gap is what stops the headline number from
+   * being read as a whole working day.
+   *
+   * @returns {object|null} null when the day is too short to judge, or too old
+   *   to carry timestamps (days recorded before the activity layer shipped).
+   */
+  computeCoverage(dayData) {
+    const activities = (dayData && dayData.activities) || {};
+    const keys = Object.keys(activities);
+    if (keys.length === 0) return null;
+
+    let firstAt = Infinity;
+    let lastAt = 0;
+    keys.forEach((key) => {
+      const a = activities[key];
+      if (a && Number.isFinite(a.firstAt)) firstAt = Math.min(firstAt, a.firstAt);
+      if (a && Number.isFinite(a.lastAt)) lastAt = Math.max(lastAt, a.lastAt);
+    });
+
+    if (!Number.isFinite(firstAt) || lastAt <= firstAt) return null;
+
+    const elapsedSeconds = Math.round((lastAt - firstAt) / 1000);
+    if (elapsedSeconds < this.MIN_COVERAGE_SPAN_SECONDS) return null;
+
+    // Tracked time can nudge past the span through rounding at the edges, so
+    // the gap is a shortfall or nothing - never negative.
+    const trackedSeconds = Math.max(0, Math.round(dayData.totalSeconds || 0));
+    const unaccountedSeconds = Math.max(0, elapsedSeconds - trackedSeconds);
+
+    return {
+      firstAt,
+      lastAt,
+      elapsedSeconds,
+      trackedSeconds,
+      unaccountedSeconds,
+      coveragePercent: Math.min(100, Math.round((trackedSeconds / elapsedSeconds) * 100))
+    };
+  },
+
+  /**
+   * Clock time of a timestamp, e.g. "9:12 AM".
+   */
+  formatClockTime(ms) {
+    return new Date(ms).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  },
+
+  /**
+   * One plain sentence naming what the headline number leaves out.
+   */
+  formatCoverageNote(coverage) {
+    if (!coverage) return '';
+    const span = `${this.formatClockTime(coverage.firstAt)} and ${this.formatClockTime(coverage.lastAt)}`;
+    const tracked = this.formatDuration(coverage.trackedSeconds);
+    const gap = this.formatDuration(coverage.unaccountedSeconds);
+
+    if (coverage.unaccountedSeconds < 300) {
+      return `Between ${span} you were in Chrome for ${tracked}, which is nearly all of it. ` +
+        `Anything done in an editor, on a call, or in a desktop app is still not counted here.`;
+    }
+
+    return `Between ${span} you were in Chrome for ${tracked}. The other ${gap} went somewhere ` +
+      `Tasker cannot see - an editor, a call, a desktop app, or away from the machine. ` +
+      `Treat this as browser time, not a whole working day.`;
   },
 
   /**
@@ -314,10 +459,34 @@ const Formatters = {
   // Sites where the page title or URL tends to carry the content itself -
   // an email subject, an account balance, a document of record. Time and
   // domain are still recorded; the specifics deliberately are not.
+  //
+  // Matched as substrings of the hostname. This list is best-effort and can
+  // never be complete - a challenger bank launches every week - so it is a
+  // safety net, not the guarantee. The guarantee is the user's own exclusion
+  // list, which stops those sites being recorded at all.
   SENSITIVE_DETAIL_DOMAINS: [
+    // Mail - subject lines are the message
     'mail.google', 'outlook', 'mail.yahoo', 'proton.me', 'protonmail',
+    'mail.com', 'zoho.com/mail', 'fastmail',
+
+    // Banking, incumbent and challenger. Titles here routinely carry balances.
     'bank', 'paypal', 'chase', 'amex', 'wellsfargo', 'capitalone',
-    'fidelity', 'schwab', 'mychart', 'healthcare'
+    'monzo', 'revolut', 'starling', 'n26.', 'chime.com', 'nubank',
+    'wise.com', 'sofi.com', 'ally.com', 'discover.com', 'citi',
+    'hsbc', 'barclays', 'lloyds', 'natwest', 'santander', 'usbank',
+    'tdbank', 'nationwide', 'venmo', 'cashapp', 'monese', 'kuda.com',
+
+    // Brokerages, pensions and crypto - portfolio values in the title
+    'fidelity', 'schwab', 'vanguard', 'etrade', 'robinhood', 'wealthfront',
+    'betterment', 'coinbase', 'binance', 'kraken.com', 'blockchain.com',
+    'metamask', 'ledger.com', 'crypto.com',
+
+    // Health
+    'mychart', 'healthcare', 'clinic', 'patient', 'pharmacy',
+    'medicare', 'medicaid', 'nhs.uk', 'teladoc', 'zocdoc', 'goodrx',
+
+    // Tax and payroll
+    'turbotax', 'hmrc', 'irs.gov', 'gusto.com', 'adp.com'
   ],
 
   /**
@@ -474,6 +643,115 @@ const Formatters = {
   },
 
   /**
+   * The repo or ticket an activity belongs to, or null if it is neither.
+   *
+   * Derived from the action/label pair that describeActivity() already produced,
+   * rather than from a new stored field - which means the rollup works on history
+   * collected before this shipped, with no migration and no re-parsing of URLs
+   * that are no longer around.
+   */
+  deriveWorkKey(activity) {
+    const action = String((activity && activity.action) || '');
+    const label = String((activity && activity.label) || '').trim();
+    if (!label) return null;
+
+    if (action === 'Worked ticket') {
+      return { type: 'ticket', key: label.toUpperCase() };
+    }
+
+    // "#12 in dan/tasker" - pull requests and issues.
+    const inRepo = label.match(/^#(\d+)\s+in\s+(\S+\/\S+)$/);
+    if (inRepo) return { type: 'repo', key: inRepo[2] };
+
+    // "dan/tasker" or "dan/tasker/service-worker.js" - commits, code, browsing.
+    if (action === 'Reviewed commits' || action === 'Browsed repo' || action === 'Read code') {
+      const parts = label.split('/').filter(Boolean);
+      if (parts.length >= 2) return { type: 'repo', key: `${parts[0]}/${parts[1]}` };
+    }
+
+    return null;
+  },
+
+  /**
+   * Short name for one item within a rollup: "PR #12", "Issue #7", "commits".
+   */
+  shortItemLabel(activity) {
+    const action = String((activity && activity.action) || '');
+    const label = String((activity && activity.label) || '');
+    const num = label.match(/^#(\d+)/);
+
+    if (action === 'Reviewed PR' && num) return `PR #${num[1]}`;
+    if (action === 'Issue' && num) return `Issue #${num[1]}`;
+    if (action === 'Reviewed commits') return 'commits';
+    if (action === 'Read code') return 'code';
+    if (action === 'Browsed repo') return 'browsing';
+    if (action === 'Worked ticket') return 'ticket';
+    return action.toLowerCase() || 'activity';
+  },
+
+  /**
+   * Group a day's or month's activities by the repo or ticket they belong to.
+   *
+   * "6h on github.com" is not an answer to what someone worked on; "2h 14m on
+   * dan/tasker across PR #12, PR #15 and commits" is. Everything that resolves
+   * to neither a repo nor a ticket is left out entirely rather than bundled into
+   * a misleading "other" bucket.
+   *
+   * @returns {Array} longest-first, each { type, key, seconds, visits, items }
+   */
+  rollupWork(source, limit = 10) {
+    const activities = (source && source.activities) || {};
+    const groups = {};
+
+    Object.keys(activities).forEach((activityKey) => {
+      const activity = activities[activityKey];
+      if (!activity || !(activity.seconds > 0)) return;
+
+      const work = this.deriveWorkKey(activity);
+      if (!work) return;
+
+      const groupKey = `${work.type}:${work.key}`;
+      if (!groups[groupKey]) {
+        groups[groupKey] = { type: work.type, key: work.key, seconds: 0, visits: 0, items: [] };
+      }
+
+      const group = groups[groupKey];
+      group.seconds += activity.seconds;
+      group.visits += activity.visits || 1;
+
+      const name = this.shortItemLabel(activity);
+      const existing = group.items.find(item => item.name === name);
+      if (existing) existing.seconds += activity.seconds;
+      else group.items.push({ name, seconds: activity.seconds });
+    });
+
+    return Object.keys(groups)
+      .map(k => groups[k])
+      .map((group) => {
+        group.items.sort((a, b) => b.seconds - a.seconds);
+        return group;
+      })
+      .sort((a, b) => b.seconds - a.seconds)
+      .slice(0, limit);
+  },
+
+  /**
+   * "PR #12, PR #15, commits" - the pieces of work under one repo or ticket.
+   */
+  formatRollupItems(group, limit = 4) {
+    const all = (group && group.items) || [];
+
+    // A ticket's only "item" is the ticket itself, so listing it restates the
+    // row's own name. Nothing useful to add, so add nothing.
+    if (all.length === 1 && all[0].name === 'ticket') return '';
+
+    const names = all.slice(0, limit).map(item => item.name);
+    const remaining = all.length - names.length;
+    if (remaining > 0) names.push(`+${remaining} more`);
+    return names.join(', ');
+  },
+
+  /**
    * Generate Markdown for Daily Activity Log & Notes
    */
   generateDailyMarkdown(dateKey, dayData, highlights = [], notes = []) {
@@ -484,6 +762,13 @@ const Formatters = {
     md += `**Date:** ${formattedDate}  \n`;
     md += `**Total Active Browsing Time:** ${totalTime}  \n`;
     md += `**Productivity Score:** ${this.formatScore(dayData.productivityScore)}  \n\n`;
+
+    // Say what this number is not, in the artifact itself. A log handed to a
+    // manager or attached to an invoice travels without any of the app's context.
+    const coverage = this.computeCoverage(dayData);
+    if (coverage) {
+      md += `> **Coverage:** ${this.formatCoverageNote(coverage)}\n\n`;
+    }
 
     md += `--- \n\n`;
     md += `## 🌟 Key Accomplishments & Highlights\n`;
@@ -523,6 +808,16 @@ const Formatters = {
       md += `*No detailed activity recorded for this day yet.*\n`;
     }
     md += `\n`;
+
+    const workGroups = this.rollupWork(dayData, 10);
+    if (workGroups.length > 0) {
+      md += `## 🧰 Repos & Tickets\n`;
+      workGroups.forEach((group) => {
+        const detail = this.formatRollupItems(group);
+        md += `- **${group.key}** — ${this.formatDuration(group.seconds)}${detail ? ` (${detail})` : ''}\n`;
+      });
+      md += `\n`;
+    }
 
     md += `## 🌐 Top Visited Domains\n`;
     const domains = dayData.domains || {};
@@ -570,6 +865,16 @@ const Formatters = {
     });
     md += `\n`;
 
+    const monthWork = this.rollupWork(monthStats, 15);
+    if (monthWork.length > 0) {
+      md += `## 🧰 Repos & Tickets This Month\n`;
+      monthWork.forEach((group) => {
+        const detail = this.formatRollupItems(group);
+        md += `- **${group.key}** — ${this.formatDuration(group.seconds)}${detail ? ` (${detail})` : ''}\n`;
+      });
+      md += `\n`;
+    }
+
     md += `## 👑 Top 5 Most Used Platforms\n`;
     if (monthStats.topDomains && monthStats.topDomains.length > 0) {
       monthStats.topDomains.forEach((item, idx) => {
@@ -592,7 +897,13 @@ const Formatters = {
     const totalTime = this.formatDuration(dayData.totalSeconds || 0);
 
     let text = `📊 Tasker Daily Summary (${formattedDate})\n`;
-    text += `⏱️ Total Focus Time: ${totalTime} | Score: ${this.formatScore(dayData.productivityScore)}\n\n`;
+    text += `⏱️ Time in Chrome: ${totalTime} | Score: ${this.formatScore(dayData.productivityScore)}\n`;
+
+    const coverage = this.computeCoverage(dayData);
+    if (coverage && coverage.unaccountedSeconds >= 300) {
+      text += `ℹ️ Browser time only - ${this.formatDuration(coverage.unaccountedSeconds)} of this span happened outside Chrome.\n`;
+    }
+    text += `\n`;
 
     if (highlights && highlights.length > 0) {
       text += `🌟 Key Accomplishments:\n`;

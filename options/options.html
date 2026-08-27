@@ -75,7 +75,36 @@
         </div>
       </section>
 
-      <!-- Section 3: Privacy & Blacklist -->
+      <!-- Section 3: Focus Scoring -->
+      <section class="card">
+        <div class="card-header">
+          <h2>⚖️ What Counts as Productive</h2>
+        </div>
+        <div class="card-body">
+          <p class="section-intro">
+            Your focus score is a weighted average of where your time went. The defaults suit
+            a developer's week &mdash; if your job lives on LinkedIn, YouTube or Reddit, move
+            those up so a good day reads like one. Changes apply to every day, past and present:
+            the score is always recalculated, never stored.
+          </p>
+
+          <div id="weightList" class="weight-list"></div>
+
+          <button type="button" class="preset-btn" id="resetWeightsBtn">Reset weights to defaults</button>
+
+          <div class="form-group" style="margin-top: 26px;">
+            <label>Site Rules</label>
+            <span class="help-text">
+              Overrides the built-in guess for a site. Covers subdomains too, so
+              <code>linkedin.com</code> also matches <code>business.linkedin.com</code>.
+            </span>
+            <div id="domainRuleList" class="rule-list"></div>
+            <button type="button" class="preset-btn" id="addDomainRuleBtn">+ Add site rule</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 4: Privacy & Blacklist -->
       <section class="card">
         <div class="card-header">
           <h2>🛡️ Privacy & Excluded Websites</h2>
@@ -99,7 +128,27 @@
         </div>
       </section>
 
-      <!-- Section 4: Web Store Privacy Notice -->
+      <!-- Section 5: Keyboard Shortcut -->
+      <section class="card">
+        <div class="card-header">
+          <h2>⌨️ Keyboard Shortcut</h2>
+        </div>
+        <div class="card-body">
+          <div class="form-group">
+            <label>Log the current page as a win</label>
+            <span class="help-text">
+              Press <kbd class="kbd">Alt+Shift+L</kbd> to record whatever you are looking at as
+              an accomplishment, without opening anything. Chrome owns this binding, so it is
+              changed on Chrome's own shortcuts page.
+            </span>
+            <button type="button" class="preset-btn" id="openShortcutsBtn" style="margin-top: 10px;">
+              Change shortcut in Chrome
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 6: Web Store Privacy Notice -->
       <section class="card">
         <div class="card-header">
           <h2>🔒 User Data & Privacy Notice</h2>
@@ -111,7 +160,7 @@
         </div>
       </section>
 
-      <!-- Section 5: Save & Data Management -->
+      <!-- Section 7: Save & Data Management -->
       <div class="actions-row">
         <button id="saveSettingsBtn" class="btn-primary">Save Settings</button>
         <button id="resetDefaultsBtn" class="btn-secondary">Reset to Recommended</button>

@@ -220,6 +220,14 @@
   }
 
   /* ---------- Features ---------- */
+  .kbd {
+    font-family: ui-monospace, 'DM Mono', Consolas, monospace;
+    font-size: 0.85em;
+    white-space: nowrap;
+    padding: 1px 6px;
+    border-radius: 5px;
+    background: rgba(42, 15, 20, 0.08);
+  }
   .feature-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -480,9 +488,9 @@
           <div class="icon">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2A0F14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
           </div>
-          <h3>Focus score &amp; accomplishments</h3>
-          <p>A daily focus score computed from how you actually browsed — plus a quick way to log accomplishments and milestones so wins don't disappear by Friday.</p>
-          <span class="tag">one number, honest answer</span>
+          <h3>A focus score you set the rules for</h3>
+          <p>A daily score computed from how you actually browsed — and you decide what counts. Slide the weight on any category, or tell Tasker that LinkedIn is work for you. Hit <span class="kbd">Alt+Shift+L</span> to log a win the moment it happens.</p>
+          <span class="tag">your job, your definition of productive</span>
         </div>
 
         <div class="feature" style="background: var(--soft-yellow);">
@@ -501,6 +509,24 @@
           <h3>Sync to your own Drive</h3>
           <p>Connect your Google account and Tasker files logs into a folder in <em>your</em> Google Drive — via Google OAuth, only when you say so. No middleman, no mystery bucket.</p>
           <span class="tag">your drive · your folder · your files</span>
+        </div>
+
+        <div class="feature" style="background: var(--sage);">
+          <div class="icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2A0F14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </div>
+          <h3>Grouped by repo and ticket</h3>
+          <p>&ldquo;6h on github.com&rdquo; is not an answer. Tasker rolls the day up by what the time went into — <em>dan/tasker &mdash; 1h 45m across PR #12, PR #15 and commits</em> — so the monthly recap reads like a list of work, not a list of websites.</p>
+          <span class="tag">the answer to &ldquo;what did you ship?&rdquo;</span>
+        </div>
+
+        <div class="feature" style="background: var(--lilac);">
+          <div class="icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2A0F14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="#2A0F14" stroke="none"/></svg>
+          </div>
+          <h3>Honest about what it can&rsquo;t see</h3>
+          <p>Tasker only sees Chrome. Time in your editor, on calls, in desktop apps is invisible to it — so it tells you: <em>between 9:00 AM and 6:00 PM you were in Chrome for 3h; the other 6h went somewhere Tasker cannot see.</em> A timesheet that quietly rounds down is worse than no timesheet.</p>
+          <span class="tag">browser time, labelled as browser time</span>
         </div>
       </div>
     </div>

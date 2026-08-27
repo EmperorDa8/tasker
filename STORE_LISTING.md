@@ -60,7 +60,7 @@ Tasker's single purpose is to track the user's own browsing activity time and tu
 - **unlimitedStorage** — Activity logs accumulate over months of daily use and can exceed default storage quotas. Needed so long-term local history and monthly recaps are not truncated or lost.
 - **idle** — Detects when the user is away from the keyboard so idle time is excluded and tracked time stays accurate. No idle data is transmitted.
 - **identity** — Used solely to obtain a Google OAuth token (drive.file scope) when the user explicitly enables Google Drive sync, so their logs can be saved to their own Drive. Never used without user action.
-- **alarms** — Schedules periodic background tasks: saving in-progress tracking data, finalizing daily summaries at day rollover, and running user-scheduled Drive syncs. MV3 service workers require alarms for reliable scheduling.
+- **alarms** — Keeps the timer accurate. Chrome suspends an MV3 service worker after a few seconds of inactivity, so Tasker registers a repeating alarm (every 30 seconds) that wakes the worker to record elapsed time on the active tab; without it, time spent reading a single page goes uncounted. A second, six-hourly alarm runs the optional Drive sync and prunes history past the retention window.
 
 **Note:** Tasker declares **one narrow host permission**, for its own summary-service endpoint only. Earlier drafts declared `<all_urls>`; it was removed because the `tabs` permission alone supplies the tab URL and title needed for time attribution. The extension injects no content scripts and never reads or modifies page content, and it has no host access to any site the user visits. If a reviewer asks why a tracker needs no broad host access, this is the answer.
 

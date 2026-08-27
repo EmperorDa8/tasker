@@ -125,7 +125,7 @@
   <div class="page">
     <div class="eyebrow">Tasker — Activity Tracker &amp; Google Drive Recap</div>
     <h1>Privacy Policy</h1>
-    <div class="dates">Effective: August 8, 2026 &nbsp;·&nbsp; Last updated: August 8, 2026</div>
+    <div class="dates">Effective: August 8, 2026 &nbsp;·&nbsp; Last updated: August 27, 2026</div>
 
     <div class="tldr">
       The short version: Tasker is local-first. Your browsing data never leaves your device unless you explicitly sync it to your own Google Drive or enable the optional AI summary feature.
@@ -140,7 +140,9 @@
       <li><strong>User-provided content:</strong> accomplishment notes, milestones, and journal entries you type into the extension.</li>
       <li><strong>Settings:</strong> your preferences, such as the Google Drive folder name, sync frequency, excluded-domain list, whether AI summaries are enabled, and (if you provide one) a custom Google OAuth Client ID.</li>
     </ul>
-    <p>Tasker does <strong>not</strong> collect or handle: personally identifiable information beyond your Google account authorization, health or financial information, passwords or other credentials, keystrokes, page contents, form inputs, or mouse activity.</p>
+    <p>Tasker does <strong>not</strong> collect or handle: personally identifiable information beyond your Google account authorization, passwords or other credentials, keystrokes, page contents, form inputs, or mouse activity.</p>
+
+    <p><strong>About page titles.</strong> Tasker does not seek out health or financial information, but it does record the title of the page in your active tab, and a title can contain such things &mdash; an account balance, a clinic name. Two protections apply. First, on sites recognised as sensitive (banks, brokerages, crypto exchanges, mail, health and tax providers) Tasker records only the domain and deliberately discards the title. Second, any site on your excluded list is not recorded at all. That recognition list is best-effort and cannot cover every provider, so <strong>if a site matters to you, add it to the excluded list</strong> &mdash; that is the guarantee. Either way this information stays on your device: it is never sent to our summary service, which receives category totals only.</p>
 
     <h2>2. Where Your Data Is Stored</h2>
     <p>All tracked activity, notes, and reports are stored <strong>locally in your browser</strong> using <code>chrome.storage.local</code>. Your browsing history &mdash; the sites you visit, page titles, and time per site &mdash; never leaves your device. There is no account, no login, and no analytics.</p>
@@ -182,7 +184,8 @@
         <tr><td>storage, unlimitedStorage</td><td>To save your activity log, notes, and settings locally on your device.</td></tr>
         <tr><td>idle</td><td>To pause the timer when you step away from the computer, keeping stats honest.</td></tr>
         <tr><td>identity</td><td>To sign in to your own Google account for Drive sync, via Google's official OAuth flow.</td></tr>
-        <tr><td>alarms</td><td>To schedule optional automatic Drive backups.</td></tr>
+        <tr><td>alarms</td><td>To keep the timer accurate. Chrome shuts a background extension down when idle, so Tasker sets a repeating alarm to wake up and record the time you have spent, roughly twice a minute. The same mechanism schedules optional automatic Drive backups.</td></tr>
+        <tr><td>tasker-extension.onrender.com</td><td>Host access to Tasker's own summary service, and to no other site. Used only when AI monthly summaries are switched on, and it receives category totals only — never a URL, page title or note. With the feature off, Tasker contacts nothing.</td></tr>
       </tbody>
     </table>
 

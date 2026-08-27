@@ -1,7 +1,7 @@
 # Privacy Policy — Tasker: Activity Tracker & Google Drive Recap
 
 **Effective date:** August 8, 2026
-**Last updated:** August 8, 2026
+**Last updated:** August 27, 2026
 
 Tasker ("the extension", "we") is a Chrome browser extension that helps you track your own browsing activity, summarize daily accomplishments, and optionally back up reports to your personal Google Drive. This policy explains what data Tasker handles, where it is stored, and the choices you have.
 
@@ -17,7 +17,9 @@ To provide its single purpose — personal activity tracking and productivity re
 - **User-provided content**: accomplishment notes, milestones, and journal entries you type into the extension.
 - **Settings**: your preferences, such as the Google Drive folder name, sync frequency, excluded-domain list, whether AI summaries are enabled, and (if you provide one) a custom Google OAuth Client ID.
 
-Tasker does **not** collect or handle: personally identifiable information beyond your Google account authorization, health or financial information, passwords or other credentials, keystrokes, page contents, form inputs, or mouse activity.
+Tasker does **not** collect or handle: personally identifiable information beyond your Google account authorization, passwords or other credentials, keystrokes, page contents, form inputs, or mouse activity.
+
+**About page titles.** Tasker does not seek out health or financial information, but it does record the title of the page in your active tab, and a title can contain such things — an account balance, a clinic name. Two protections apply. First, on sites recognised as sensitive (banks, brokerages, crypto exchanges, mail, health and tax providers) Tasker records only the domain and deliberately discards the title. Second, any site on your excluded list is not recorded at all. That recognition list is best-effort and cannot cover every provider, so **if a site matters to you, add it to the excluded list** — that is the guarantee. Either way this information stays on your device: it is never sent to our summary service, which receives category totals only.
 
 ## 2. Where Your Data Is Stored
 
@@ -56,7 +58,8 @@ Google's handling of data in both cases is governed by the [Google Privacy Polic
 | `storage`, `unlimitedStorage` | To save your activity log, notes, and settings locally on your device. |
 | `idle` | To pause the timer when you step away from the computer, keeping stats honest. |
 | `identity` | To sign in to your own Google account for Drive sync, via Google's official OAuth flow. |
-| `alarms` | To schedule optional automatic Drive backups. |
+| `alarms` | To keep the timer accurate. Chrome shuts a background extension down when idle, so Tasker sets a repeating alarm to wake up and record the time you have spent, roughly twice a minute. The same mechanism schedules optional automatic Drive backups. |
+| `tasker-extension.onrender.com` (host access) | Host access to Tasker's own summary service, and to no other site. Used only when AI monthly summaries are switched on, and it receives category totals only — never a URL, page title or note. With the feature off, Tasker contacts nothing. |
 
 ## 7. Children's Privacy
 

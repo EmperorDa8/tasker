@@ -46,6 +46,28 @@ const TaskerStorage = {
   },
 
   /**
+   * Run a read-modify-write section with no other section interleaved.
+   *
+   * Day totals are read, mutated and written back as three separate awaits. Two
+   * flushes overlapping - an alarm heartbeat and a tab switch, which the 30s
+   * heartbeat makes routine - would both read the same starting totals and the
+   * second write would silently discard the first one's seconds along with any
+   * domain or activity rows it added.
+   *
+   * Sections must not nest: an inner call would wait on a queue the outer call
+   * is still holding, and deadlock.
+   */
+  _writeQueue: Promise.resolve(),
+
+  serialize(fn) {
+    // Chain onto the queue regardless of whether the previous section settled
+    // or threw, or one rejection would stall every write after it.
+    const run = this._writeQueue.then(fn, fn);
+    this._writeQueue = run.then(() => undefined, () => undefined);
+    return run;
+  },
+
+  /**
    * Persist active tracking tab session for MV3 worker restart resilience
    */
   async saveActiveSession(session) {
@@ -123,7 +145,11 @@ const TaskerStorage = {
       autoSyncIntervalHours: 24,
       blacklistedDomains: ['bank', 'paypal', 'passwords', 'accounts.google.com'],
       minFocusSeconds: 30,
-      hasSeenOnboarding: false
+      hasSeenOnboarding: false,
+      // Sparse overrides: only what the user actually changed. Categories and
+      // domains absent here keep following the built-in defaults.
+      categoryWeights: {},
+      domainCategories: {}
     };
     return { ...defaultSettings, ...(res.tasker_settings || {}) };
   },
@@ -135,14 +161,39 @@ const TaskerStorage = {
     const current = await this.getSettings();
     const updated = { ...current, ...newSettings };
     await this.set({ tasker_settings: updated });
+    // Adopt the new scoring rules immediately rather than at the next reload,
+    // so a slider moved in Options changes the score the user is looking at.
+    Formatters.applyPreferences(updated);
+    this._prefsReady = Promise.resolve();
     return updated;
   },
+
+  /**
+   * Make sure the user's scoring preferences have been loaded into Formatters.
+   *
+   * Scoring happens in several places - the worker, the popup, the dashboard -
+   * and every one of them goes through getDayData or getMonthlyStats. Hydrating
+   * here means no caller can forget to, and the promise is cached so this costs
+   * one storage read per context rather than one per day rendered.
+   */
+  async ensurePreferences() {
+    if (!this._prefsReady) {
+      this._prefsReady = (async () => {
+        const settings = await this.getSettings();
+        Formatters.applyPreferences(settings);
+      })();
+    }
+    return this._prefsReady;
+  },
+
+  _prefsReady: null,
 
   /**
    * Get Daily Activity Data
    * @param {string} dateKey YYYY-MM-DD
    */
   async getDayData(dateKey) {
+    await this.ensurePreferences();
     const key = `day_${dateKey}`;
     const res = await this.get(key);
     const defaultDay = {
@@ -214,18 +265,20 @@ const TaskerStorage = {
    * Add Daily Highlight
    */
   async addHighlight(dateKey, highlightItem) {
-    const list = await this.getHighlights(dateKey);
-    const item = {
-      id: 'hl_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      title: highlightItem.title || 'Accomplishment',
-      description: highlightItem.description || '',
-      category: highlightItem.category || 'Productivity',
-      timestamp: Date.now()
-    };
-    list.unshift(item);
-    await this.set({ [`highlights_${dateKey}`]: list });
-    return item;
+    return this.serialize(async () => {
+      const list = await this.getHighlights(dateKey);
+      const item = {
+        id: 'hl_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        title: highlightItem.title || 'Accomplishment',
+        description: highlightItem.description || '',
+        category: highlightItem.category || 'Productivity',
+        timestamp: Date.now()
+      };
+      list.unshift(item);
+      await this.set({ [`highlights_${dateKey}`]: list });
+      return item;
+    });
   },
 
   /**
@@ -277,6 +330,7 @@ const TaskerStorage = {
    * Get Monthly Stats & Recap
    */
   async getMonthlyStats(monthKey) {
+    await this.ensurePreferences();
     const parts = String(monthKey || '').split('-');
     if (parts.length !== 2) {
       return { monthKey, totalSeconds: 0, daysTrackedCount: 0, avgDailySeconds: 0, monthlyScore: null, categories: {}, domains: {}, activities: {}, topActivities: [], topDomains: [], milestones: [] };

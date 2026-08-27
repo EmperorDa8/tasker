@@ -34,19 +34,120 @@ chrome.runtime.onStartup.addListener(async () => {
   await initTracker();
 });
 
-// Initialize Activity Tracker
+// Initialize Activity Tracker.
+//
+// The in-flight promise is memoised, not just the instance. A bare
+// `if (!trackerInstance)` check yields at its first await, so two callers
+// arriving together - the heartbeat alarm and a popup message on the same cold
+// wake - would each build a tracker, double-register the tab listeners and
+// count every second twice.
+let trackerReady = null;
 async function initTracker() {
-  if (!trackerInstance) {
-    trackerInstance = new ActivityTracker();
-    await trackerInstance.init();
+  if (!trackerReady) {
+    trackerReady = (async () => {
+      const instance = new ActivityTracker();
+      await instance.init();
+      trackerInstance = instance;
+      return instance;
+    })().catch((err) => {
+      // A cached REJECTED promise would answer every future call with the same
+      // failure - one bad init (a failed importScripts, a storage hiccup) would
+      // silently kill tracking for the rest of the browser session. Clear it so
+      // the next event gets a genuine retry.
+      trackerReady = null;
+      throw err;
+    });
+  }
+  return trackerReady;
+}
+
+/**
+ * Run one event handler, absorbing failures.
+ *
+ * These listeners are the only callers of initTracker(), and an unhandled
+ * rejection inside a service-worker listener is invisible to the user - the
+ * extension just quietly stops recording. Logging keeps a failure diagnosable
+ * without taking the worker down with it.
+ */
+async function withTracker(label, fn) {
+  try {
+    const tracker = await initTracker();
+    await fn(tracker);
+  } catch (err) {
+    console.error(`Tasker: ${label} failed`, err);
   }
 }
 
 // Ensure tracker is running on worker awaken
 initTracker();
 
-// Alarm Listener for Auto Google Drive Sync
+// Clear any badge left behind by a confirmation whose timeout never fired,
+// because the worker was suspended in the two seconds after a shortcut press.
+// A stuck tick would otherwise sit on the icon until the next one.
+if (chrome.action && chrome.action.setBadgeText) {
+  chrome.action.setBadgeText({ text: '' });
+}
+
+// Tab, window and idle listeners are registered here, synchronously, on the
+// worker's first turn. That registration is what tells Chrome to wake a
+// suspended worker for these events; a listener added later - inside an async
+// init(), say - misses anything that arrives during a cold start. Each handler
+// waits for the tracker to be ready, then delegates.
+chrome.tabs.onActivated.addListener((activeInfo) => {
+  withTracker('tab activated', t => t.handleTabActivated(activeInfo));
+});
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  withTracker('tab updated', t => t.handleTabUpdated(tabId, changeInfo, tab));
+});
+
+if (chrome.windows) {
+  chrome.windows.onFocusChanged.addListener((windowId) => {
+    withTracker('window focus', t => t.handleWindowFocus(windowId));
+  });
+}
+
+if (chrome.idle) {
+  chrome.idle.onStateChanged.addListener((newState) => {
+    withTracker('idle state', t => t.handleIdleState(newState));
+  });
+}
+
+/**
+ * Confirm a shortcut press on the toolbar icon.
+ *
+ * The badge is the only feedback channel that costs nothing: a desktop
+ * notification would mean the `notifications` permission and a new warning on
+ * the install screen, for a message the user needs for two seconds.
+ */
+function flashBadge(text, color) {
+  if (!chrome.action || !chrome.action.setBadgeText) return;
+  chrome.action.setBadgeBackgroundColor({ color });
+  chrome.action.setBadgeText({ text });
+  setTimeout(() => chrome.action.setBadgeText({ text: '' }), 2000);
+}
+
+// Keyboard shortcut: log the current activity as a win without opening anything.
+if (chrome.commands) {
+  chrome.commands.onCommand.addListener((command) => {
+    if (command !== 'log_win') return;
+    withTracker('log win', async (t) => {
+      const result = await t.logCurrentWin();
+      flashBadge(result.ok ? '✓' : '·', result.ok ? '#3E7A5E' : '#766E70');
+    });
+  });
+}
+
+// Alarm Listener: tracker heartbeat and auto Google Drive sync
 chrome.alarms.onAlarm.addListener(async (alarm) => {
+  // The heartbeat is the reason the worker is awake right now. initTracker()
+  // re-adopts and flushes the persisted session on a cold wake; handleTick()
+  // covers the case where the worker was already running.
+  if (alarm.name === 'tasker_tick') {
+    await withTracker('heartbeat', t => t.handleTick());
+    return;
+  }
+
   if (alarm.name === 'tasker_auto_drive_sync') {
     // Retention runs on the recurring alarm, not only on install/update, so
     // history cannot grow unbounded for users who go a long time between updates.
@@ -110,6 +211,10 @@ async function handleAsyncMessage(message, sender) {
       await TaskerStorage.saveSettings({ isTrackingPaused: newState });
       await trackerInstance.setPausedState(newState);
       return { isPaused: newState };
+    }
+
+    case 'LOG_CURRENT_WIN': {
+      return await trackerInstance.logCurrentWin();
     }
 
     case 'ADD_HIGHLIGHT': {

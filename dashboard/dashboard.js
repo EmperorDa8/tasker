@@ -18,6 +18,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   const overviewProductivity = document.getElementById('overviewProductivity');
   const overviewHighlightsCount = document.getElementById('overviewHighlightsCount');
   const overviewDriveStatus = document.getElementById('overviewDriveStatus');
+  const coverageBanner = document.getElementById('coverageBanner');
+  const coverageHeadline = document.getElementById('coverageHeadline');
+  const coverageDetail = document.getElementById('coverageDetail');
+  const workRollupRow = document.getElementById('workRollupRow');
+  const workRollupList = document.getElementById('workRollupList');
   const categoryChartContainer = document.getElementById('categoryChartContainer');
   const topDomainsGroup = document.getElementById('topDomainsGroup');
   const todayActivityGroup = document.getElementById('todayActivityGroup');
@@ -135,6 +140,78 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  /**
+   * Show what today's total does not include.
+   *
+   * Stays hidden until there is a long enough span to reconcile - on a short
+   * morning the gap is noise, and a banner that always fires is one nobody reads.
+   */
+  function renderCoverage(dayData) {
+    const coverage = Formatters.computeCoverage(dayData || {});
+    if (!coverage) {
+      coverageBanner.classList.add('hidden');
+      return;
+    }
+
+    coverageHeadline.textContent =
+      `Browser time only — ${coverage.coveragePercent}% of your day is visible here`;
+    coverageDetail.textContent = Formatters.formatCoverageNote(coverage);
+    coverageBanner.classList.remove('hidden');
+  }
+
+  /**
+   * Time grouped by the repo or ticket it went into.
+   *
+   * The whole card is hidden when nothing resolves to a repo or ticket - for a
+   * marketer or a student it never applies, and an empty "Repos & Tickets" panel
+   * would just be a permanent reminder that the tool was built for someone else.
+   */
+  function renderWorkRollup(dayData) {
+    const groups = Formatters.rollupWork(dayData || {}, 8);
+    workRollupList.textContent = '';
+
+    if (groups.length === 0) {
+      workRollupRow.classList.add('hidden');
+      return;
+    }
+
+    groups.forEach((group) => {
+      const row = document.createElement('div');
+      row.className = 'rollup-row';
+
+      const main = document.createElement('div');
+      main.className = 'rollup-main';
+
+      const key = document.createElement('div');
+      key.className = 'rollup-key';
+      const kind = document.createElement('span');
+      kind.className = `rollup-kind ${group.type}`;
+      kind.textContent = group.type;
+      key.appendChild(kind);
+      key.appendChild(document.createTextNode(group.key));
+
+      main.appendChild(key);
+
+      const detail = Formatters.formatRollupItems(group);
+      if (detail) {
+        const items = document.createElement('div');
+        items.className = 'rollup-items';
+        items.textContent = detail;
+        main.appendChild(items);
+      }
+
+      const time = document.createElement('div');
+      time.className = 'rollup-time';
+      time.textContent = Formatters.formatDuration(group.seconds);
+
+      row.appendChild(main);
+      row.appendChild(time);
+      workRollupList.appendChild(row);
+    });
+
+    workRollupRow.classList.remove('hidden');
+  }
+
   // 3. Load Overview Tab Data
   async function loadOverviewData() {
     try {
@@ -146,6 +223,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         overviewHighlightsCount.textContent = `${d.highlightsCount} items`;
         overviewDriveStatus.textContent = d.lastSync ? 'Synced Today' : 'Ready';
 
+        renderCoverage(d.dayData);
+        renderWorkRollup(d.dayData);
         renderOverviewCategories(d.dayData.categories || {}, d.totalSeconds || 0);
         renderOverviewTopDomains(d.dayData.domains || {});
         renderActivityList(

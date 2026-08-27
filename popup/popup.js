@@ -31,7 +31,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   const copySummaryBtn = document.getElementById('copySummaryBtn');
   const popupToast = document.getElementById('popupToast');
   const suggestionChipBtns = document.querySelectorAll('.chip-btn');
+  const logCurrentWinBtn = document.getElementById('logCurrentWinBtn');
 
+  // Both were previously implicit globals, created only if the first data load
+  // succeeded. When it did not, the ticker below threw once a second forever and
+  // the timer sat frozen with no indication why.
+  let currentSeconds = 0;
+  let timerTicker = null;
   let currentDayData = null;
   let currentHighlights = [];
 
@@ -85,6 +91,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('Failed to log chip item:', e);
       }
     });
+  });
+
+  // Same thing the keyboard shortcut does, for anyone who would rather click -
+  // and so the feature is discoverable at all, since a shortcut nobody is told
+  // about is a shortcut nobody uses.
+  logCurrentWinBtn.addEventListener('click', async () => {
+    try {
+      const res = await chrome.runtime.sendMessage({ action: 'LOG_CURRENT_WIN' });
+      const result = res && res.data;
+      if (result && result.ok) {
+        showToast(`Logged: "${result.highlight.title}"`);
+        await refreshPopupData();
+      } else {
+        showToast((result && result.reason) || 'Nothing to log right now');
+      }
+    } catch (e) {
+      console.error('Failed to log current activity:', e);
+    }
   });
 
   function showToast(msg) {
