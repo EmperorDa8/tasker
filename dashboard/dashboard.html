@@ -117,9 +117,18 @@
           </div>
         </div>
 
+        <!-- Coverage: what today's number does not include -->
+        <div class="card coverage-banner hidden" id="coverageBanner">
+          <div class="coverage-icon">◔</div>
+          <div class="coverage-text">
+            <strong id="coverageHeadline">Browser time only</strong>
+            <p id="coverageDetail"></p>
+          </div>
+        </div>
+
         <!-- Stat Cards Grid -->
         <div class="stats-grid">
-          <div class="stat-card" title="Total active time spent on tabs today">
+          <div class="stat-card" title="Active time spent in Chrome tabs today. Time in other apps is not included.">
             <div class="stat-icon indigo">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"></circle>
@@ -127,7 +136,7 @@
               </svg>
             </div>
             <div class="stat-info">
-              <span class="stat-label">Today's Focus Time</span>
+              <span class="stat-label">Today's Chrome Time</span>
               <span class="stat-value" id="overviewTodayTime">0h 0m</span>
             </div>
           </div>
@@ -194,6 +203,19 @@
               <div class="domain-list-group" id="topDomainsGroup">
                 <!-- Dynamic Domain List -->
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Repos & Tickets -->
+        <div class="dashboard-row hidden" id="workRollupRow">
+          <div class="card flex-2">
+            <div class="card-header">
+              <h3>Repos &amp; Tickets</h3>
+              <span class="card-subtitle">Time grouped by what it was spent on</span>
+            </div>
+            <div class="card-body">
+              <div class="rollup-list" id="workRollupList"></div>
             </div>
           </div>
         </div>
