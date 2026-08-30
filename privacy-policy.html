@@ -125,7 +125,7 @@
   <div class="page">
     <div class="eyebrow">Tasker — Activity Tracker &amp; Google Drive Recap</div>
     <h1>Privacy Policy</h1>
-    <div class="dates">Effective: August 8, 2026 &nbsp;·&nbsp; Last updated: August 27, 2026</div>
+    <div class="dates">Effective: August 8, 2026 &nbsp;·&nbsp; Last updated: August 30, 2026</div>
 
     <div class="tldr">
       The short version: Tasker is local-first. Your browsing data never leaves your device unless you explicitly sync it to your own Google Drive or enable the optional AI summary feature.
@@ -138,7 +138,8 @@
     <ul>
       <li><strong>Web history / activity data:</strong> the domain, page title, URL, activity category (e.g. Development, Research), and the time you spend on active browser tabs.</li>
       <li><strong>User-provided content:</strong> accomplishment notes, milestones, and journal entries you type into the extension.</li>
-      <li><strong>Settings:</strong> your preferences, such as the Google Drive folder name, sync frequency, excluded-domain list, whether AI summaries are enabled, and (if you provide one) a custom Google OAuth Client ID.</li>
+      <li><strong>Settings:</strong> your preferences, such as the Google Drive folder name, report format, sync frequency, excluded-domain list, whether AI summaries are enabled, whether the work profile is enabled, and (if you provide one) a custom Google OAuth Client ID.</li>
+      <li><strong>Derived work profile (optional, on-device).</strong> From the activity already stored above, Tasker computes an inference about which kind of work your browsing resembles, together with the supporting evidence (which tools, how much time, over how many days). This is derived on your device, stored with your settings, shown only to you, and <strong>never transmitted</strong>. It can be switched off entirely, or replaced with an answer you set yourself, in Settings.</li>
     </ul>
     <p>Tasker does <strong>not</strong> collect or handle: personally identifiable information beyond your Google account authorization, passwords or other credentials, keystrokes, page contents, form inputs, or mouse activity.</p>
 
@@ -151,7 +152,7 @@
     <h2>3. When Data Leaves Your Device</h2>
     <p>Data leaves your device <strong>only</strong> in these two cases, both fully under your control:</p>
     <ol>
-      <li><strong>Google Drive sync (optional).</strong> When you click Sync (or enable automatic sync), Tasker uploads your daily log and monthly recap files (Markdown documents) to a folder in <strong>your own Google Drive account</strong>, authorized through Google's official OAuth 2.0 sign-in. The files are visible only to you under your Google account. Tasker requests the minimum Drive scope needed to create and update its own files. You can revoke this access at any time at <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>.</li>
+      <li><strong>Google Drive sync (optional).</strong> When you click Sync (or enable automatic sync), Tasker uploads your daily log and monthly recap files (PDF documents by default, or Markdown if you choose) to a folder in <strong>your own Google Drive account</strong>, authorized through Google's official OAuth 2.0 sign-in. The files are visible only to you under your Google account. Tasker requests the minimum Drive scope needed to create and update its own files. You can revoke this access at any time at <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>. These reports are generated on your device; if the work profile is switched on, the report includes it, labelled as an inference.</li>
       <li><strong>AI monthly summaries (optional, switchable off).</strong> When you open a monthly recap, Tasker asks our summary service to write a short narrative for that month. Only aggregate totals are sent: the month, your total tracked seconds, the number of active days, and seconds per category (for example "Development: 58 hours"). <strong>No URLs, page titles, domains, notes or milestones are ever sent</strong> — your browsing history cannot be reconstructed from this data. A random identifier generated on your device accompanies the request purely to apply a fair-use limit; it is tied to no account and to nothing identifying. The service forwards those totals to Google's Gemini API, returns the text, and does not retain the request. Switch this off in Settings and monthly recaps are generated entirely on your device.</li>
     </ol>
     <p>Google's handling of data in both cases is governed by the <a href="https://policies.google.com/privacy">Google Privacy Policy</a>.</p>
@@ -161,7 +162,8 @@
       <ul style="margin-bottom:0;">
         <li>We do <strong>not</strong> sell, rent, or trade your data.</li>
         <li>We do <strong>not</strong> transfer your data to third parties (there is no server to transfer it from).</li>
-        <li>We do <strong>not</strong> use your data for advertising, profiling, or creditworthiness/lending purposes.</li>
+        <li>We do <strong>not</strong> use your data for advertising, ad targeting, marketing profiling, or creditworthiness/lending purposes.</li>
+        <li>We do <strong>not</strong> share, sell or transmit the work profile described in section 1. It is computed on your device, shown only to you, and leaves your device only inside a report you choose to sync to your own Google Drive.</li>
         <li>We do <strong>not</strong> use your data for any purpose unrelated to the extension's single purpose of personal activity tracking.</li>
       </ul>
     </div>
@@ -170,7 +172,9 @@
     <ul>
       <li><strong>Pause tracking</strong> at any time with one click from the popup.</li>
       <li><strong>Exclude sensitive sites</strong> (banking, email, health, password managers) via the excluded-domains list and one-click privacy presets in Settings. Excluded sites are never recorded.</li>
-      <li><strong>Export</strong> your full history as JSON or Markdown at any time.</li>
+      <li><strong>Choose your report format</strong> &mdash; PDF or Markdown &mdash; in Settings.</li>
+      <li><strong>Switch off or override the work profile</strong> in Settings. Switching it off stops it being computed at all; overriding it replaces the inference with your own answer everywhere it appears.</li>
+      <li><strong>Export</strong> your full history as JSON at any time.</li>
       <li><strong>Delete everything:</strong> "Clear Local History" in Settings permanently erases all locally stored data. Uninstalling the extension also removes all local data. Files already synced to your Google Drive remain in your Drive under your control — you can delete them there.</li>
     </ul>
 

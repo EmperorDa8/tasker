@@ -1,6 +1,6 @@
 # Tasker — Activity Tracker & Google Drive Recap
 
-A local-first Chrome extension that records how you actually spend your time in the browser and turns it into something you can hand to someone: a daily log and a monthly recap, written in Markdown, optionally backed up to your own Google Drive.
+A local-first Chrome extension that records how you actually spend your time in the browser and turns it into something you can hand to someone: a branded PDF report for the day and a monthly recap, optionally backed up to your own Google Drive.
 
 No account. No login. No analytics. Your browsing history stays in `chrome.storage.local` on your machine.
 
@@ -21,10 +21,13 @@ Most people rebuild their week from memory. Timesheets, client invoices, status 
 - **Automatic tracking.** Time on the active tab is attributed to a domain and page title. No timers to start or stop. `chrome.idle` pauses tracking when you step away, so idle time is never counted as work.
 - **Automatic categorisation.** Development, Research, Productivity, Communication, Design, Media, Social, News, Shopping.
 - **Daily focus score.** A 0–100 index derived from how your time was distributed, plus manual accomplishment notes you log as they happen.
-- **Monthly recap hub.** Total focus time, active days, monthly focus score, milestones, and a category allocation breakdown — exportable as Markdown.
-- **Google Drive sync (optional).** OAuth 2.0 via `chrome.identity`, using the narrow `drive.file` scope: Tasker can only touch files it created, never the rest of your Drive. Uploads `Tasker_Daily_Log_YYYY-MM-DD.md` and `Tasker_Monthly_Recap_YYYY-MM.md` into a dedicated folder.
+- **Monthly recap hub.** Total focus time, active days, monthly focus score, milestones, and a category allocation breakdown.
+- **Branded PDF reports.** Daily logs and monthly recaps render as real vector PDFs — cover page, stat tiles, category meters, running header and page numbers — written by a dependency-free PDF writer in `utils/pdf.js`. A typical daily report is ~26 KB. Markdown remains available as a setting.
+- **Work profile (optional).** Infers what kind of work your browsing resembles across 54 roles, on-device, from the tools you spend time in. Refuses to answer below its evidence thresholds, shows a shortlist when two profiles score too closely, reports a title family rather than picking between interchangeable job titles, and carries the supporting evidence with every finding. Never transmitted; overridable.
+- **Google Drive sync (optional).** OAuth 2.0 via `chrome.identity`, using the narrow `drive.file` scope: Tasker can only touch files it created, never the rest of your Drive. Uploads `Tasker_Daily_Log_YYYY-MM-DD.pdf` and `Tasker_Monthly_Recap_YYYY-MM.pdf` into `Daily Logs` and `Monthly Recaps` subfolders of a dedicated folder.
 - **AI monthly summaries (optional).** A short narrative written by Gemini. Only aggregate totals leave the device — month, total seconds, active days, seconds per category. Never URLs, titles, domains, or notes. Switch it off and recaps are generated entirely offline by the rule-based summariser.
-- **Privacy controls.** Exclude any domain from tracking with one click, pause tracking, export everything as JSON/Markdown, or delete all data permanently.
+- **Privacy controls.** Exclude any domain from tracking with one click, pause tracking, export everything as JSON, or delete all data permanently.
+- **Design system with dark mode.** One set of tokens across the popup, dashboard and settings, self-hosted fonts, and a bundled Material Symbols icon set — no remote asset is ever requested.
 
 <p align="center">
   <img src="screenshots/final/3-popup.png" width="30%" alt="Popup">
@@ -67,10 +70,27 @@ tasker/
 ├── options/               # Settings, privacy controls, export
 ├── utils/
 │   ├── formatters.js      # Duration, domain, category, Markdown
-│   └── storage.js         # Abstraction over chrome.storage
+│   ├── storage.js         # Abstraction over chrome.storage
+│   ├── roleDetector.js    # On-device work-profile inference
+│   ├── pdf.js             # Dependency-free PDF 1.4 writer
+│   ├── reportBuilder.js   # What a Tasker report says, and in what order
+│   └── ui.js              # Shared work-profile / theme / download helpers
 ├── server/                # Optional Gemini proxy (see below)
-├── assets/                # Icons and logo
+├── assets/
+│   ├── design/tokens.css  # Colour, type, spacing, elevation — all surfaces
+│   ├── fonts/             # Self-hosted woff2 (scripts/fetch_fonts.py)
+│   └── icons/icons.js     # Bundled Material Symbols (scripts/build_icon_pack.py)
 └── screenshots/           # Store screenshots + their HTML sources
+```
+
+## Regenerating bundled assets
+
+Both are build-time steps that hit the network once and commit their output; the
+extension itself never requests a remote asset, because its CSP forbids one.
+
+```bash
+python scripts/fetch_fonts.py       # -> assets/fonts/*.woff2 + fonts.css
+python scripts/build_icon_pack.py   # -> assets/icons/icons.js
 ```
 
 ## The summary service (`server/`)
