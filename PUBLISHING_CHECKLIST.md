@@ -33,7 +33,11 @@ Note: the manifest `oauth2` block + `chrome.identity.getAuthToken` is the only a
 
 ## 4. Dashboard — store listing tab
 - [ ] Paste name, short description, detailed description, and category (Productivity) from `STORE_LISTING.md`.
-- [ ] **Screenshots (required): at least 1, up to 5, exactly 1280x800 or 640x400 PNG/JPEG.** Suggested shots: dashboard view, popup, options page, a synced file in Drive.
+- [ ] **Screenshots (required): at least 1, up to 5, exactly 1280x800 or 640x400 PNG/JPEG.**
+      Run `python scripts/build_screenshots.py` - it captures the real popup, dashboard
+      and settings pages with headless Chrome and writes five 1280x800 PNGs to
+      `screenshots/final/`, then checks their dimensions. Re-run it after any UI change;
+      the old hand-built mockups drifted from the product and had to be thrown away.
 - [ ] Optional promo images: small tile 440x280; marquee 1400x560.
 - [ ] Icon 128x128 is taken from the package automatically.
 
