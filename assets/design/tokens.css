@@ -15,37 +15,59 @@
    ========================================================================== */
 
 :root {
-  /* --- Brand ------------------------------------------------------------- */
-  /* Deep plum is the brand's own colour; indigo is the single interactive
-     accent. Everything else on screen is neutral, which is what makes one
-     accent read as deliberate rather than decorative. */
+  /* --- Brand -------------------------------------------------------------
+     The warm plum-and-cream palette the product has always used. Plum is the
+     action colour - it is what a primary button and a selected nav item are
+     painted in - and indigo is reserved for links, focus and selection, so
+     the two never compete for the same job.
+
+     The accent surfaces below (soft yellow, pink, sage, lilac, peach) are the
+     character of the thing. They are tints, not decoration: a card painted in
+     one of them is saying what kind of card it is. */
   --brand-ink: #2A0F14;
   --brand-ink-soft: #4E2134;
-  --brand-accent: #5A3BE0;
-  --brand-accent-hover: #4A2FCB;
-  --brand-accent-press: #3D25AC;
-  --brand-accent-tint: #EEEAFD;
-  --brand-accent-ring: rgba(90, 59, 224, 0.30);
-  --brand-gold: #F5C542;
-  --brand-gold-tint: #FDF3D2;
+  --brand-accent: #5F44E6;
+  --brand-accent-hover: #4E35C9;
+  --brand-accent-press: #4029AB;
+  --brand-accent-tint: #EAE5FC;
+  --brand-accent-ring: rgba(95, 68, 230, 0.32);
+  --brand-gold: #FAE261;
+  --brand-gold-tint: #FDF1B0;
+
+  /* --- Accent surfaces ---------------------------------------------------- */
+  --accent-yellow: #FAE261;
+  --accent-yellow-soft: #FDF1B0;
+  --accent-pink: #FFDCEF;
+  --accent-peach: #FFAB8D;
+  --accent-sage: #DDEEE4;
+  --accent-lilac: #EAE5FC;
+  --accent-rose: #B5485E;
+
+  /* --- Action -------------------------------------------------------------
+     Named separately from the brand so "what a primary button looks like" is
+     one decision in one place rather than a colour repeated across three
+     stylesheets. */
+  --action-bg: var(--brand-ink);
+  --action-bg-hover: var(--brand-ink-soft);
+  --action-fg: #FFFFFF;
 
   /* --- Neutrals ----------------------------------------------------------
-     A warm-grey ramp rather than pure grey: it sits under the plum brand
-     without the blue cast that makes generic UI look like a template. */
+     Warm and very slightly green, which is what stops the cream background
+     reading as dirty white and keeps the plum text from looking purple. */
   --n-0:  #FFFFFF;
-  --n-25: #FCFCFB;
-  --n-50: #F7F7F5;
-  --n-100:#F1F1EE;
-  --n-150:#E9E9E5;
-  --n-200:#DEDEDA;
-  --n-300:#C6C6C1;
-  --n-400:#A3A29D;
-  --n-500:#807F7A;
-  --n-600:#63625E;
-  --n-700:#4A4946;
-  --n-800:#333230;
-  --n-900:#1F1E1D;
-  --n-950:#141313;
+  --n-25: #FCFDFB;
+  --n-50: #F8FAF7;
+  --n-100:#F0F2EF;
+  --n-150:#E8EBE6;
+  --n-200:#DFE3DC;
+  --n-300:#C7CDC4;
+  --n-400:#9C9496;
+  --n-500:#766E70;
+  --n-600:#635B5D;
+  --n-700:#544145;
+  --n-800:#3B2A2E;
+  --n-900:#2A0F14;
+  --n-950:#1C0A0D;
 
   /* --- Semantic surfaces -------------------------------------------------- */
   --bg-app: var(--n-50);
@@ -54,7 +76,7 @@
   --bg-inset: var(--n-150);
   --bg-hover: rgba(42, 15, 20, 0.045);
   --bg-active: rgba(42, 15, 20, 0.075);
-  --bg-overlay: rgba(20, 19, 19, 0.45);
+  --bg-overlay: rgba(42, 15, 20, 0.45);
 
   --text-strong: var(--n-900);
   --text-body: var(--n-700);
@@ -63,19 +85,19 @@
   --text-inverse: var(--n-0);
   --text-accent: var(--brand-accent);
 
-  --border-hairline: rgba(42, 15, 20, 0.10);
-  --border-soft: rgba(42, 15, 20, 0.07);
-  --border-strong: rgba(42, 15, 20, 0.18);
+  --border-hairline: rgba(42, 15, 20, 0.09);
+  --border-soft: rgba(42, 15, 20, 0.06);
+  --border-strong: rgba(42, 15, 20, 0.17);
 
   /* --- Status ------------------------------------------------------------- */
-  --ok: #1F7A54;
-  --ok-tint: #E1F1E9;
-  --warn: #9A6510;
-  --warn-tint: #FBEFD6;
-  --danger: #B23A3A;
-  --danger-tint: #F9E4E2;
-  --info: #2C5FA8;
-  --info-tint: #E3ECF9;
+  --ok: #3E7A5E;
+  --ok-tint: #DDEEE4;
+  --warn: #A1740F;
+  --warn-tint: #FDF1B0;
+  --danger: #B5485E;
+  --danger-tint: #FFE0E6;
+  --info: #5F44E6;
+  --info-tint: #EAE5FC;
 
   /* --- Category palette ---------------------------------------------------
      Held here as well as in formatters.js so a chart, a pill and a PDF bar

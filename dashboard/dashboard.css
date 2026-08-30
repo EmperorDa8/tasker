@@ -79,12 +79,12 @@
 .nav-item:hover { background: var(--bg-hover); color: var(--text-strong); }
 
 .nav-item.active {
-  background: var(--brand-accent-tint);
-  color: var(--brand-accent);
+  background: var(--brand-ink);
+  color: var(--action-fg);
   font-weight: 600;
 }
 
-.nav-item.active [data-icon] { color: var(--brand-accent); }
+.nav-item.active [data-icon] { color: var(--brand-gold); }
 
 .sidebar-foot { display: flex; flex-direction: column; gap: var(--sp-3); }
 
@@ -94,7 +94,7 @@
   gap: 10px;
   padding: 10px;
   border-radius: var(--r-md);
-  background: var(--bg-sunken);
+  background: var(--accent-sage);
 }
 
 .drive-card-icon {
@@ -105,7 +105,7 @@
   place-items: center;
   border-radius: var(--r-sm);
   background: var(--bg-raised);
-  color: var(--brand-accent);
+  color: var(--ok);
 }
 
 .drive-card-copy { display: flex; flex-direction: column; min-width: 0; }
@@ -182,8 +182,8 @@
 .btn:disabled { opacity: 0.6; cursor: default; }
 .btn:active:not(:disabled) { transform: translateY(1px); }
 
-.btn-primary { background: var(--brand-accent); color: #FFFFFF; }
-.btn-primary:hover:not(:disabled) { background: var(--brand-accent-hover); }
+.btn-primary { background: var(--action-bg); color: var(--action-fg); }
+.btn-primary:hover:not(:disabled) { background: var(--action-bg-hover); }
 
 .btn-quiet {
   background: var(--bg-raised);
@@ -239,7 +239,7 @@
 .callout p { margin-top: 3px; font-size: var(--fs-sm); line-height: var(--lh-normal); color: var(--text-body); max-width: 96ch; }
 .callout code { font-family: var(--font-mono); font-size: 11px; padding: 1px 5px; border-radius: var(--r-xs); background: var(--bg-sunken); }
 
-.callout-plain { background: var(--bg-sunken); }
+.callout-plain { background: var(--accent-sage); }
 .callout-plain .callout-icon { color: var(--ok); }
 
 /* ------------------------------------------------------------------ stats - */
@@ -267,7 +267,7 @@
   display: grid;
   place-items: center;
   border-radius: var(--r-sm);
-  background: var(--bg-sunken);
+  background: var(--accent-lilac);
   color: var(--brand-accent);
   margin-bottom: var(--sp-2);
 }
@@ -518,23 +518,9 @@
   flex-wrap: wrap;
   padding: var(--sp-6);
   border-radius: var(--r-xl);
-  background: linear-gradient(135deg, var(--brand-ink), var(--brand-ink-soft));
-  color: #FFFFFF;
-  box-shadow: var(--el-3);
-  position: relative;
-  overflow: hidden;
-}
-
-/* The gold seam matches the band at the top of the PDF cover, so the screen
-   and the document read as the same product. */
-.recap-hero::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 3px;
-  background: var(--brand-gold);
+  background: var(--accent-yellow-soft);
+  color: var(--text-strong);
+  border: 1px solid var(--border-soft);
 }
 
 .recap-hero-copy { min-width: 0; flex: 1 1 380px; }
@@ -545,7 +531,7 @@
   font-size: var(--fs-2xs);
   letter-spacing: var(--ls-label);
   text-transform: uppercase;
-  color: var(--brand-gold);
+  color: var(--text-muted);
 }
 
 .recap-hero h2 {
@@ -553,26 +539,27 @@
   font-size: var(--fs-3xl);
   font-weight: 700;
   letter-spacing: var(--ls-display);
-  color: #FFFFFF;
+  color: var(--text-strong);
 }
 
 .recap-hero p {
   margin-top: 8px;
   font-size: var(--fs-md);
   line-height: var(--lh-normal);
-  color: rgba(255, 255, 255, 0.78);
+  color: var(--text-body);
   max-width: 66ch;
 }
 
 .recap-hero-stats { display: flex; gap: var(--sp-5); flex-wrap: wrap; }
 .recap-stat { display: flex; flex-direction: column; gap: 3px; }
-.recap-stat .t-label { color: rgba(255, 255, 255, 0.55); }
+.recap-stat { padding: var(--sp-3) var(--sp-4); border-radius: var(--r-md); background: var(--bg-raised); }
+.recap-stat .t-label { color: var(--text-muted); }
 
 .recap-stat strong {
   font-family: var(--font-display);
   font-size: var(--fs-2xl);
   font-weight: 700;
-  color: #FFFFFF;
+  color: var(--text-strong);
   font-variant-numeric: tabular-nums;
 }
 
@@ -580,14 +567,15 @@
 
 .milestones { list-style: none; display: flex; flex-direction: column; }
 
+.milestones { gap: 8px; }
+
 .milestone {
   display: flex;
   gap: var(--sp-3);
-  padding: 11px 0;
-  border-bottom: 1px solid var(--border-soft);
+  padding: 12px 14px;
+  border-radius: var(--r-md);
+  background: var(--accent-pink);
 }
-
-.milestone:last-child { border-bottom: none; }
 
 .milestone-badge {
   width: 24px;
@@ -596,8 +584,8 @@
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: var(--brand-accent-tint);
-  color: var(--brand-accent);
+  background: var(--brand-ink);
+  color: var(--action-fg);
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   font-weight: 500;

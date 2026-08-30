@@ -143,7 +143,7 @@ body {
   position: relative;
   padding: var(--sp-3) var(--sp-4);
   border-radius: var(--r-lg);
-  background: linear-gradient(140deg, var(--brand-accent-tint), var(--bg-raised) 78%);
+  background: var(--accent-yellow-soft);
   border: 1px solid var(--border-soft);
 }
 
@@ -173,7 +173,7 @@ body {
   color: var(--text-strong);
 }
 
-.welcome-title [data-icon] { color: var(--brand-accent); }
+.welcome-title [data-icon] { color: var(--brand-ink); }
 
 .welcome-copy {
   margin-top: 4px;
@@ -231,7 +231,7 @@ body {
   display: grid;
   place-items: center;
   background:
-    conic-gradient(var(--brand-accent) calc(var(--score, 0) * 1%), var(--bg-inset) 0);
+    conic-gradient(var(--brand-ink) calc(var(--score, 0) * 1%), var(--bg-inset) 0);
 }
 
 .score-ring::after {
@@ -329,13 +329,13 @@ body {
 
 .btn-primary {
   flex: 1;
-  background: var(--brand-accent);
-  color: #FFFFFF;
+  background: var(--action-bg);
+  color: var(--action-fg);
   box-shadow: var(--el-1);
 }
 
-.btn-primary:hover:not(:disabled) { background: var(--brand-accent-hover); }
-.btn-primary:active:not(:disabled) { background: var(--brand-accent-press); }
+.btn-primary:hover:not(:disabled) { background: var(--action-bg-hover); }
+.btn-primary:active:not(:disabled) { background: var(--action-bg-hover); }
 
 .btn-quiet {
   background: var(--bg-raised);
@@ -735,7 +735,7 @@ body {
   transition: all var(--dur-fast) var(--ease-out);
 }
 
-.log-current [data-icon] { color: var(--brand-gold); }
+.log-current [data-icon] { color: var(--accent-peach); }
 .log-current span:nth-of-type(2) { flex: 1; text-align: left; }
 
 .log-current:hover {
