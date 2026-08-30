@@ -132,6 +132,6 @@ Branded PDF reports. Daily logs and monthly recaps are now finished documents wi
 
 A work profile, built on evidence. Tasker reads the tools you spend time in and tells you what kind of work that resembles, with the evidence behind it. It says "not enough evidence yet" rather than guessing, and you can override it.
 
-A rebuilt interface. New design system across the popup, dashboard and settings, with dark mode.
+A rebuilt interface. New design system across the popup, dashboard and settings, with sharper typography and a clearer layout.
 
 Drive reports are now filed into Daily Logs and Monthly Recaps subfolders.

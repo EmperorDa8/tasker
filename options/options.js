@@ -36,7 +36,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     presetAuth: $('presetAuthBtn'),
     presetPrivacy: $('presetPrivacyBtn'),
 
-    themeChoice: $('themeChoice'),
     openShortcuts: $('openShortcutsBtn'),
     exportData: $('exportDataBtn'),
     clearData: $('clearDataBtn'),
@@ -75,21 +74,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  [el.driveFormat, el.themeChoice].forEach((group) => {
-    group.addEventListener('click', (event) => {
-      const seg = event.target.closest('.seg');
-      if (!seg) return;
-      setSeg(group, seg.getAttribute('data-value'));
-      // The theme is the one setting that must take effect immediately: it is
-      // the setting whose whole point is what the page looks like.
-      if (group === el.themeChoice) TaskerUI.applyTheme(segValue(group));
-    });
+  el.driveFormat.addEventListener('click', (event) => {
+    const seg = event.target.closest('.seg');
+    if (!seg) return;
+    setSeg(el.driveFormat, seg.getAttribute('data-value'));
   });
 
   /* ------------------------------------------------------------- loading - */
 
   const settings = await TaskerStorage.getSettings();
-  TaskerUI.applyTheme(settings.theme);
 
   el.driveFolderName.value = settings.googleDriveFolderName || 'Tasker Activity Logs';
   el.autoSyncDrive.checked = settings.autoSyncDrive === true;
@@ -98,7 +91,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   el.blacklist.value = (settings.blacklistedDomains || []).join(', ');
   el.workProfileEnabled.checked = (settings.workProfile || {}).enabled !== false;
   setSeg(el.driveFormat, settings.driveFormat || 'pdf');
-  setSeg(el.themeChoice, settings.theme || 'system');
 
   // Working copies. Nothing reaches storage until Save, so a half-typed site
   // rule never starts recategorising history mid-keystroke.
@@ -392,7 +384,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         driveOrganizeFolders: el.driveOrganizeFolders.checked,
         autoSyncDrive: el.autoSyncDrive.checked,
         aiSummariesEnabled: el.aiSummariesEnabled.checked,
-        theme: segValue(el.themeChoice) || 'system',
         blacklistedDomains: el.blacklist.value.split(',').map(s => s.trim()).filter(Boolean),
         categoryWeights: collectWeightOverrides(),
         domainCategories: collectDomainRules(),
@@ -418,8 +409,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     el.workProfileEnabled.checked = true;
     el.blacklist.value = 'bank, paypal, passwords, accounts.google.com';
     setSeg(el.driveFormat, 'pdf');
-    setSeg(el.themeChoice, 'system');
-    TaskerUI.applyTheme('system');
     weights = { ...Formatters.DEFAULT_CATEGORY_WEIGHTS };
     domainRules = [];
     renderWeights();
@@ -433,7 +422,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           driveOrganizeFolders: true,
           autoSyncDrive: false,
           aiSummariesEnabled: true,
-          theme: 'system',
           blacklistedDomains: ['bank', 'paypal', 'passwords', 'accounts.google.com'],
           categoryWeights: {},
           domainCategories: {},

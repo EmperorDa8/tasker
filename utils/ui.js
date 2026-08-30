@@ -1,36 +1,25 @@
 /**
  * Tasker - shared UI helpers
  *
- * The three surfaces (popup, dashboard, settings) all show the work profile,
- * all offer a PDF, and all honour the theme setting. Each one having its own
- * version of that is how the wording of a claim drifts between screens - which
- * matters more than usual here, because the claim is an inference about the
- * person reading it.
+ * The three surfaces (popup, dashboard, settings) all show the work profile and
+ * all offer a PDF. Each one having its own version of that is how the wording of
+ * a claim drifts between screens - which matters more than usual here, because
+ * the claim is an inference about the person reading it.
  */
 
 const TaskerUI = {
 
   /**
-   * Apply the user's theme choice to the document.
-   * 'system' removes the attribute and lets prefers-color-scheme decide.
+   * Settings a surface needs before its first paint.
+   *
+   * Kept as its own call even though there is no longer a theme to apply,
+   * because the popup already awaits it and reads onboarding state from the
+   * result. Returns null rather than throwing: a surface that cannot reach
+   * storage should still render.
    */
-  applyTheme(theme) {
-    const root = document.documentElement;
-    if (theme === 'light' || theme === 'dark') {
-      root.setAttribute('data-theme', theme);
-    } else {
-      root.removeAttribute('data-theme');
-    }
-  },
-
-  /**
-   * Read the theme from settings and apply it, as early as possible.
-   */
-  async initTheme() {
+  async initSurface() {
     try {
-      const settings = await TaskerStorage.getSettings();
-      this.applyTheme(settings.theme);
-      return settings;
+      return await TaskerStorage.getSettings();
     } catch (e) {
       return null;
     }

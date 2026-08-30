@@ -8,8 +8,10 @@
    Loaded before every surface stylesheet, so a surface only ever declares
    layout and its own components - never a raw hex value.
 
-   Dark mode is driven by prefers-color-scheme and can be forced per surface
-   with data-theme="dark" / data-theme="light" on <html>.
+   The palette is light, deliberately and only. `color-scheme: light` below is
+   what holds that: without it a viewer whose OS is set to dark gets dark
+   native form controls, scrollbars and date pickers rendered against these
+   light surfaces, which looks broken rather than themed.
    ========================================================================== */
 
 :root {
@@ -150,120 +152,9 @@
   --dur-slow: 320ms;
 }
 
-/* ---------------------------------------------------------------------------
-   Dark theme. Only the semantic layer is redefined - the ramp and the brand
-   hues stay put, so a component written against --bg-raised needs no dark
-   variant of its own.
-   ------------------------------------------------------------------------- */
-:root[data-theme="dark"],
-:root:not([data-theme="light"]) {
+/* The whole UI is light. Native controls must follow, whatever the OS says. */
+:root {
   color-scheme: light;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    color-scheme: dark;
-
-    --bg-app: #131211;
-    --bg-raised: #1C1B1A;
-    --bg-sunken: #232221;
-    --bg-inset: #2B2A28;
-    --bg-hover: rgba(255, 255, 255, 0.055);
-    --bg-active: rgba(255, 255, 255, 0.09);
-    --bg-overlay: rgba(0, 0, 0, 0.65);
-
-    --text-strong: #F4F3F1;
-    --text-body: #D3D1CD;
-    --text-muted: #9B9995;
-    --text-faint: #77756F;
-    --text-inverse: #171615;
-
-    --border-hairline: rgba(255, 255, 255, 0.10);
-    --border-soft: rgba(255, 255, 255, 0.06);
-    --border-strong: rgba(255, 255, 255, 0.20);
-
-    --brand-accent: #9280F5;
-    --brand-accent-hover: #A695F8;
-    --brand-accent-press: #7E68EE;
-    --brand-accent-tint: #26214A;
-    --brand-accent-ring: rgba(146, 128, 245, 0.35);
-    --brand-gold-tint: #3A3016;
-
-    --ok: #5FC79B;
-    --ok-tint: #163026;
-    --warn: #E0AC55;
-    --warn-tint: #3A2E16;
-    --danger: #EE8078;
-    --danger-tint: #3A1E1C;
-    --info: #7FAAE8;
-    --info-tint: #1B2A40;
-
-    --cat-development: #9280F5;
-    --cat-productivity: #DDAE4D;
-    --cat-research: #5FC79B;
-    --cat-design: #E884BE;
-    --cat-communication: #EE9A75;
-    --cat-news: #6FBDB2;
-    --cat-social: #7FAAE8;
-    --cat-shopping: #DFA163;
-    --cat-entertainment: #E88096;
-    --cat-other: #A3A29D;
-
-    --el-1: 0 1px 2px rgba(0, 0, 0, 0.40);
-    --el-2: 0 1px 2px rgba(0, 0, 0, 0.40), 0 4px 12px -4px rgba(0, 0, 0, 0.55);
-    --el-3: 0 2px 4px rgba(0, 0, 0, 0.40), 0 12px 28px -10px rgba(0, 0, 0, 0.65);
-    --el-4: 0 4px 8px rgba(0, 0, 0, 0.45), 0 24px 48px -16px rgba(0, 0, 0, 0.70);
-  }
-}
-
-/* Explicit dark override, for a surface that forces the theme itself. */
-:root[data-theme="dark"] {
-  color-scheme: dark;
-
-  --bg-app: #131211;
-  --bg-raised: #1C1B1A;
-  --bg-sunken: #232221;
-  --bg-inset: #2B2A28;
-  --bg-hover: rgba(255, 255, 255, 0.055);
-  --bg-active: rgba(255, 255, 255, 0.09);
-  --bg-overlay: rgba(0, 0, 0, 0.65);
-
-  --text-strong: #F4F3F1;
-  --text-body: #D3D1CD;
-  --text-muted: #9B9995;
-  --text-faint: #77756F;
-  --text-inverse: #171615;
-
-  --border-hairline: rgba(255, 255, 255, 0.10);
-  --border-soft: rgba(255, 255, 255, 0.06);
-  --border-strong: rgba(255, 255, 255, 0.20);
-
-  --brand-accent: #9280F5;
-  --brand-accent-hover: #A695F8;
-  --brand-accent-press: #7E68EE;
-  --brand-accent-tint: #26214A;
-  --brand-accent-ring: rgba(146, 128, 245, 0.35);
-  --brand-gold-tint: #3A3016;
-
-  --ok: #5FC79B;
-  --ok-tint: #163026;
-  --warn: #E0AC55;
-  --warn-tint: #3A2E16;
-  --danger: #EE8078;
-  --danger-tint: #3A1E1C;
-  --info: #7FAAE8;
-  --info-tint: #1B2A40;
-
-  --cat-development: #9280F5;
-  --cat-productivity: #DDAE4D;
-  --cat-research: #5FC79B;
-  --cat-design: #E884BE;
-  --cat-communication: #EE9A75;
-  --cat-news: #6FBDB2;
-  --cat-social: #7FAAE8;
-  --cat-shopping: #DFA163;
-  --cat-entertainment: #E88096;
-  --cat-other: #A3A29D;
 }
 
 /* ---------------------------------------------------------------------------

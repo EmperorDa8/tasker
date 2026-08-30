@@ -42,9 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let currentHighlights = [];
   let isPaused = false;
 
-  // The popup must follow the user's theme choice before it paints, or a dark
-  // build flashes white for a frame every time it is opened.
-  const settings = await TaskerUI.initTheme();
+  const settings = await TaskerUI.initSurface();
   if (settings && settings.hasSeenOnboarding) {
     el.onboarding.classList.add('hidden');
   }

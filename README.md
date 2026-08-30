@@ -27,7 +27,7 @@ Most people rebuild their week from memory. Timesheets, client invoices, status 
 - **Google Drive sync (optional).** OAuth 2.0 via `chrome.identity`, using the narrow `drive.file` scope: Tasker can only touch files it created, never the rest of your Drive. Uploads `Tasker_Daily_Log_YYYY-MM-DD.pdf` and `Tasker_Monthly_Recap_YYYY-MM.pdf` into `Daily Logs` and `Monthly Recaps` subfolders of a dedicated folder.
 - **AI monthly summaries (optional).** A short narrative written by Gemini. Only aggregate totals leave the device — month, total seconds, active days, seconds per category. Never URLs, titles, domains, or notes. Switch it off and recaps are generated entirely offline by the rule-based summariser.
 - **Privacy controls.** Exclude any domain from tracking with one click, pause tracking, export everything as JSON, or delete all data permanently.
-- **Design system with dark mode.** One set of tokens across the popup, dashboard and settings, self-hosted fonts, and a bundled Material Symbols icon set — no remote asset is ever requested.
+- **One design system.** A single set of tokens across the popup, dashboard and settings, self-hosted fonts, and a bundled Material Symbols icon set — no remote asset is ever requested.
 
 <p align="center">
   <img src="screenshots/final/3-popup.png" width="30%" alt="Popup">

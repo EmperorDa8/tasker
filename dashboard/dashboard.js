@@ -67,8 +67,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   let currentDateKey = Formatters.getDateKey();
   let monthlyMarkdownText = '';
 
-  await TaskerUI.initTheme();
-
   /* ------------------------------------------------------------ helpers - */
 
   function toast(message, isError) {

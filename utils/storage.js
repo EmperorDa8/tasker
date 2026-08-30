@@ -164,9 +164,7 @@ const TaskerStorage = {
       workProfile: {
         enabled: true,
         override: null
-      },
-      // 'system' follows the OS; 'light' and 'dark' pin it.
-      theme: 'system'
+      }
     };
     const merged = { ...defaultSettings, ...(res.tasker_settings || {}) };
     // workProfile is the one nested object here, and the spread above would
