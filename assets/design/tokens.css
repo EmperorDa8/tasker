@@ -1,0 +1,411 @@
+/* ============================================================================
+   Tasker Design System - shared tokens
+   ----------------------------------------------------------------------------
+   One source of truth for colour, type, spacing, radius and elevation across
+   the popup, the dashboard and the settings page. Each surface used to carry
+   its own copy of the palette, which is how the three of them drifted apart.
+
+   Loaded before every surface stylesheet, so a surface only ever declares
+   layout and its own components - never a raw hex value.
+
+   Dark mode is driven by prefers-color-scheme and can be forced per surface
+   with data-theme="dark" / data-theme="light" on <html>.
+   ========================================================================== */
+
+:root {
+  /* --- Brand ------------------------------------------------------------- */
+  /* Deep plum is the brand's own colour; indigo is the single interactive
+     accent. Everything else on screen is neutral, which is what makes one
+     accent read as deliberate rather than decorative. */
+  --brand-ink: #2A0F14;
+  --brand-ink-soft: #4E2134;
+  --brand-accent: #5A3BE0;
+  --brand-accent-hover: #4A2FCB;
+  --brand-accent-press: #3D25AC;
+  --brand-accent-tint: #EEEAFD;
+  --brand-accent-ring: rgba(90, 59, 224, 0.30);
+  --brand-gold: #F5C542;
+  --brand-gold-tint: #FDF3D2;
+
+  /* --- Neutrals ----------------------------------------------------------
+     A warm-grey ramp rather than pure grey: it sits under the plum brand
+     without the blue cast that makes generic UI look like a template. */
+  --n-0:  #FFFFFF;
+  --n-25: #FCFCFB;
+  --n-50: #F7F7F5;
+  --n-100:#F1F1EE;
+  --n-150:#E9E9E5;
+  --n-200:#DEDEDA;
+  --n-300:#C6C6C1;
+  --n-400:#A3A29D;
+  --n-500:#807F7A;
+  --n-600:#63625E;
+  --n-700:#4A4946;
+  --n-800:#333230;
+  --n-900:#1F1E1D;
+  --n-950:#141313;
+
+  /* --- Semantic surfaces -------------------------------------------------- */
+  --bg-app: var(--n-50);
+  --bg-raised: var(--n-0);
+  --bg-sunken: var(--n-100);
+  --bg-inset: var(--n-150);
+  --bg-hover: rgba(42, 15, 20, 0.045);
+  --bg-active: rgba(42, 15, 20, 0.075);
+  --bg-overlay: rgba(20, 19, 19, 0.45);
+
+  --text-strong: var(--n-900);
+  --text-body: var(--n-700);
+  --text-muted: var(--n-500);
+  --text-faint: var(--n-400);
+  --text-inverse: var(--n-0);
+  --text-accent: var(--brand-accent);
+
+  --border-hairline: rgba(42, 15, 20, 0.10);
+  --border-soft: rgba(42, 15, 20, 0.07);
+  --border-strong: rgba(42, 15, 20, 0.18);
+
+  /* --- Status ------------------------------------------------------------- */
+  --ok: #1F7A54;
+  --ok-tint: #E1F1E9;
+  --warn: #9A6510;
+  --warn-tint: #FBEFD6;
+  --danger: #B23A3A;
+  --danger-tint: #F9E4E2;
+  --info: #2C5FA8;
+  --info-tint: #E3ECF9;
+
+  /* --- Category palette ---------------------------------------------------
+     Held here as well as in formatters.js so a chart, a pill and a PDF bar
+     can never disagree about what "Development" looks like. */
+  --cat-development: #5A3BE0;
+  --cat-productivity: #A8760F;
+  --cat-research: #24735A;
+  --cat-design: #B8478A;
+  --cat-communication: #C05F3C;
+  --cat-news: #3F7A72;
+  --cat-social: #34659F;
+  --cat-shopping: #A9601F;
+  --cat-entertainment: #A83C55;
+  --cat-other: #6E6D69;
+
+  /* --- Type --------------------------------------------------------------- */
+  --font-display: 'Bricolage Grotesque', 'Inter', system-ui, sans-serif;
+  --font-ui: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'DM Mono', 'SFMono-Regular', Consolas, monospace;
+
+  --fs-2xs: 10px;
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  --fs-md: 13px;
+  --fs-lg: 15px;
+  --fs-xl: 18px;
+  --fs-2xl: 22px;
+  --fs-3xl: 28px;
+  --fs-4xl: 36px;
+
+  --lh-tight: 1.15;
+  --lh-snug: 1.35;
+  --lh-normal: 1.55;
+
+  /* Optical letterspacing: display type tightens as it grows, small caps
+     labels open up so they stay readable at 10-11px. */
+  --ls-display: -0.022em;
+  --ls-heading: -0.012em;
+  --ls-label: 0.06em;
+
+  /* --- Space -------------------------------------------------------------- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-7: 32px;
+  --sp-8: 40px;
+  --sp-9: 56px;
+
+  /* --- Radius ------------------------------------------------------------- */
+  --r-xs: 6px;
+  --r-sm: 9px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 22px;
+  --r-full: 9999px;
+
+  /* --- Elevation ----------------------------------------------------------
+     Two-part shadows: a tight contact shadow plus a wide ambient one. A
+     single blurred box-shadow is what makes cards look like stickers. */
+  --el-1: 0 1px 2px rgba(20, 19, 19, 0.05);
+  --el-2: 0 1px 2px rgba(20, 19, 19, 0.05), 0 4px 12px -4px rgba(20, 19, 19, 0.10);
+  --el-3: 0 2px 4px rgba(20, 19, 19, 0.05), 0 12px 28px -10px rgba(20, 19, 19, 0.16);
+  --el-4: 0 4px 8px rgba(20, 19, 19, 0.06), 0 24px 48px -16px rgba(20, 19, 19, 0.22);
+  --el-focus: 0 0 0 3px var(--brand-accent-ring);
+
+  /* --- Motion -------------------------------------------------------------- */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
+}
+
+/* ---------------------------------------------------------------------------
+   Dark theme. Only the semantic layer is redefined - the ramp and the brand
+   hues stay put, so a component written against --bg-raised needs no dark
+   variant of its own.
+   ------------------------------------------------------------------------- */
+:root[data-theme="dark"],
+:root:not([data-theme="light"]) {
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --bg-app: #131211;
+    --bg-raised: #1C1B1A;
+    --bg-sunken: #232221;
+    --bg-inset: #2B2A28;
+    --bg-hover: rgba(255, 255, 255, 0.055);
+    --bg-active: rgba(255, 255, 255, 0.09);
+    --bg-overlay: rgba(0, 0, 0, 0.65);
+
+    --text-strong: #F4F3F1;
+    --text-body: #D3D1CD;
+    --text-muted: #9B9995;
+    --text-faint: #77756F;
+    --text-inverse: #171615;
+
+    --border-hairline: rgba(255, 255, 255, 0.10);
+    --border-soft: rgba(255, 255, 255, 0.06);
+    --border-strong: rgba(255, 255, 255, 0.20);
+
+    --brand-accent: #9280F5;
+    --brand-accent-hover: #A695F8;
+    --brand-accent-press: #7E68EE;
+    --brand-accent-tint: #26214A;
+    --brand-accent-ring: rgba(146, 128, 245, 0.35);
+    --brand-gold-tint: #3A3016;
+
+    --ok: #5FC79B;
+    --ok-tint: #163026;
+    --warn: #E0AC55;
+    --warn-tint: #3A2E16;
+    --danger: #EE8078;
+    --danger-tint: #3A1E1C;
+    --info: #7FAAE8;
+    --info-tint: #1B2A40;
+
+    --cat-development: #9280F5;
+    --cat-productivity: #DDAE4D;
+    --cat-research: #5FC79B;
+    --cat-design: #E884BE;
+    --cat-communication: #EE9A75;
+    --cat-news: #6FBDB2;
+    --cat-social: #7FAAE8;
+    --cat-shopping: #DFA163;
+    --cat-entertainment: #E88096;
+    --cat-other: #A3A29D;
+
+    --el-1: 0 1px 2px rgba(0, 0, 0, 0.40);
+    --el-2: 0 1px 2px rgba(0, 0, 0, 0.40), 0 4px 12px -4px rgba(0, 0, 0, 0.55);
+    --el-3: 0 2px 4px rgba(0, 0, 0, 0.40), 0 12px 28px -10px rgba(0, 0, 0, 0.65);
+    --el-4: 0 4px 8px rgba(0, 0, 0, 0.45), 0 24px 48px -16px rgba(0, 0, 0, 0.70);
+  }
+}
+
+/* Explicit dark override, for a surface that forces the theme itself. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg-app: #131211;
+  --bg-raised: #1C1B1A;
+  --bg-sunken: #232221;
+  --bg-inset: #2B2A28;
+  --bg-hover: rgba(255, 255, 255, 0.055);
+  --bg-active: rgba(255, 255, 255, 0.09);
+  --bg-overlay: rgba(0, 0, 0, 0.65);
+
+  --text-strong: #F4F3F1;
+  --text-body: #D3D1CD;
+  --text-muted: #9B9995;
+  --text-faint: #77756F;
+  --text-inverse: #171615;
+
+  --border-hairline: rgba(255, 255, 255, 0.10);
+  --border-soft: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.20);
+
+  --brand-accent: #9280F5;
+  --brand-accent-hover: #A695F8;
+  --brand-accent-press: #7E68EE;
+  --brand-accent-tint: #26214A;
+  --brand-accent-ring: rgba(146, 128, 245, 0.35);
+  --brand-gold-tint: #3A3016;
+
+  --ok: #5FC79B;
+  --ok-tint: #163026;
+  --warn: #E0AC55;
+  --warn-tint: #3A2E16;
+  --danger: #EE8078;
+  --danger-tint: #3A1E1C;
+  --info: #7FAAE8;
+  --info-tint: #1B2A40;
+
+  --cat-development: #9280F5;
+  --cat-productivity: #DDAE4D;
+  --cat-research: #5FC79B;
+  --cat-design: #E884BE;
+  --cat-communication: #EE9A75;
+  --cat-news: #6FBDB2;
+  --cat-social: #7FAAE8;
+  --cat-shopping: #DFA163;
+  --cat-entertainment: #E88096;
+  --cat-other: #A3A29D;
+}
+
+/* ---------------------------------------------------------------------------
+   Primitives shared by every surface.
+   ------------------------------------------------------------------------- */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--fs-md);
+  line-height: var(--lh-normal);
+  color: var(--text-body);
+  background: var(--bg-app);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'cv05' 1, 'ss03' 1;
+}
+
+h1, h2, h3, h4 {
+  margin: 0;
+  font-family: var(--font-display);
+  color: var(--text-strong);
+  font-weight: 600;
+  letter-spacing: var(--ls-heading);
+  line-height: var(--lh-tight);
+}
+
+p { margin: 0; }
+
+/* Numerals that do not jitter as a timer ticks. */
+.tnum, .stat-value, .time-display {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+/* --- Icon primitive -------------------------------------------------------
+   TaskerIcons paints an <svg> into any [data-icon]. Sizing and colour live
+   here so markup never repeats width/height/fill. */
+[data-icon] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 1em;
+  height: 1em;
+  font-size: 16px;
+  line-height: 0;
+  color: inherit;
+}
+
+[data-icon] > svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  fill: currentColor;
+}
+
+[data-icon][data-size="xs"] { font-size: 12px; }
+[data-icon][data-size="sm"] { font-size: 14px; }
+[data-icon][data-size="md"] { font-size: 16px; }
+[data-icon][data-size="lg"] { font-size: 20px; }
+[data-icon][data-size="xl"] { font-size: 26px; }
+
+/* --- Focus ----------------------------------------------------------------
+   One visible ring everywhere, keyboard only. Removing outlines without a
+   replacement is the single most common accessibility regression in a
+   redesign, so the ring is defined once at the root. */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--el-focus);
+  border-radius: var(--r-sm);
+}
+
+/* --- Scrollbars ----------------------------------------------------------- */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--n-300) transparent;
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: var(--r-full);
+}
+::-webkit-scrollbar-thumb:hover { background-color: var(--text-faint); background-clip: content-box; }
+
+/* --- Shared atoms --------------------------------------------------------- */
+
+.t-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  font-weight: 500;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.t-card {
+  background: var(--bg-raised);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--r-lg);
+  box-shadow: var(--el-1);
+}
+
+.t-divider {
+  height: 1px;
+  background: var(--border-soft);
+  border: 0;
+  margin: var(--sp-4) 0;
+}
+
+/* Evidence / confidence chips, used by the role panel on every surface. */
+.t-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border-radius: var(--r-full);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-soft);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  color: var(--text-body);
+  white-space: nowrap;
+}
+
+.t-chip.is-accent { background: var(--brand-accent-tint); border-color: transparent; color: var(--brand-accent); }
+.t-chip.is-ok     { background: var(--ok-tint);   border-color: transparent; color: var(--ok); }
+.t-chip.is-warn   { background: var(--warn-tint); border-color: transparent; color: var(--warn); }
+.t-chip.is-muted  { background: var(--bg-sunken); color: var(--text-muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

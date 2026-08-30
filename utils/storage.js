@@ -149,9 +149,31 @@ const TaskerStorage = {
       // Sparse overrides: only what the user actually changed. Categories and
       // domains absent here keep following the built-in defaults.
       categoryWeights: {},
-      domainCategories: {}
+      domainCategories: {},
+      // Reports are written as branded PDFs by default: that is the artifact
+      // people actually forward. Markdown stays available for anyone piping
+      // logs into their own notes system.
+      //   'pdf' | 'markdown' | 'both'
+      driveFormat: 'pdf',
+      // Filing logs into Daily Logs / Monthly Recaps subfolders. Off would
+      // leave a flat folder that becomes unusable after a month of daily logs.
+      driveOrganizeFolders: true,
+      // Work profile inference. `override` is the user's own answer and always
+      // beats the inference; `enabled: false` turns the feature off entirely
+      // and nothing is computed.
+      workProfile: {
+        enabled: true,
+        override: null
+      },
+      // 'system' follows the OS; 'light' and 'dark' pin it.
+      theme: 'system'
     };
-    return { ...defaultSettings, ...(res.tasker_settings || {}) };
+    const merged = { ...defaultSettings, ...(res.tasker_settings || {}) };
+    // workProfile is the one nested object here, and the spread above would
+    // replace it wholesale - so a stored { override } written by an older
+    // version would arrive with `enabled` undefined and read as switched off.
+    merged.workProfile = { ...defaultSettings.workProfile, ...(merged.workProfile || {}) };
+    return merged;
   },
 
   /**
@@ -324,6 +346,33 @@ const TaskerStorage = {
     const updated = list.filter(n => n.id !== noteId);
     await this.set({ [`notes_${dateKey}`]: updated });
     return updated;
+  },
+
+  /**
+   * The last `count` calendar days of activity, newest last.
+   *
+   * Read as one batched storage call rather than a loop of gets: the work
+   * profile inference needs three weeks at once, and 21 sequential reads on
+   * every popup open is 21 round trips for data that arrives in one.
+   *
+   * Days with no record are returned as null rather than skipped, so a caller
+   * can tell "nothing happened on Sunday" apart from "Sunday is missing".
+   */
+  async getRecentDays(count = 21) {
+    await this.ensurePreferences();
+
+    const today = new Date();
+    const dateKeys = [];
+    for (let back = count - 1; back >= 0; back--) {
+      const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - back);
+      dateKeys.push(Formatters.getDateKey(d));
+    }
+
+    const items = await this.get(dateKeys.map(k => `day_${k}`));
+    return dateKeys.map(dateKey => ({
+      dateKey,
+      day: items[`day_${dateKey}`] || null
+    }));
   },
 
   /**

@@ -1,9 +1,13 @@
 """Fetch Google Fonts woff2 files and emit a self-hosted @font-face stylesheet."""
 import os, re, urllib.request
 
+# Inter carries the interface: it is the face Reddit-class product UI is built
+# on, and its variable axis covers 400-700 in one file, so the whole UI weight
+# range costs two requests instead of eight. Bricolage Grotesque stays for
+# display headings and DM Mono for figures and labels.
 CSS_URL = ("https://fonts.googleapis.com/css2?"
-           "family=Bricolage+Grotesque:opsz,wght@12..96,400..700&"
-           "family=Figtree:wght@400;500;600;700&"
+           "family=Bricolage+Grotesque:opsz,wght@12..96,400..800&"
+           "family=Inter:wght@400..700&"
            "family=DM+Mono:wght@400;500&display=swap")
 
 # A modern UA makes Google serve woff2 rather than legacy ttf.

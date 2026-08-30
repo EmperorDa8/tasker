@@ -2,8 +2,8 @@
   "manifest_version": 3,
   "minimum_chrome_version": "120",
   "name": "Tasker - Activity Tracker & Google Drive Recap",
-  "version": "1.2.0",
-  "description": "Local-first browsing activity tracker with daily summaries, monthly recaps, and optional sync to your own Google Drive.",
+  "version": "1.3.0",
+  "description": "Local-first browsing activity tracker with branded PDF reports, an evidence-based work profile, and optional sync to your own Google Drive.",
   "permissions": [
     "tabs",
     "storage",

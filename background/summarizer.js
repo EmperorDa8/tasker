@@ -20,6 +20,7 @@ const ActivitySummarizer = {
     const dayData = await TaskerStorage.getDayData(dateKey);
     const highlights = await TaskerStorage.getHighlights(dateKey);
     const notes = await TaskerStorage.getNotes(dateKey);
+    const profile = await this.getWorkProfile();
 
     const markdown = Formatters.generateDailyMarkdown(dateKey, dayData, highlights, notes);
     return {
@@ -31,8 +32,32 @@ const ActivitySummarizer = {
       markdown,
       dayData,
       highlights,
-      notes
+      notes,
+      profile
     };
+  },
+
+  /**
+   * The current work-profile inference, or null when it is switched off.
+   *
+   * Reads a rolling window rather than the single day being reported: one day
+   * cannot establish what someone does for a living, and the detector refuses
+   * to answer from that little evidence anyway.
+   *
+   * Never throws. An inference failing is not a reason for a report to fail -
+   * the report is the thing the user asked for, the profile is a garnish.
+   */
+  async getWorkProfile() {
+    try {
+      const settings = await TaskerStorage.getSettings();
+      if (settings.workProfile && settings.workProfile.enabled === false) return null;
+
+      const days = await TaskerStorage.getRecentDays(RoleDetector.LOOKBACK_DAYS);
+      return RoleDetector.infer(days, settings);
+    } catch (err) {
+      console.warn('Tasker: work profile inference failed', err);
+      return null;
+    }
   },
 
   /**
@@ -58,6 +83,7 @@ const ActivitySummarizer = {
       monthStats.aiSummaryParagraph = aiInsights.summaryParagraph;
     }
 
+    const profile = await this.getWorkProfile();
     const markdown = Formatters.generateMonthlyRecapMarkdown(monthKey, monthStats);
     
     // Save generated recap in storage
@@ -66,7 +92,8 @@ const ActivitySummarizer = {
     return {
       monthKey,
       monthStats,
-      markdown
+      markdown,
+      profile
     };
   },
 
@@ -77,6 +104,10 @@ const ActivitySummarizer = {
    * seconds per category. URLs, page titles, domains, notes and milestones never
    * leave the device - the service could not reconstruct browsing history from
    * this payload even if it tried.
+   *
+   * The inferred work profile is deliberately NOT sent either. It is the most
+   * personal thing Tasker derives, it is inferred rather than observed, and the
+   * summary service has no use for it.
    */
   async requestAiSummary(monthStats) {
     const installId = await TaskerStorage.getInstallId();

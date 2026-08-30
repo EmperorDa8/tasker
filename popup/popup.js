@@ -1,350 +1,366 @@
 /**
- * Tasker - Popup UI Controller
+ * Tasker - popup controller
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Elements
-  const toggleTrackingBtn = document.getElementById('toggleTrackingBtn');
-  const statusText = document.getElementById('statusText');
-  const openDashboardBtn = document.getElementById('openDashboardBtn');
-  const todayTimeDisplay = document.getElementById('todayTimeDisplay');
-  const productivityScore = document.getElementById('productivityScore');
-  const activeDomain = document.getElementById('activeDomain');
-  const activeCategoryPill = document.getElementById('activeCategoryPill');
-  const syncDriveBtn = document.getElementById('syncDriveBtn');
-  const monthlyRecapBtn = document.getElementById('monthlyRecapBtn');
-  const categoryList = document.getElementById('categoryList');
-  const categoriesTotalCount = document.getElementById('categoriesTotalCount');
-  const highlightInput = document.getElementById('highlightInput');
-  const addHighlightBtn = document.getElementById('addHighlightBtn');
-  const highlightsList = document.getElementById('highlightsList');
-  const highlightBadge = document.getElementById('highlightBadge');
-  const driveStatusText = document.getElementById('driveStatusText');
-  const openOptionsBtn = document.getElementById('openOptionsBtn');
+  const $ = id => document.getElementById(id);
 
-  // Additional UI Elements
-  const quickHelpToggleBtn = document.getElementById('quickHelpToggleBtn');
-  const helpDrawer = document.getElementById('helpDrawer');
-  const closeHelpDrawer = document.getElementById('closeHelpDrawer');
-  const onboardingCard = document.getElementById('onboardingCard');
-  const dismissOnboardingBtn = document.getElementById('dismissOnboardingBtn');
-  const copySummaryBtn = document.getElementById('copySummaryBtn');
-  const popupToast = document.getElementById('popupToast');
-  const suggestionChipBtns = document.querySelectorAll('.chip-btn');
-  const logCurrentWinBtn = document.getElementById('logCurrentWinBtn');
+  const el = {
+    toggleTracking: $('toggleTrackingBtn'),
+    statusText: $('statusText'),
+    openDashboard: $('openDashboardBtn'),
+    todayTime: $('todayTimeDisplay'),
+    scoreRing: $('scoreRing'),
+    score: $('productivityScore'),
+    activeDomain: $('activeDomain'),
+    activeCategory: $('activeCategoryPill'),
+    syncDrive: $('syncDriveBtn'),
+    downloadPdf: $('downloadPdfBtn'),
+    copySummary: $('copySummaryBtn'),
+    categoryList: $('categoryList'),
+    categoryCount: $('categoriesTotalCount'),
+    workProfileBody: $('workProfileBody'),
+    workProfileWindow: $('workProfileWindow'),
+    highlightInput: $('highlightInput'),
+    addHighlight: $('addHighlightBtn'),
+    highlightsList: $('highlightsList'),
+    highlightBadge: $('highlightBadge'),
+    logCurrentWin: $('logCurrentWinBtn'),
+    driveStatusText: $('driveStatusText'),
+    driveStatusDot: $('driveStatusDot'),
+    openOptions: $('openOptionsBtn'),
+    helpToggle: $('quickHelpToggleBtn'),
+    helpDrawer: $('helpDrawer'),
+    closeHelp: $('closeHelpDrawer'),
+    onboarding: $('onboardingCard'),
+    dismissOnboarding: $('dismissOnboardingBtn'),
+    toast: $('popupToast')
+  };
 
-  // Both were previously implicit globals, created only if the first data load
-  // succeeded. When it did not, the ticker below threw once a second forever and
-  // the timer sat frozen with no indication why.
   let currentSeconds = 0;
-  let timerTicker = null;
   let currentDayData = null;
   let currentHighlights = [];
+  let isPaused = false;
 
-  // Check Onboarding state
-  const settings = await TaskerStorage.getSettings();
-  if (settings.hasSeenOnboarding) {
-    onboardingCard.style.display = 'none';
+  // The popup must follow the user's theme choice before it paints, or a dark
+  // build flashes white for a frame every time it is opened.
+  const settings = await TaskerUI.initTheme();
+  if (settings && settings.hasSeenOnboarding) {
+    el.onboarding.classList.add('hidden');
   }
 
-  dismissOnboardingBtn.addEventListener('click', async () => {
-    onboardingCard.style.display = 'none';
+  /* ------------------------------------------------------------ helpers - */
+
+  function showToast(message) {
+    el.toast.textContent = message;
+    el.toast.classList.remove('hidden');
+    clearTimeout(showToast._timer);
+    showToast._timer = setTimeout(() => el.toast.classList.add('hidden'), 2600);
+  }
+
+  async function send(action, payload) {
+    const res = await chrome.runtime.sendMessage({ action, ...(payload || {}) });
+    if (!res || !res.success) {
+      throw new Error((res && res.error) || 'The extension did not respond');
+    }
+    return res.data;
+  }
+
+  /**
+   * Run a button's action with a pending state, and put the button back
+   * whatever happens. Every async button in here previously restored itself
+   * on the happy path only, so one failed sync left a dead "Syncing..." button
+   * until the popup was reopened.
+   */
+  async function withPending(button, pendingLabel, task) {
+    const original = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML =
+      `<span data-icon="sync" data-size="sm" class="spin"></span>` +
+      `<span class="btn-label">${Formatters.escapeHtml(pendingLabel)}</span>`;
+    if (typeof TaskerIcons !== 'undefined') TaskerIcons.hydrate(button);
+
+    try {
+      return await task();
+    } finally {
+      button.innerHTML = original;
+      button.disabled = false;
+      if (typeof TaskerIcons !== 'undefined') TaskerIcons.hydrate(button);
+    }
+  }
+
+  /* -------------------------------------------------------------- render - */
+
+  function renderTrackingState(paused) {
+    isPaused = !!paused;
+    el.toggleTracking.classList.toggle('is-recording', !isPaused);
+    el.toggleTracking.classList.toggle('is-paused', isPaused);
+    el.statusText.textContent = isPaused ? 'Paused' : 'Recording';
+  }
+
+  function renderScore(score) {
+    const hasScore = score !== null && score !== undefined;
+    el.score.textContent = hasScore ? String(score) : '—';
+    // The ring is driven by a custom property so the "no score yet" case is an
+    // empty ring rather than a ring that looks like a zero.
+    el.scoreRing.style.setProperty('--score', hasScore ? score : 0);
+    el.scoreRing.title = hasScore
+      ? `Focus score ${score}/100 - a weighted average of where today's time went`
+      : 'Not enough tracked time yet to score the day';
+  }
+
+  function renderCategories(categories, totalSeconds) {
+    const keys = Object.keys(categories || {})
+      .filter(k => categories[k] > 0)
+      .sort((a, b) => categories[b] - categories[a]);
+
+    el.categoryCount.textContent = `${keys.length} active`;
+
+    if (keys.length === 0) {
+      el.categoryList.innerHTML =
+        '<p class="empty-note">Nothing tracked yet today. Start browsing and categories appear here.</p>';
+      return;
+    }
+
+    el.categoryList.innerHTML = keys.slice(0, 4).map((key) => {
+      const seconds = categories[key];
+      const meta = Formatters.getCategoryMeta(key);
+      const percent = totalSeconds > 0 ? Math.round((seconds / totalSeconds) * 100) : 0;
+      return `
+        <div class="category-item">
+          <div class="cat-top">
+            <span class="cat-name">
+              <span class="cat-glyph" style="background:${meta.bgColor}; color:${meta.color}"
+                    data-icon="${meta.icon}" data-size="sm"></span>
+              ${Formatters.escapeHtml(key)}
+            </span>
+            <span class="cat-time">${Formatters.formatDuration(seconds)} · ${percent}%</span>
+          </div>
+          <div class="cat-track">
+            <div class="cat-fill" style="width:${percent}%; background:${meta.color}"></div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderHighlights(highlights) {
+    el.highlightBadge.textContent = `${highlights.length} logged`;
+
+    if (highlights.length === 0) {
+      el.highlightsList.innerHTML =
+        '<li class="empty-note">Nothing logged yet. Use a chip above, or the keyboard shortcut.</li>';
+      return;
+    }
+
+    el.highlightsList.innerHTML = highlights.map(item => `
+      <li class="highlight-item">
+        <span class="highlight-text" title="${Formatters.escapeHtml(item.title)}">${Formatters.escapeHtml(item.title)}</span>
+        <span class="highlight-time">${Formatters.escapeHtml(item.time || '')}</span>
+        <button class="delete-hl-btn" data-id="${Formatters.escapeHtml(item.id)}"
+                title="Remove" aria-label="Remove accomplishment">
+          <span data-icon="close" data-size="xs"></span>
+        </button>
+      </li>`).join('');
+
+    el.highlightsList.querySelectorAll('.delete-hl-btn').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        try {
+          await send('DELETE_HIGHLIGHT', { id: btn.getAttribute('data-id') });
+          showToast('Removed');
+          await refresh();
+        } catch (err) {
+          showToast(err.message);
+        }
+      });
+    });
+  }
+
+  /**
+   * The work profile is fetched separately from GET_STATUS.
+   *
+   * It reads three weeks of history, and the popup should not wait on that to
+   * show today's number - the timer and the category list are what the user
+   * opened this for.
+   */
+  async function loadWorkProfile() {
+    try {
+      const profile = await send('GET_WORK_PROFILE');
+      if (profile && profile.stats && profile.stats.windowDays) {
+        el.workProfileWindow.textContent = `last ${profile.stats.windowDays} days`;
+      }
+      TaskerUI.renderWorkProfile(el.workProfileBody, profile, {
+        dense: true,
+        onCorrect: openOptions
+      });
+    } catch (err) {
+      el.workProfileBody.innerHTML =
+        `<p class="wp-note">Could not read your recent activity: ${Formatters.escapeHtml(err.message)}</p>`;
+    }
+  }
+
+  async function refresh() {
+    try {
+      const data = await send('GET_STATUS');
+      currentDayData = data.dayData;
+      currentHighlights = data.highlights || [];
+
+      renderTrackingState(data.isPaused);
+
+      currentSeconds = data.totalSeconds || 0;
+      el.todayTime.textContent = Formatters.formatDuration(currentSeconds);
+      renderScore(data.dayData.productivityScore);
+
+      if (data.activeTab) {
+        const meta = Formatters.getCategoryMeta(data.activeTab.category);
+        el.activeDomain.textContent = data.activeTab.domain || 'Active browsing';
+        el.activeCategory.textContent = data.activeTab.category || 'General';
+        el.activeCategory.style.background = meta.bgColor;
+        el.activeCategory.style.color = meta.color;
+      } else {
+        el.activeDomain.textContent = isPaused ? 'Recording paused' : 'Idle - nothing being tracked';
+        el.activeCategory.textContent = '—';
+        el.activeCategory.style.background = '';
+        el.activeCategory.style.color = '';
+      }
+
+      renderCategories(data.dayData.categories || {}, currentSeconds);
+      renderHighlights(currentHighlights);
+
+      if (data.lastSync) {
+        const when = new Date(data.lastSync.syncedAt);
+        el.driveStatusText.textContent = `Synced ${when.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+        el.driveStatusDot.className = 'state-dot';
+      } else {
+        el.driveStatusText.textContent = 'Not synced today';
+        el.driveStatusDot.className = 'state-dot is-idle';
+      }
+
+      if (typeof TaskerIcons !== 'undefined') TaskerIcons.hydrate(document);
+    } catch (err) {
+      console.warn('Tasker popup: could not reach the service worker', err);
+      el.activeDomain.textContent = 'Extension is waking up…';
+    }
+  }
+
+  /* --------------------------------------------------------------- wire - */
+
+  function openOptions() {
+    if (chrome.runtime.openOptionsPage) chrome.runtime.openOptionsPage();
+    else window.open(chrome.runtime.getURL('options/options.html'));
+  }
+
+  el.dismissOnboarding.addEventListener('click', async () => {
+    el.onboarding.classList.add('hidden');
     await TaskerStorage.saveSettings({ hasSeenOnboarding: true });
   });
 
-  // Quick Help Drawer Toggle
-  quickHelpToggleBtn.addEventListener('click', () => {
-    helpDrawer.classList.toggle('hidden');
+  el.helpToggle.addEventListener('click', () => el.helpDrawer.classList.toggle('hidden'));
+  el.closeHelp.addEventListener('click', () => el.helpDrawer.classList.add('hidden'));
+  el.openDashboard.addEventListener('click', () => chrome.runtime.sendMessage({ action: 'OPEN_DASHBOARD' }));
+  el.openOptions.addEventListener('click', openOptions);
+
+  el.toggleTracking.addEventListener('click', async () => {
+    try {
+      const data = await send('TOGGLE_TRACKING');
+      renderTrackingState(data.isPaused);
+      showToast(data.isPaused ? 'Recording paused' : 'Recording resumed');
+    } catch (err) {
+      showToast(err.message);
+    }
   });
 
-  closeHelpDrawer.addEventListener('click', () => {
-    helpDrawer.classList.add('hidden');
-  });
-
-  // 1-Click Copy Summary to Clipboard
-  copySummaryBtn.addEventListener('click', () => {
-    if (!currentDayData) return;
-    const dateKey = Formatters.getDateKey();
-    const summaryText = Formatters.formatDailyLogForClipboard(dateKey, currentDayData, currentHighlights);
-    
-    navigator.clipboard.writeText(summaryText).then(() => {
-      showToast('Copied daily summary to clipboard!');
-    }).catch(err => {
-      showToast('Copied to clipboard!');
-    });
-  });
-
-  // Suggestion Chips Click
-  suggestionChipBtns.forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const text = btn.getAttribute('data-text');
-      if (!text) return;
-
+  el.syncDrive.addEventListener('click', () => {
+    withPending(el.syncDrive, 'Syncing', async () => {
       try {
-        await chrome.runtime.sendMessage({
-          action: 'ADD_HIGHLIGHT',
-          highlight: { title: text, category: 'Productivity' }
-        });
-        showToast(`Logged: "${text}"`);
-        await refreshPopupData();
-      } catch (e) {
-        console.error('Failed to log chip item:', e);
+        const result = await send('SYNC_DRIVE_TODAY');
+        const kind = result.mimeType === 'application/pdf' ? 'PDF' : 'log';
+        showToast(`Today's ${kind} is in your Drive folder`);
+        el.driveStatusText.textContent = 'Synced just now';
+        el.driveStatusDot.className = 'state-dot';
+      } catch (err) {
+        // A sync failure is nearly always a sign-in problem, and the message
+        // from driveSync already says which one - so show it rather than a
+        // generic "something went wrong".
+        showToast(err.message);
+        el.driveStatusDot.className = 'state-dot is-error';
       }
     });
   });
 
-  // Same thing the keyboard shortcut does, for anyone who would rather click -
-  // and so the feature is discoverable at all, since a shortcut nobody is told
-  // about is a shortcut nobody uses.
-  logCurrentWinBtn.addEventListener('click', async () => {
-    try {
-      const res = await chrome.runtime.sendMessage({ action: 'LOG_CURRENT_WIN' });
-      const result = res && res.data;
-      if (result && result.ok) {
-        showToast(`Logged: "${result.highlight.title}"`);
-        await refreshPopupData();
-      } else {
-        showToast((result && result.reason) || 'Nothing to log right now');
+  el.downloadPdf.addEventListener('click', () => {
+    withPending(el.downloadPdf, 'Building', async () => {
+      try {
+        const filename = await TaskerUI.downloadReportPdf('daily', { dateKey: Formatters.getDateKey() });
+        showToast(`Saved ${filename}`);
+      } catch (err) {
+        showToast(err.message);
       }
-    } catch (e) {
-      console.error('Failed to log current activity:', e);
+    });
+  });
+
+  el.copySummary.addEventListener('click', async () => {
+    if (!currentDayData) return showToast('Nothing tracked yet today');
+    const text = Formatters.formatDailyLogForClipboard(
+      Formatters.getDateKey(), currentDayData, currentHighlights);
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast('Summary copied');
+    } catch (err) {
+      showToast('Could not reach the clipboard');
     }
   });
 
-  function showToast(msg) {
-    popupToast.textContent = msg;
-    popupToast.classList.remove('hidden');
-    setTimeout(() => {
-      popupToast.classList.add('hidden');
-    }, 2200);
-  }
+  document.querySelectorAll('.quick-chip').forEach((chip) => {
+    chip.addEventListener('click', async () => {
+      const title = chip.getAttribute('data-text');
+      if (!title) return;
+      try {
+        await send('ADD_HIGHLIGHT', { highlight: { title, category: 'Productivity' } });
+        showToast(`Logged: ${title}`);
+        await refresh();
+      } catch (err) {
+        showToast(err.message);
+      }
+    });
+  });
 
-  // 1. Load initial status from Service Worker
-  await refreshPopupData();
-
-  // 2. Start local live timer ticker
-  timerTicker = setInterval(() => {
-    if (!toggleTrackingBtn.classList.contains('paused')) {
-      currentSeconds += 1;
-      todayTimeDisplay.textContent = Formatters.formatDuration(currentSeconds);
+  el.logCurrentWin.addEventListener('click', async () => {
+    try {
+      const result = await send('LOG_CURRENT_WIN');
+      showToast(result.ok ? `Logged: ${result.highlight.title}` : (result.reason || 'Nothing to log'));
+      if (result.ok) await refresh();
+    } catch (err) {
+      showToast(err.message);
     }
+  });
+
+  el.addHighlight.addEventListener('click', async () => {
+    const title = el.highlightInput.value.trim();
+    if (!title) return;
+    try {
+      await send('ADD_HIGHLIGHT', { highlight: { title, category: 'Productivity' } });
+      el.highlightInput.value = '';
+      showToast('Logged');
+      await refresh();
+    } catch (err) {
+      showToast(err.message);
+    }
+  });
+
+  el.highlightInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') el.addHighlight.click();
+  });
+
+  /* --------------------------------------------------------------- start - */
+
+  await refresh();
+  loadWorkProfile();
+
+  // Local ticker so the figure moves while the popup is open. The worker owns
+  // the real total; this only advances the display between refreshes.
+  setInterval(() => {
+    if (isPaused) return;
+    currentSeconds += 1;
+    el.todayTime.textContent = Formatters.formatDuration(currentSeconds);
   }, 1000);
-
-  // 3. Event Listener: Toggle Recording State
-  toggleTrackingBtn.addEventListener('click', async () => {
-    try {
-      const response = await chrome.runtime.sendMessage({ action: 'TOGGLE_TRACKING' });
-      if (response && response.success) {
-        updateTrackingStateUI(response.data.isPaused);
-      }
-    } catch (e) {
-      console.error('Failed to toggle tracking:', e);
-    }
-  });
-
-  // 4. Event Listener: Open Full Dashboard
-  openDashboardBtn.addEventListener('click', () => {
-    chrome.runtime.sendMessage({ action: 'OPEN_DASHBOARD' });
-  });
-
-  // 5. Event Listener: Sync Today's Log to Google Drive
-  syncDriveBtn.addEventListener('click', async () => {
-    const originalText = syncDriveBtn.innerHTML;
-    syncDriveBtn.innerHTML = `
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin">
-        <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
-      </svg>
-      <span>Syncing...</span>
-    `;
-    syncDriveBtn.disabled = true;
-
-    try {
-      const response = await chrome.runtime.sendMessage({ action: 'SYNC_DRIVE_TODAY' });
-      if (response && response.success) {
-        driveStatusText.textContent = 'Drive Synced!';
-        showToast('Synced to Google Drive!');
-        syncDriveBtn.innerHTML = `
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
-          <span>Synced!</span>
-        `;
-        setTimeout(() => {
-          syncDriveBtn.innerHTML = originalText;
-          syncDriveBtn.disabled = false;
-        }, 2500);
-      } else {
-        alert('Google Drive Sync Notice:\n\n' + (response.error || 'Please sign in to Google Chrome or configure OAuth in Settings.'));
-        syncDriveBtn.innerHTML = originalText;
-        syncDriveBtn.disabled = false;
-      }
-    } catch (err) {
-      alert('Google Drive Sync Notice:\nPlease ensure you are logged into your Chrome browser profile with a Google Account.');
-      syncDriveBtn.innerHTML = originalText;
-      syncDriveBtn.disabled = false;
-    }
-  });
-
-  // 6. Event Listener: Open Monthly Recap in Dashboard
-  monthlyRecapBtn.addEventListener('click', () => {
-    chrome.runtime.sendMessage({ action: 'OPEN_DASHBOARD' });
-  });
-
-  // 7. Event Listener: Add Custom Highlight
-  addHighlightBtn.addEventListener('click', async () => {
-    const val = highlightInput.value.trim();
-    if (!val) return;
-
-    try {
-      const res = await chrome.runtime.sendMessage({
-        action: 'ADD_HIGHLIGHT',
-        highlight: { title: val, category: 'Productivity' }
-      });
-      if (res && res.success) {
-        highlightInput.value = '';
-        showToast('Milestone logged!');
-        await refreshPopupData();
-      }
-    } catch (e) {
-      console.error('Failed to add highlight:', e);
-    }
-  });
-
-  highlightInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') addHighlightBtn.click();
-  });
-
-  // 8. Event Listener: Options Page
-  openOptionsBtn.addEventListener('click', () => {
-    if (chrome.runtime.openOptionsPage) {
-      chrome.runtime.openOptionsPage();
-    } else {
-      window.open(chrome.runtime.getURL('options/options.html'));
-    }
-  });
-
-  /**
-   * Helper: Fetch latest extension data
-   */
-  async function refreshPopupData() {
-    try {
-      const res = await chrome.runtime.sendMessage({ action: 'GET_STATUS' });
-      if (res && res.success && res.data) {
-        const data = res.data;
-        currentDayData = data.dayData;
-        currentHighlights = data.highlights || [];
-
-        // Recording state
-        updateTrackingStateUI(data.isPaused);
-
-        // Time display
-        currentSeconds = data.totalSeconds || 0;
-        todayTimeDisplay.textContent = Formatters.formatDuration(currentSeconds);
-        productivityScore.textContent = Formatters.formatScore(data.dayData.productivityScore);
-
-        // Active tab domain
-        if (data.activeTab) {
-          activeDomain.textContent = data.activeTab.domain || 'Active Browsing';
-          activeCategoryPill.textContent = data.activeTab.category || 'General';
-          const meta = Formatters.getCategoryMeta(data.activeTab.category);
-          activeCategoryPill.style.backgroundColor = meta.bgColor;
-          activeCategoryPill.style.color = meta.color;
-        } else {
-          activeDomain.textContent = 'Idle / Waiting';
-          activeCategoryPill.textContent = 'General';
-        }
-
-        // Render Categories
-        renderCategories(data.dayData.categories || {}, data.totalSeconds || 0);
-
-        // Render Highlights
-        renderHighlights(data.highlights || []);
-
-        // Drive Sync Status
-        if (data.lastSync) {
-          driveStatusText.textContent = `Synced Today`;
-        }
-      }
-    } catch (err) {
-      console.warn('Unable to contact service worker:', err);
-    }
-  }
-
-  function updateTrackingStateUI(isPaused) {
-    if (isPaused) {
-      toggleTrackingBtn.classList.remove('active');
-      toggleTrackingBtn.classList.add('paused');
-      statusText.textContent = 'Paused';
-    } else {
-      toggleTrackingBtn.classList.remove('paused');
-      toggleTrackingBtn.classList.add('active');
-      statusText.textContent = 'Recording';
-    }
-  }
-
-  function renderCategories(categoriesObj, totalSecs) {
-    categoryList.innerHTML = '';
-    const keys = Object.keys(categoriesObj).sort((a, b) => categoriesObj[b] - categoriesObj[a]);
-    categoriesTotalCount.textContent = `${keys.length} active`;
-
-    if (keys.length === 0) {
-      categoryList.innerHTML = `<div class="empty-state" style="font-size:11px; color:#9C9496; text-align:center; padding:10px;">Start browsing to log categories automatically</div>`;
-      return;
-    }
-
-    keys.slice(0, 3).forEach(catKey => {
-      const seconds = categoriesObj[catKey];
-      const meta = Formatters.getCategoryMeta(catKey);
-      const percentage = totalSecs > 0 ? Math.round((seconds / totalSecs) * 100) : 0;
-
-      const item = document.createElement('div');
-      item.className = 'category-item';
-      item.innerHTML = `
-        <div class="cat-top">
-          <div class="cat-name-group">
-            <span class="cat-color-dot" style="background-color: ${meta.color}"></span>
-            <span>${Formatters.escapeHtml(catKey)}</span>
-          </div>
-          <span class="cat-time">${Formatters.formatDuration(seconds)} (${percentage}%)</span>
-        </div>
-        <div class="cat-progress-bg">
-          <div class="cat-progress-fill" style="width: ${percentage}%; background-color: ${meta.color};"></div>
-        </div>
-      `;
-      categoryList.appendChild(item);
-    });
-  }
-
-  function renderHighlights(highlightsArr) {
-    highlightsList.innerHTML = '';
-    highlightBadge.textContent = `${highlightsArr.length} logged`;
-
-    if (highlightsArr.length === 0) {
-      highlightsList.innerHTML = `<li class="highlight-item" style="color: #9C9496; justify-content: center;">No milestones logged yet today. Use quick chips above!</li>`;
-      return;
-    }
-
-    highlightsArr.forEach(item => {
-      const li = document.createElement('li');
-      li.className = 'highlight-item';
-      li.innerHTML = `
-        <span class="highlight-text">${Formatters.escapeHtml(item.title)}</span>
-        <button class="delete-hl-btn" data-id="${Formatters.escapeHtml(item.id)}" title="Remove milestone">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      `;
-
-      li.querySelector('.delete-hl-btn').addEventListener('click', async (e) => {
-        const id = e.currentTarget.getAttribute('data-id');
-        await chrome.runtime.sendMessage({ action: 'DELETE_HIGHLIGHT', id });
-        showToast('Milestone removed');
-        await refreshPopupData();
-      });
-
-      highlightsList.appendChild(li);
-    });
-  }
 });

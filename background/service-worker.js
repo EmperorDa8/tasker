@@ -6,6 +6,9 @@ try {
   importScripts(
     '../utils/formatters.js',
     '../utils/storage.js',
+    '../utils/roleDetector.js',
+    '../utils/pdf.js',
+    '../utils/reportBuilder.js',
     './tracker.js',
     './summarizer.js',
     './driveSync.js'
@@ -267,6 +270,72 @@ async function handleAsyncMessage(message, sender) {
         trackerInstance.blacklistedDomains = updated.blacklistedDomains || [];
       }
       return updated;
+    }
+
+    case 'GET_WORK_PROFILE': {
+      // Recomputed on request rather than cached. It is a few hundred
+      // arithmetic operations over data already in memory, and a cached
+      // profile is a profile that goes on asserting yesterday's answer after
+      // the user has changed jobs - or corrected it in Settings.
+      return await ActivitySummarizer.getWorkProfile();
+    }
+
+    case 'SET_WORK_PROFILE_OVERRIDE': {
+      // null clears the override and hands the question back to the detector.
+      const settings = await TaskerStorage.getSettings();
+      const roleId = message.roleId || null;
+      if (roleId !== null && !RoleDetector.ROLES[roleId]) {
+        throw new Error(`Unknown work profile: ${roleId}`);
+      }
+      await TaskerStorage.saveSettings({
+        workProfile: { ...settings.workProfile, override: roleId }
+      });
+      return await ActivitySummarizer.getWorkProfile();
+    }
+
+    case 'GET_ROLE_CATALOGUE': {
+      // Shipped to the options page so the override picker cannot drift out of
+      // step with what the detector actually knows about.
+      return Object.keys(RoleDetector.ROLES).map(id => ({
+        id,
+        label: RoleDetector.ROLES[id].label,
+        family: RoleDetector.ROLES[id].family,
+        icon: RoleDetector.ROLES[id].icon
+      }));
+    }
+
+    case 'BUILD_DAILY_PDF': {
+      // Bytes rather than a Blob: structured clone cannot carry a Blob across
+      // the message boundary, and an array of numbers survives it intact.
+      const summary = await ActivitySummarizer.generateDailySummary(dateKey);
+      const doc = TaskerReports.buildDailyReport({
+        dateKey,
+        dayData: summary.dayData,
+        highlights: summary.highlights,
+        notes: summary.notes,
+        profile: summary.profile
+      });
+      return {
+        filename: TaskerReports.fileName('daily', dateKey, 'pdf'),
+        bytes: Array.from(doc.build())
+      };
+    }
+
+    case 'BUILD_MONTHLY_PDF': {
+      const recap = await ActivitySummarizer.generateMonthlyRecap(monthKey);
+      const doc = TaskerReports.buildMonthlyReport({
+        monthKey,
+        monthStats: recap.monthStats,
+        profile: recap.profile
+      });
+      return {
+        filename: TaskerReports.fileName('monthly', monthKey, 'pdf'),
+        bytes: Array.from(doc.build())
+      };
+    }
+
+    case 'TEST_DRIVE_CONNECTION': {
+      return await GoogleDriveSync.testConnection();
     }
 
     default:

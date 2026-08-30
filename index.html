@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tasker — Know where your time goes</title>
-<meta name="description" content="Tasker is a local-first Chrome extension that automatically tracks your browsing time, scores your focus, and writes your daily and monthly recaps — all on your device.">
+<meta name="description" content="Tasker is a local-first Chrome extension that automatically tracks your browsing time, scores your focus, and turns your day into a branded PDF report — all on your device.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='12' fill='%232A0F14'/%3E%3Cpolyline points='22 12 18 12 15 21 9 3 6 12 2 12' fill='none' stroke='%23FAE261' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' transform='translate(3.6,3.6) scale(0.7)'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -402,7 +402,71 @@
   .footer-brand .logo-mark { width: 28px; height: 28px; }
 
   /* ---------- Responsive ---------- */
+  /* "New in 1.3" strip. Sits between the hero and the features so the three
+     things that changed are visible without scrolling the whole page. */
+  .whats-new {
+    padding: 0 0 8px;
+  }
+  .new-panel {
+    background: var(--card);
+    border: 1px solid rgba(42,15,20,0.08);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+  }
+  .new-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .new-badge {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--purple);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+  .new-head h3 {
+    font-family: var(--display);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .new-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+  }
+  .new-item { display: flex; gap: 12px; }
+  .new-item .dot {
+    flex: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    display: grid;
+    place-items: center;
+    background: var(--lilac);
+  }
+  .new-item strong {
+    display: block;
+    font-size: 15px;
+    color: var(--ink);
+    margin-bottom: 3px;
+  }
+  .new-item span {
+    display: block;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--muted);
+  }
+
   @media (max-width: 860px) {
+    .new-grid { grid-template-columns: 1fr; }
     .feature-grid, .privacy-grid { grid-template-columns: 1fr; }
     .steps { grid-template-columns: 1fr; }
     .hero-cards { grid-template-columns: 1fr; }
@@ -425,6 +489,7 @@
       Tasker
     </a>
     <nav class="nav-links">
+      <a class="nav-hide" href="#whats-new">New</a>
       <a class="nav-hide" href="#features">Features</a>
       <a class="nav-hide" href="#privacy">Privacy</a>
       <a class="nav-hide" href="#how">How it works</a>
@@ -440,7 +505,7 @@
     <div class="wrap">
       <span class="eyebrow">A Chrome extension for people who lose track of the day</span>
       <h1>Know where your <span class="accent">time</span> actually goes.</h1>
-      <p class="sub">Tasker quietly tracks the time you spend in your browser tabs, sorts it into categories, scores your focus, and writes your daily and monthly recaps for you. All of it stays on your device.</p>
+      <p class="sub">Tasker quietly tracks the time you spend in your browser tabs, sorts it into categories, scores your focus, and turns the day into a branded PDF you can hand to anyone. All of it stays on your device.</p>
       <div class="hero-ctas">
         <a class="btn btn-primary" href="https://chromewebstore.google.com/detail/tasker-activity-tracker-g/nfdjclnanladapnhofbmnhclkhlndeak" target="_blank" rel="noopener">Add to Chrome — it's free</a>
         <a class="btn btn-secondary" href="#privacy">Read the privacy pitch</a>
@@ -462,6 +527,51 @@
         </div>
       </div>
       <p class="cards-note">example figures, for illustration &mdash; your numbers are your own</p>
+    </div>
+  </section>
+
+  <!-- What's new -->
+  <section class="whats-new" id="whats-new">
+    <div class="wrap">
+      <div class="new-panel">
+        <div class="new-head">
+          <span class="new-badge">New in 1.3</span>
+          <h3>Reports you can send, and a profile that refuses to guess.</h3>
+        </div>
+        <div class="new-grid">
+
+          <div class="new-item">
+            <span class="dot">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5F44E6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="14 3 14 9 20 9"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="13" y2="18"/></svg>
+            </span>
+            <div>
+              <strong>Branded PDF reports</strong>
+              <span>Daily logs and monthly recaps are now finished documents &mdash; cover page, category charts, page numbers &mdash; not just Markdown. Download one, or sync it to Drive.</span>
+            </div>
+          </div>
+
+          <div class="new-item">
+            <span class="dot">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5F44E6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><line x1="8" y1="13" x2="16" y2="13"/></svg>
+            </span>
+            <div>
+              <strong>A work profile, built on evidence</strong>
+              <span>Tasker reads the tools you actually use and tells you what kind of work that looks like &mdash; and shows you exactly which tools it based that on.</span>
+            </div>
+          </div>
+
+          <div class="new-item">
+            <span class="dot">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5F44E6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="#5F44E6" stroke="none"/></svg>
+            </span>
+            <div>
+              <strong>Rebuilt interface, with dark mode</strong>
+              <span>A new design system across the popup, dashboard and settings &mdash; sharper typography, a proper icon set, and a theme that follows your system.</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
     </div>
   </section>
 
@@ -497,9 +607,9 @@
           <div class="icon">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2A0F14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="14 3 14 9 20 9"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
           </div>
-          <h3>Daily logs &amp; monthly recaps</h3>
-          <p>Every day becomes a clean Markdown log; every month becomes a recap report — with an AI-written summary included, no API key or account to set up.</p>
-          <span class="tag">markdown you own forever</span>
+          <h3>Reports you can actually send</h3>
+          <p>Every day becomes a branded PDF &mdash; cover page, focus score, category charts, page numbers &mdash; and every month becomes a recap report with an AI-written summary, no API key or account to set up. Prefer plain text? Markdown is still one setting away.</p>
+          <span class="tag">PDF or markdown &middot; yours forever</span>
         </div>
 
         <div class="feature" style="background: var(--lilac);">
@@ -528,6 +638,16 @@
           <p>Tasker only sees Chrome. Time in your editor, on calls, in desktop apps is invisible to it — so it tells you: <em>between 9:00 AM and 6:00 PM you were in Chrome for 3h; the other 6h went somewhere Tasker cannot see.</em> A timesheet that quietly rounds down is worse than no timesheet.</p>
           <span class="tag">browser time, labelled as browser time</span>
         </div>
+
+        <div class="feature" style="background: var(--pink);">
+          <div class="icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2A0F14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><line x1="8" y1="13" x2="16" y2="13"/></svg>
+          </div>
+          <h3>A work profile that shows its working</h3>
+          <p>From the tools you spend time in, Tasker works out what kind of work your week looks like &mdash; across 54 roles, including the ones that only exist since 2024: AI engineering, agent work, evals, MLOps, AI safety. Every finding comes with the evidence behind it: which tools, how many hours, over how many days.</p>
+          <p style="margin-top: 12px;">It will also say <em>&ldquo;not enough evidence yet&rdquo;</em> and tell you what is missing, rather than guess. Where two profiles score too closely, it shows the shortlist instead of picking one. And where the market runs one job under six names &mdash; AI Engineer, GenAI Engineer, LLM Engineer &mdash; it names the family rather than pretending browsing can tell them apart. Disagree? Set it yourself and your answer wins everywhere.</p>
+          <span class="tag">inferred on your device &middot; never uploaded</span>
+        </div>
       </div>
     </div>
   </section>
@@ -538,7 +658,7 @@
       <div class="privacy-panel">
         <span class="eyebrow">Privacy, by architecture</span>
         <h2>Local-first. No backend. Nothing to leak.</h2>
-        <p class="lede">A time tracker sees your whole day, so we built Tasker to keep it to itself. Your history lives in <code style="font-family: var(--mono); font-size: 0.9em;">chrome.storage.local</code> on your device and stays there — no account, no login, no analytics. Sync to your own Google Drive when you choose. The AI monthly summary sends category totals only ("Development: 58 hours"), never a single URL, page title or note.</p>
+        <p class="lede">A time tracker sees your whole day, so we built Tasker to keep it to itself. Your history lives in <code style="font-family: var(--mono); font-size: 0.9em;">chrome.storage.local</code> on your device and stays there — no account, no login, no analytics. Sync to your own Google Drive when you choose. The AI monthly summary sends category totals only ("Development: 58 hours"), never a single URL, page title or note. Your work profile is worked out on your machine and is never sent anywhere at all.</p>
 
         <div class="privacy-grid">
           <div class="privacy-item">
@@ -556,6 +676,10 @@
           <div class="privacy-item">
             <span class="check"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2A0F14" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
             <div><strong>Delete anytime</strong><span>Wipe your data whenever you like — it's on your machine, so deleting means deleted.</span></div>
+          </div>
+          <div class="privacy-item">
+            <span class="check"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2A0F14" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Your profile stays yours</strong><span>The work profile is computed locally, never transmitted, and can be switched off or overridden in one click.</span></div>
           </div>
         </div>
 
@@ -588,7 +712,7 @@
         <div class="step">
           <span class="num">step 03 — get your recap</span>
           <h3>Read the story of your day</h3>
-          <p>Daily Markdown logs and a monthly recap report land in your Drive folder — with an AI-written summary of the month included.</p>
+          <p>A branded PDF for the day and a monthly recap report land in your Drive folder, filed into their own subfolders — with an AI-written summary of the month included.</p>
         </div>
       </div>
     </div>

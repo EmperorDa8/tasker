@@ -1,0 +1,244 @@
+"""Bundle the Material Symbols icons the UI uses into assets/icons/icons.js.
+
+Icons are fetched once, at build time, and shipped inside the extension. They
+are NOT loaded from a CDN at runtime, and they cannot be: the manifest's CSP
+allows no remote script, style, font or image, and a Web Store reviewer treats
+a remote asset request as an undeclared network call. Bundling also means the
+UI paints its icons offline and on the first frame, with no icon-font flash.
+
+Source: Material Symbols (Rounded, weight 400), Apache License 2.0.
+https://fonts.google.com/icons
+
+    python scripts/build_icon_pack.py
+
+Any name Google does not serve is reported and skipped rather than silently
+emitting a blank glyph - a missing icon must fail loudly at build time, not
+show up as a hole in the popup.
+"""
+import io
+import json
+import os
+import re
+import sys
+import urllib.error
+import urllib.request
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DEST = os.path.join(ROOT, "assets", "icons", "icons.js")
+
+STYLE = "materialsymbolsrounded"
+URL = ("https://fonts.gstatic.com/s/i/short-term/release/"
+       "{style}/{name}/default/24px.svg")
+
+# Grouped by where they are used, so an icon dropped from the UI is easy to
+# drop from the bundle too.
+ICONS = [
+    # Chrome / navigation
+    "bolt", "settings", "dashboard", "help", "close", "check", "check_circle",
+    "chevron_right", "chevron_left", "expand_more", "expand_less", "more_horiz",
+    "arrow_outward", "open_in_new", "refresh", "search", "add", "edit", "delete",
+    "content_copy", "download", "menu", "tune", "filter_list", "sort",
+    "drag_indicator", "keyboard", "info", "warning", "error", "verified",
+
+    # State / tracking
+    "play_arrow", "pause", "fiber_manual_record", "radio_button_checked",
+    "schedule", "timer", "history", "today", "calendar_month", "hourglass_empty",
+    "visibility", "visibility_off", "lock", "shield", "shield_lock",
+
+    # Metrics / reporting
+    "trending_up", "insights", "monitoring", "query_stats", "analytics",
+    "bar_chart", "pie_chart", "workspace_premium", "emoji_events", "flag",
+    "target", "bookmark", "label", "star", "military_tech",
+
+    # Files / sync
+    "folder", "folder_open", "cloud_upload", "cloud_done", "cloud_off",
+    "cloud_sync", "picture_as_pdf", "description", "article", "sync",
+    "sync_problem", "save", "storage", "database",
+
+    # Category glyphs (must cover every key in Formatters.getCategoryMeta)
+    "code", "terminal", "design_services", "campaign", "groups", "forum",
+    "mail", "shopping_bag", "newspaper", "movie", "public", "menu_book",
+    "school", "checklist",
+
+    # Role detection
+    "badge", "work", "person_search", "psychology", "science", "smart_toy",
+    "auto_awesome", "hub", "biotech", "gavel", "payments", "support_agent",
+    "record_voice_over", "sell", "rocket_launch", "handyman", "api",
+    "model_training", "dataset", "network_node", "deployed_code", "manage_search",
+    "engineering", "palette", "brush", "stethoscope", "account_balance",
+
+    # Theme
+    "light_mode", "dark_mode", "contrast",
+]
+
+UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+      "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
+
+
+def fetch(name):
+    req = urllib.request.Request(URL.format(style=STYLE, name=name),
+                                 headers={"User-Agent": UA})
+    with urllib.request.urlopen(req, timeout=30) as r:
+        return r.read().decode("utf-8")
+
+
+def parse(svg):
+    """Pull the viewBox and the concatenated path data out of one SVG."""
+    box = re.search(r'viewBox="([^"]+)"', svg)
+    paths = re.findall(r'<path[^>]*\sd="([^"]+)"', svg)
+    if not box or not paths:
+        return None
+    # Material Symbols ships a single path per glyph; join defensively so a
+    # two-path glyph still renders rather than losing half of itself.
+    return box.group(1), " ".join(p.strip() for p in paths)
+
+
+def main():
+    icons = {}
+    missing = []
+    total = 0
+
+    for name in sorted(set(ICONS)):
+        try:
+            parsed = parse(fetch(name))
+        except urllib.error.HTTPError as e:
+            missing.append(f"{name} (HTTP {e.code})")
+            continue
+        except Exception as e:  # network hiccup - worth reporting, not fatal
+            missing.append(f"{name} ({e})")
+            continue
+
+        if not parsed:
+            missing.append(f"{name} (no path data)")
+            continue
+
+        box, d = parsed
+        icons[name] = {"v": box, "d": d}
+        total += len(d)
+        print(f"  {name:24s} {len(d):5d} chars")
+
+    if missing:
+        print("\nNOT BUNDLED:", file=sys.stderr)
+        for m in missing:
+            print(f"  - {m}", file=sys.stderr)
+
+    if not icons:
+        sys.exit("error: nothing fetched, refusing to overwrite icons.js")
+
+    body = json.dumps(icons, indent=0, sort_keys=True, separators=(",", ":"))
+    header = (
+        "/* GENERATED by scripts/build_icon_pack.py - do not edit by hand.\n"
+        " *\n"
+        " * Material Symbols (Rounded 400), Apache License 2.0.\n"
+        " * https://fonts.google.com/icons\n"
+        " *\n"
+        " * Bundled rather than linked: the extension CSP allows no remote\n"
+        " * asset, and a locally drawn icon set paints on the first frame.\n"
+        " */\n"
+    )
+
+    with io.open(DEST, "w", encoding="utf-8", newline="\n") as f:
+        f.write(header)
+        f.write("\nconst TASKER_ICON_PATHS = ")
+        f.write(body)
+        f.write(";\n")
+        f.write(ICON_RUNTIME)
+
+    print(f"\n{len(icons)} icons, {total/1024:.1f} KB of path data -> assets/icons/icons.js")
+
+
+ICON_RUNTIME = r'''
+/* ---------------------------------------------------------------------------
+   Runtime. Anything in the DOM carrying data-icon="name" gets the matching
+   glyph painted into it, so markup stays free of 40-line path strings:
+
+       <span data-icon="cloud_upload" data-size="lg"></span>
+
+   Hydration is idempotent and runs again after any dynamic render, so list
+   rows built from templates pick up their icons without extra wiring.
+   ------------------------------------------------------------------------- */
+
+const TaskerIcons = {
+  paths: TASKER_ICON_PATHS,
+
+  /**
+   * SVG markup for one icon, or an empty string when the name is unknown.
+   *
+   * Returns markup rather than a node so it can be interpolated into the
+   * template literals the list views already build. The name is looked up in
+   * a fixed table and never interpolated, so there is nothing here for
+   * attacker-controlled text to reach.
+   */
+  svg(name, opts) {
+    const icon = this.paths[name];
+    if (!icon) return '';
+    const o = opts || {};
+    const label = o.label
+      ? ` role="img" aria-label="${String(o.label).replace(/"/g, '&quot;')}"`
+      : ' aria-hidden="true" focusable="false"';
+    return `<svg viewBox="${icon.v}"${label}><path d="${icon.d}"/></svg>`;
+  },
+
+  /**
+   * A ready-made icon element: <span data-icon="..."> with the glyph inside.
+   */
+  markup(name, size, extraClass) {
+    const cls = extraClass ? ` class="${extraClass}"` : '';
+    const sz = size ? ` data-size="${size}"` : '';
+    return `<span data-icon="${name}"${sz}${cls}>${this.svg(name)}</span>`;
+  },
+
+  /**
+   * Paint every unhydrated [data-icon] under `root`.
+   */
+  hydrate(root) {
+    const scope = root || document;
+    const nodes = scope.querySelectorAll('[data-icon]:not([data-icon-ready])');
+    nodes.forEach((node) => {
+      const name = node.getAttribute('data-icon');
+      const markup = this.svg(name, { label: node.getAttribute('data-icon-label') });
+      if (!markup) {
+        // Leave a visible gap rather than a broken glyph, and say which name
+        // failed - a typo here is otherwise invisible until someone squints.
+        console.warn('TaskerIcons: no icon named', name);
+        return;
+      }
+      node.innerHTML = markup;
+      node.setAttribute('data-icon-ready', '');
+    });
+  },
+
+  /**
+   * Hydrate now and keep hydrating as the page renders.
+   *
+   * The dashboard rebuilds whole sections from template literals on every tab
+   * change; an observer means none of those call sites has to remember to
+   * re-hydrate.
+   */
+  start() {
+    if (typeof document === 'undefined') return;
+    const run = () => this.hydrate(document);
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', run, { once: true });
+    } else {
+      run();
+    }
+    if (typeof MutationObserver !== 'undefined') {
+      const observer = new MutationObserver(() => this.hydrate(document));
+      const attach = () => observer.observe(document.documentElement, { childList: true, subtree: true });
+      if (document.documentElement) attach();
+      else document.addEventListener('DOMContentLoaded', attach, { once: true });
+    }
+  }
+};
+
+if (typeof globalThis !== 'undefined') {
+  globalThis.TaskerIcons = TaskerIcons;
+}
+
+TaskerIcons.start();
+'''
+
+
+if __name__ == "__main__":
+    main()

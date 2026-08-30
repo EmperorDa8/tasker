@@ -1,45 +1,232 @@
 /**
- * Tasker - Options Page Logic
+ * Tasker - settings controller
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const driveFolderName = document.getElementById('driveFolderName');
-  const autoSyncDrive = document.getElementById('autoSyncDrive');
-  const aiSummariesEnabled = document.getElementById('aiSummariesEnabled');
-  const blacklistedDomains = document.getElementById('blacklistedDomains');
-  const saveSettingsBtn = document.getElementById('saveSettingsBtn');
-  const exportDataBtn = document.getElementById('exportDataBtn');
-  const clearDataBtn = document.getElementById('clearDataBtn');
-  const saveToast = document.getElementById('saveToast');
+  const $ = id => document.getElementById(id);
 
-  const weightList = document.getElementById('weightList');
-  const resetWeightsBtn = document.getElementById('resetWeightsBtn');
-  const domainRuleList = document.getElementById('domainRuleList');
-  const addDomainRuleBtn = document.getElementById('addDomainRuleBtn');
+  const el = {
+    save: $('saveSettingsBtn'),
+    saveBottom: $('saveSettingsBtnBottom'),
+    resetDefaults: $('resetDefaultsBtn'),
+    toast: $('saveToast'),
 
-  const presetBankingBtn = document.getElementById('presetBankingBtn');
-  const presetAuthBtn = document.getElementById('presetAuthBtn');
-  const presetPrivacyBtn = document.getElementById('presetPrivacyBtn');
-  const resetDefaultsBtn = document.getElementById('resetDefaultsBtn');
-  const openShortcutsBtn = document.getElementById('openShortcutsBtn');
+    workProfileEnabled: $('workProfileEnabled'),
+    workProfileBody: $('workProfileBody'),
+    roleOverride: $('roleOverride'),
+    clearOverride: $('clearOverrideBtn'),
+    overrideField: $('overrideField'),
 
-  // Load existing settings
+    driveFormat: $('driveFormat'),
+    driveFolderName: $('driveFolderName'),
+    driveOrganizeFolders: $('driveOrganizeFolders'),
+    autoSyncDrive: $('autoSyncDrive'),
+    testDrive: $('testDriveBtn'),
+    driveResult: $('driveResult'),
+
+    aiSummariesEnabled: $('aiSummariesEnabled'),
+
+    weightList: $('weightList'),
+    resetWeights: $('resetWeightsBtn'),
+    domainRuleList: $('domainRuleList'),
+    addDomainRule: $('addDomainRuleBtn'),
+
+    blacklist: $('blacklistedDomains'),
+    presetBanking: $('presetBankingBtn'),
+    presetAuth: $('presetAuthBtn'),
+    presetPrivacy: $('presetPrivacyBtn'),
+
+    themeChoice: $('themeChoice'),
+    openShortcuts: $('openShortcutsBtn'),
+    exportData: $('exportDataBtn'),
+    clearData: $('clearDataBtn'),
+    sideNav: $('sideNav')
+  };
+
+  /* ------------------------------------------------------------ helpers - */
+
+  function toast(message, isError) {
+    el.toast.textContent = message;
+    el.toast.classList.remove('hidden');
+    el.toast.style.background = isError ? 'var(--danger)' : '';
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => el.toast.classList.add('hidden'), 3200);
+  }
+
+  async function send(action, payload) {
+    const res = await chrome.runtime.sendMessage({ action, ...(payload || {}) });
+    if (!res || !res.success) throw new Error((res && res.error) || 'The extension did not respond');
+    return res.data;
+  }
+
+  /**
+   * Read/write for a segmented control. The chosen value lives on the DOM
+   * rather than in a parallel variable, so the control and the value it
+   * represents cannot fall out of step.
+   */
+  function segValue(group) {
+    const active = group.querySelector('.seg.is-active');
+    return active ? active.getAttribute('data-value') : null;
+  }
+
+  function setSeg(group, value) {
+    group.querySelectorAll('.seg').forEach((seg) => {
+      seg.classList.toggle('is-active', seg.getAttribute('data-value') === value);
+    });
+  }
+
+  [el.driveFormat, el.themeChoice].forEach((group) => {
+    group.addEventListener('click', (event) => {
+      const seg = event.target.closest('.seg');
+      if (!seg) return;
+      setSeg(group, seg.getAttribute('data-value'));
+      // The theme is the one setting that must take effect immediately: it is
+      // the setting whose whole point is what the page looks like.
+      if (group === el.themeChoice) TaskerUI.applyTheme(segValue(group));
+    });
+  });
+
+  /* ------------------------------------------------------------- loading - */
+
   const settings = await TaskerStorage.getSettings();
-  driveFolderName.value = settings.googleDriveFolderName || 'Tasker Activity Logs';
-  autoSyncDrive.checked = settings.autoSyncDrive === true;
-  aiSummariesEnabled.checked = settings.aiSummariesEnabled !== false;
-  blacklistedDomains.value = (settings.blacklistedDomains || []).join(', ');
+  TaskerUI.applyTheme(settings.theme);
 
-  // --- Focus scoring -------------------------------------------------------
+  el.driveFolderName.value = settings.googleDriveFolderName || 'Tasker Activity Logs';
+  el.autoSyncDrive.checked = settings.autoSyncDrive === true;
+  el.driveOrganizeFolders.checked = settings.driveOrganizeFolders !== false;
+  el.aiSummariesEnabled.checked = settings.aiSummariesEnabled !== false;
+  el.blacklist.value = (settings.blacklistedDomains || []).join(', ');
+  el.workProfileEnabled.checked = (settings.workProfile || {}).enabled !== false;
+  setSeg(el.driveFormat, settings.driveFormat || 'pdf');
+  setSeg(el.themeChoice, settings.theme || 'system');
 
-  // Working copy. Nothing here reaches storage until Save is pressed, so a
-  // half-typed site rule never starts recategorising the user's history.
+  // Working copies. Nothing reaches storage until Save, so a half-typed site
+  // rule never starts recategorising history mid-keystroke.
   let weights = { ...Formatters.DEFAULT_CATEGORY_WEIGHTS, ...(settings.categoryWeights || {}) };
   let domainRules = Object.keys(settings.domainCategories || {})
     .map(domain => ({ domain, category: settings.domainCategories[domain] }));
 
+  /* -------------------------------------------------------- work profile - */
+
+  /**
+   * Populate the override picker from the detector's own catalogue, so the
+   * list of roles a user can pick can never drift from the list the detector
+   * knows how to report.
+   */
+  async function loadRoleCatalogue(selected) {
+    try {
+      const roles = await send('GET_ROLE_CATALOGUE');
+      const byFamily = {};
+      roles.forEach((role) => {
+        (byFamily[role.family] = byFamily[role.family] || []).push(role);
+      });
+
+      el.roleOverride.textContent = '';
+      const none = document.createElement('option');
+      none.value = '';
+      none.textContent = 'Let Tasker work it out from my browsing';
+      el.roleOverride.appendChild(none);
+
+      Object.keys(byFamily).sort().forEach((family) => {
+        const group = document.createElement('optgroup');
+        group.label = family;
+        byFamily[family].forEach((role) => {
+          const option = document.createElement('option');
+          option.value = role.id;
+          option.textContent = role.label;
+          if (role.id === selected) option.selected = true;
+          group.appendChild(option);
+        });
+        el.roleOverride.appendChild(group);
+      });
+    } catch (err) {
+      el.overrideField.classList.add('hidden');
+    }
+  }
+
+  async function refreshWorkProfile() {
+    if (!el.workProfileEnabled.checked) {
+      el.workProfileBody.innerHTML =
+        '<div class="wp-empty"><div><strong>Switched off</strong>' +
+        '<p>Nothing is being inferred, and nothing is stored about your role.</p></div></div>';
+      return;
+    }
+    try {
+      const profile = await send('GET_WORK_PROFILE');
+      TaskerUI.renderWorkProfile(el.workProfileBody, profile, {});
+      if (typeof TaskerIcons !== 'undefined') TaskerIcons.hydrate(el.workProfileBody);
+    } catch (err) {
+      el.workProfileBody.innerHTML =
+        `<p class="wp-note">${Formatters.escapeHtml(err.message)}</p>`;
+    }
+  }
+
+  el.workProfileEnabled.addEventListener('change', async () => {
+    // This one saves on the spot rather than waiting for the Save button:
+    // it is a consent decision, and a consent toggle that needs a second
+    // click to take effect is a consent toggle people get wrong.
+    const current = await TaskerStorage.getSettings();
+    await send('SAVE_SETTINGS', {
+      settings: {
+        workProfile: { ...current.workProfile, enabled: el.workProfileEnabled.checked }
+      }
+    });
+    el.overrideField.classList.toggle('hidden', !el.workProfileEnabled.checked);
+    await refreshWorkProfile();
+    toast(el.workProfileEnabled.checked ? 'Work profile is on' : 'Work profile is off');
+  });
+
+  el.roleOverride.addEventListener('change', async () => {
+    const roleId = el.roleOverride.value || null;
+    try {
+      await send('SET_WORK_PROFILE_OVERRIDE', { roleId });
+      await refreshWorkProfile();
+      toast(roleId ? 'Work profile set' : 'Back to inferring from your browsing');
+    } catch (err) {
+      toast(err.message, true);
+    }
+  });
+
+  el.clearOverride.addEventListener('click', async () => {
+    el.roleOverride.value = '';
+    el.roleOverride.dispatchEvent(new Event('change'));
+  });
+
+  el.overrideField.classList.toggle('hidden', !el.workProfileEnabled.checked);
+  await loadRoleCatalogue((settings.workProfile || {}).override);
+  refreshWorkProfile();
+
+  /* --------------------------------------------------------------- drive - */
+
+  el.testDrive.addEventListener('click', async () => {
+    const original = el.testDrive.innerHTML;
+    el.testDrive.disabled = true;
+    el.testDrive.innerHTML = '<span data-icon="sync" data-size="sm" class="spin"></span> Checking…';
+    if (typeof TaskerIcons !== 'undefined') TaskerIcons.hydrate(el.testDrive);
+
+    try {
+      const result = await send('TEST_DRIVE_CONNECTION');
+      const where = result.subfolders && result.subfolders.length
+        ? ` Reports will be filed under ${result.subfolders.join(' and ')}.`
+        : '';
+      el.driveResult.textContent =
+        `Connected. Folder "${result.folderName}" is ready in your Drive.${where}`;
+      el.driveResult.classList.remove('hidden', 'is-error');
+    } catch (err) {
+      el.driveResult.textContent = err.message;
+      el.driveResult.classList.remove('hidden');
+      el.driveResult.classList.add('is-error');
+    } finally {
+      el.testDrive.innerHTML = original;
+      el.testDrive.disabled = false;
+      if (typeof TaskerIcons !== 'undefined') TaskerIcons.hydrate(el.testDrive);
+    }
+  });
+
+  /* ------------------------------------------------------------- scoring - */
+
   function renderWeights() {
-    weightList.textContent = '';
+    el.weightList.textContent = '';
 
     Formatters.CATEGORY_KEYS.forEach((key) => {
       const meta = Formatters.getCategoryMeta(key);
@@ -79,18 +266,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       row.appendChild(name);
       row.appendChild(slider);
       row.appendChild(readout);
-      weightList.appendChild(row);
+      el.weightList.appendChild(row);
     });
   }
 
   function renderDomainRules() {
-    domainRuleList.textContent = '';
+    el.domainRuleList.textContent = '';
 
     if (domainRules.length === 0) {
       const empty = document.createElement('p');
       empty.className = 'rule-empty';
       empty.textContent = 'No site rules yet - every site uses the built-in categories.';
-      domainRuleList.appendChild(empty);
+      el.domainRuleList.appendChild(empty);
       return;
     }
 
@@ -100,13 +287,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const domainInput = document.createElement('input');
       domainInput.type = 'text';
-      domainInput.className = 'text-input';
+      domainInput.className = 'input';
       domainInput.placeholder = 'linkedin.com';
       domainInput.value = rule.domain;
       domainInput.addEventListener('input', () => { rule.domain = domainInput.value; });
 
       const select = document.createElement('select');
-      select.className = 'select-input';
+      select.className = 'select';
       Formatters.CATEGORY_KEYS.forEach((key) => {
         const option = document.createElement('option');
         option.value = key;
@@ -121,6 +308,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       remove.className = 'rule-remove';
       remove.textContent = '×';
       remove.title = 'Remove this rule';
+      remove.setAttribute('aria-label', 'Remove this rule');
       remove.addEventListener('click', () => {
         domainRules.splice(index, 1);
         renderDomainRules();
@@ -129,33 +317,32 @@ document.addEventListener('DOMContentLoaded', async () => {
       row.appendChild(domainInput);
       row.appendChild(select);
       row.appendChild(remove);
-      domainRuleList.appendChild(row);
+      el.domainRuleList.appendChild(row);
     });
   }
 
-  addDomainRuleBtn.addEventListener('click', () => {
+  el.addDomainRule.addEventListener('click', () => {
     domainRules.push({ domain: '', category: 'Productivity' });
     renderDomainRules();
-    const inputs = domainRuleList.querySelectorAll('.text-input');
+    const inputs = el.domainRuleList.querySelectorAll('.input');
     if (inputs.length) inputs[inputs.length - 1].focus();
   });
 
-  resetWeightsBtn.addEventListener('click', () => {
+  el.resetWeights.addEventListener('click', () => {
     weights = { ...Formatters.DEFAULT_CATEGORY_WEIGHTS };
     renderWeights();
-    showSaveToast('Weights reset - press Save to apply.');
+    toast('Weights reset - press Save to apply');
   });
 
   /**
    * Store only what the user actually changed. A category left at its default
-   * stays absent, so it keeps tracking that default if a later version revises it.
+   * stays absent, so it keeps following that default if a later version
+   * revises it.
    */
   function collectWeightOverrides() {
     const overrides = {};
     Formatters.CATEGORY_KEYS.forEach((key) => {
-      if (weights[key] !== Formatters.DEFAULT_CATEGORY_WEIGHTS[key]) {
-        overrides[key] = weights[key];
-      }
+      if (weights[key] !== Formatters.DEFAULT_CATEGORY_WEIGHTS[key]) overrides[key] = weights[key];
     });
     return overrides;
   }
@@ -176,106 +363,132 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderWeights();
   renderDomainRules();
 
-  function addPresetDomains(newDomainsArr) {
-    const currentList = blacklistedDomains.value.split(',').map(s => s.trim()).filter(Boolean);
-    const set = new Set([...currentList, ...newDomainsArr]);
-    blacklistedDomains.value = Array.from(set).join(', ');
-    showSaveToast('Exclusion preset added!');
+  /* -------------------------------------------------------------- privacy - */
+
+  function addPresetDomains(list) {
+    const current = el.blacklist.value.split(',').map(s => s.trim()).filter(Boolean);
+    el.blacklist.value = Array.from(new Set([...current, ...list])).join(', ');
+    toast('Added - press Save to apply');
   }
 
-  presetBankingBtn.addEventListener('click', () => {
-    addPresetDomains(TaskerStorage.DOMAIN_PRESETS.banking.domains);
-  });
+  el.presetBanking.addEventListener('click', () => addPresetDomains(TaskerStorage.DOMAIN_PRESETS.banking.domains));
+  el.presetAuth.addEventListener('click', () => addPresetDomains(TaskerStorage.DOMAIN_PRESETS.auth.domains));
+  el.presetPrivacy.addEventListener('click', () => addPresetDomains(TaskerStorage.DOMAIN_PRESETS.privacy.domains));
 
-  presetAuthBtn.addEventListener('click', () => {
-    addPresetDomains(TaskerStorage.DOMAIN_PRESETS.auth.domains);
-  });
-
-  presetPrivacyBtn.addEventListener('click', () => {
-    addPresetDomains(TaskerStorage.DOMAIN_PRESETS.privacy.domains);
-  });
-
-  // Extensions may open chrome:// pages via the tabs API even though a link to
-  // one is blocked, so this is the only way to send the user to the binding UI.
-  openShortcutsBtn.addEventListener('click', () => {
+  // Extensions may open chrome:// pages through the tabs API even though a
+  // link to one is blocked, so this is the only route to the binding UI.
+  el.openShortcuts.addEventListener('click', () => {
     chrome.tabs.create({ url: 'chrome://extensions/shortcuts' });
   });
 
-  // Save Settings
-  saveSettingsBtn.addEventListener('click', async () => {
-    const updated = {
-      googleDriveFolderName: driveFolderName.value.trim() || 'Tasker Activity Logs',
-      autoSyncDrive: autoSyncDrive.checked,
-      aiSummariesEnabled: aiSummariesEnabled.checked,
-      blacklistedDomains: blacklistedDomains.value.split(',').map(s => s.trim()).filter(Boolean),
-      categoryWeights: collectWeightOverrides(),
-      domainCategories: collectDomainRules()
-    };
+  /* ----------------------------------------------------------------- save - */
 
-    await chrome.runtime.sendMessage({ action: 'SAVE_SETTINGS', settings: updated });
-    showSaveToast('Settings saved successfully!');
-  });
-
-  // Reset Defaults
-  resetDefaultsBtn.addEventListener('click', async () => {
-    if (confirm('Reset settings to recommended defaults?')) {
-      driveFolderName.value = 'Tasker Activity Logs';
-      autoSyncDrive.checked = false;
-      aiSummariesEnabled.checked = true;
-      blacklistedDomains.value = 'bank, paypal, passwords, accounts.google.com';
-      weights = { ...Formatters.DEFAULT_CATEGORY_WEIGHTS };
-      domainRules = [];
-      renderWeights();
-      renderDomainRules();
-
-      await chrome.runtime.sendMessage({
-        action: 'SAVE_SETTINGS',
-        settings: {
-          googleDriveFolderName: 'Tasker Activity Logs',
-          autoSyncDrive: false,
-          aiSummariesEnabled: true,
-          blacklistedDomains: ['bank', 'paypal', 'passwords', 'accounts.google.com'],
-          categoryWeights: {},
-          domainCategories: {}
-        }
-      });
-      showSaveToast('Settings reset to recommended defaults!');
-    }
-  });
-
-  function showSaveToast(msg) {
-    saveToast.textContent = msg;
-    saveToast.classList.remove('hidden');
-    setTimeout(() => {
-      saveToast.classList.add('hidden');
-    }, 3000);
+  async function saveAll() {
+    const current = await TaskerStorage.getSettings();
+    await send('SAVE_SETTINGS', {
+      settings: {
+        googleDriveFolderName: el.driveFolderName.value.trim() || 'Tasker Activity Logs',
+        driveFormat: segValue(el.driveFormat) || 'pdf',
+        driveOrganizeFolders: el.driveOrganizeFolders.checked,
+        autoSyncDrive: el.autoSyncDrive.checked,
+        aiSummariesEnabled: el.aiSummariesEnabled.checked,
+        theme: segValue(el.themeChoice) || 'system',
+        blacklistedDomains: el.blacklist.value.split(',').map(s => s.trim()).filter(Boolean),
+        categoryWeights: collectWeightOverrides(),
+        domainCategories: collectDomainRules(),
+        // Carried through rather than rebuilt: the override is saved the
+        // moment it is picked, and rebuilding it from the <select> here would
+        // silently clobber it whenever the picker had not finished loading.
+        workProfile: { ...current.workProfile, enabled: el.workProfileEnabled.checked }
+      }
+    });
+    toast('Settings saved');
   }
 
-  // Export Data as JSON
-  exportDataBtn.addEventListener('click', async () => {
-    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-      chrome.storage.local.get(null, (res) => {
-        const jsonStr = JSON.stringify(res, null, 2);
-        const blob = new Blob([jsonStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Tasker_Backup_${Formatters.getDateKey()}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
+  el.save.addEventListener('click', () => saveAll().catch(err => toast(err.message, true)));
+  el.saveBottom.addEventListener('click', () => saveAll().catch(err => toast(err.message, true)));
+
+  el.resetDefaults.addEventListener('click', async () => {
+    if (!confirm('Reset every setting to its default? Your tracked history is not affected.')) return;
+
+    el.driveFolderName.value = 'Tasker Activity Logs';
+    el.autoSyncDrive.checked = false;
+    el.driveOrganizeFolders.checked = true;
+    el.aiSummariesEnabled.checked = true;
+    el.workProfileEnabled.checked = true;
+    el.blacklist.value = 'bank, paypal, passwords, accounts.google.com';
+    setSeg(el.driveFormat, 'pdf');
+    setSeg(el.themeChoice, 'system');
+    TaskerUI.applyTheme('system');
+    weights = { ...Formatters.DEFAULT_CATEGORY_WEIGHTS };
+    domainRules = [];
+    renderWeights();
+    renderDomainRules();
+
+    try {
+      await send('SAVE_SETTINGS', {
+        settings: {
+          googleDriveFolderName: 'Tasker Activity Logs',
+          driveFormat: 'pdf',
+          driveOrganizeFolders: true,
+          autoSyncDrive: false,
+          aiSummariesEnabled: true,
+          theme: 'system',
+          blacklistedDomains: ['bank', 'paypal', 'passwords', 'accounts.google.com'],
+          categoryWeights: {},
+          domainCategories: {},
+          workProfile: { enabled: true, override: null }
+        }
       });
+      el.roleOverride.value = '';
+      await refreshWorkProfile();
+      toast('Settings reset to defaults');
+    } catch (err) {
+      toast(err.message, true);
     }
   });
 
-  // Clear History Data
-  clearDataBtn.addEventListener('click', async () => {
-    if (confirm('Are you sure you want to reset all local tracking history? This action cannot be undone.')) {
-      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-        chrome.storage.local.clear(() => {
-          alert('Tracking history cleared.');
-          location.reload();
-        });
-      }
-    }
+  /* ----------------------------------------------------------------- data - */
+
+  el.exportData.addEventListener('click', () => {
+    chrome.storage.local.get(null, (all) => {
+      const blob = new Blob([JSON.stringify(all, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Tasker_Backup_${Formatters.getDateKey()}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 30000);
+      toast('Backup downloaded');
+    });
   });
+
+  el.clearData.addEventListener('click', () => {
+    if (!confirm('Delete all local tracking history? This cannot be undone, and nothing already in your Drive is touched.')) return;
+    chrome.storage.local.clear(() => {
+      alert('Local history deleted.');
+      location.reload();
+    });
+  });
+
+  /* ------------------------------------------------------- section index - */
+
+  // Highlight the section currently on screen. A settings page long enough to
+  // need an index is long enough to need to know where you are in it.
+  const sections = Array.from(document.querySelectorAll('.card[id]'));
+  const links = Array.from(el.sideNav.querySelectorAll('.side-link'));
+
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        links.forEach((link) => {
+          link.classList.toggle('is-active', link.getAttribute('href') === `#${entry.target.id}`);
+        });
+      });
+    }, { rootMargin: '-15% 0px -70% 0px' });
+    sections.forEach(section => observer.observe(section));
+  }
 });

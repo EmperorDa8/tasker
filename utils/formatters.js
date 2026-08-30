@@ -123,69 +123,74 @@ const Formatters = {
   },
 
   /**
-   * Get Category info (Label, Badge Color, Icon SVG path)
+   * Display metadata for a category: label, colours, and the icon name.
+   *
+   * `icon` is a Material Symbols name from assets/icons/icons.js, so the same
+   * key drives the popup pill, the dashboard chart legend and the PDF. Colours
+   * match the --cat-* tokens in assets/design/tokens.css; when one changes,
+   * both must change together.
    */
   getCategoryMeta(categoryKey) {
     const categories = {
       'Development': {
         label: 'Development & Code',
-        color: '#5F44E6', // Teak purple
-        bgColor: '#EAE5FC',
+        color: '#5A3BE0',
+        bgColor: '#EEEAFD',
         icon: 'code'
       },
       'Research': {
         label: 'Research & Docs',
-        color: '#3E7A5E', // Sage green
-        bgColor: '#DDEEE4',
-        icon: 'book-open'
+        color: '#24735A',
+        bgColor: '#E1F1E9',
+        icon: 'menu_book'
       },
       'Productivity': {
         label: 'Productivity & Work',
-        color: '#A8871B', // Golden yellow
-        bgColor: '#FDF1B0',
-        icon: 'check-circle'
+        color: '#A8760F',
+        bgColor: '#FBEFD6',
+        icon: 'checklist'
       },
       'Communication': {
         label: 'Communication & Email',
-        color: '#C96A47', // Peach clay
-        bgColor: '#FFD9CB',
-        icon: 'message-square'
+        color: '#C05F3C',
+        bgColor: '#FBE5DC',
+        icon: 'forum'
       },
       'Design': {
         label: 'Design & Creative',
-        color: '#C2528F', // Rose pink
-        bgColor: '#FFDCEF',
-        icon: 'feather'
+        color: '#B8478A',
+        bgColor: '#FBE2F0',
+        icon: 'design_services'
       },
       'Entertainment': {
         label: 'Media & Entertainment',
-        color: '#B5485E', // Berry
-        bgColor: '#FFE0E6',
-        icon: 'film'
+        color: '#A83C55',
+        bgColor: '#FAE0E5',
+        icon: 'movie'
       },
       'Social': {
         label: 'Social & Community',
-        color: '#3F6FB5', // Muted blue
-        bgColor: '#DCE8F7',
-        icon: 'users'
+        color: '#34659F',
+        bgColor: '#E3ECF9',
+        icon: 'groups'
       },
       'News': {
         label: 'News & Reading',
-        color: '#4E7D74', // Muted teal
-        bgColor: '#DCEEE9',
+        color: '#3F7A72',
+        bgColor: '#DFEEEB',
         icon: 'newspaper'
       },
       'Shopping': {
         label: 'Shopping & E-Commerce',
-        color: '#C06B2C', // Amber clay
-        bgColor: '#FBE6D4',
-        icon: 'shopping-bag'
+        color: '#A9601F',
+        bgColor: '#FAEADA',
+        icon: 'shopping_bag'
       },
       'Other': {
         label: 'General Browsing',
-        color: '#766E70', // Warm gray
-        bgColor: '#F0F2EF',
-        icon: 'globe'
+        color: '#6E6D69',
+        bgColor: '#F1F1EE',
+        icon: 'public'
       }
     };
 
