@@ -1,9 +1,18 @@
 """
-Build the Chrome Web Store upload package.
+Build the Chrome Web Store upload package, or an unpacked folder for testing.
 
     python build_zip.py                                   # zip as-is
+    python build_zip.py --unpacked                        # folder to load in Chrome
     python build_zip.py --service-url https://x.onrender.com
     python build_zip.py --service-url https://x.onrender.com --version 1.0.1
+
+--unpacked writes build/unpacked/ containing only the extension itself, and is
+what you point "Load unpacked" at. The repository root cannot be loaded
+directly: Chrome refuses any extension whose tree contains a file or directory
+whose name starts with an underscore, and the repo carries a Remotion video
+project whose node_modules is full of them (ajv's _limit.js and friends). It
+would also ask Chrome to parse several thousand files that are not the
+extension.
 
 --service-url rewrites the summary-service origin in BOTH places it appears.
 They must match or the extension's CSP blocks the fetch:
@@ -13,7 +22,7 @@ They must match or the extension's CSP blocks the fetch:
 The zip contains only what the extension needs at runtime. Docs, the server,
 screenshots and the build scripts are deliberately left out.
 """
-import argparse, io, json, os, re, sys, zipfile
+import argparse, io, json, os, re, shutil, sys, zipfile
 from urllib.parse import urlparse
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -22,7 +31,11 @@ INCLUDE_DIRS = ["assets", "background", "dashboard", "options", "popup", "utils"
 INCLUDE_FILES = ["manifest.json"]
 # assets/ doubles as a scratch area for screenshots and icon backups.
 EXCLUDE_NAMES = {"tasker2.png", "tasker3.png", "logo.svg", "promo-440x280.png"}
-EXCLUDE_DIRS = {"_previous"}
+# NOTE: no directory inside the extension root may start with an underscore.
+# Chrome reserves those names and refuses to load the whole extension with
+# "Filenames starting with _ are reserved for use by the system" - which is why
+# this is "previous-icons" rather than "_previous".
+EXCLUDE_DIRS = {"previous-icons", "__pycache__"}
 
 
 def rewrite_service_url(url):
@@ -115,12 +128,30 @@ def preflight(manifest):
     return problems
 
 
+def find_reserved_names(root):
+    """Names Chrome reserves: anything starting with an underscore.
+
+    Chrome rejects the whole extension with "Filenames starting with _ are
+    reserved for use by the system" and reports only the first one it meets,
+    so this lists all of them at once rather than one reload at a time.
+    """
+    found = []
+    for dirpath, dirnames, filenames in os.walk(root):
+        for name in dirnames + filenames:
+            if name.startswith("_"):
+                rel = os.path.relpath(os.path.join(dirpath, name), root)
+                found.append(rel.replace("\\", "/"))
+    return sorted(found)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--service-url")
     ap.add_argument("--version")
     ap.add_argument("--allow-placeholders", action="store_true",
                     help="build anyway (draft uploads only, never for review)")
+    ap.add_argument("--unpacked", action="store_true",
+                    help="write build/unpacked/ for Chrome's Load unpacked, instead of a zip")
     args = ap.parse_args()
 
     if args.service_url:
@@ -136,8 +167,35 @@ def main():
             sys.exit("\nrefusing to build - pass --service-url, or --allow-placeholders for a draft")
         print("  (building anyway: --allow-placeholders)\n")
 
-    out = os.path.join(ROOT, f"tasker-v{manifest['version']}.zip")
     files = collect()
+
+    if args.unpacked:
+        out_dir = os.path.join(ROOT, "build", "unpacked")
+        # Rebuild from scratch so a file deleted from the repo cannot linger in
+        # the load folder and keep working in Chrome long after it is gone.
+        if os.path.isdir(out_dir):
+            shutil.rmtree(out_dir)
+        for rel in files:
+            dest = os.path.join(out_dir, rel.replace("/", os.sep))
+            os.makedirs(os.path.dirname(dest), exist_ok=True)
+            shutil.copy2(os.path.join(ROOT, rel), dest)
+
+        reserved = find_reserved_names(out_dir)
+        if reserved:
+            print("\n  ! Chrome will refuse this build - reserved names present:")
+            for r in reserved:
+                print("    " + r)
+            sys.exit(1)
+
+        print(f"\nbuild/unpacked  ({len(files)} files)")
+        print("\nLoad it in Chrome:")
+        print("  1. chrome://extensions  ->  enable Developer mode")
+        print("  2. Load unpacked  ->  select this folder:")
+        print("     " + out_dir)
+        print("  3. Click the puzzle-piece icon and pin Tasker to the toolbar.")
+        return
+
+    out = os.path.join(ROOT, f"tasker-v{manifest['version']}.zip")
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
         for rel in files:
             z.write(os.path.join(ROOT, rel), rel)

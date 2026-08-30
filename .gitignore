@@ -1,6 +1,9 @@
 # Build artifacts — published as GitHub Releases, not committed
 *.zip
 
+# Unpacked dev build (python build_zip.py --unpacked)
+build/
+
 # Dependencies
 node_modules/
 

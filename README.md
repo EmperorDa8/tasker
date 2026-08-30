@@ -41,15 +41,31 @@ Most people rebuild their week from memory. Timesheets, client invoices, status 
 
 ```bash
 git clone https://github.com/EmperorDa8/tasker.git
+cd tasker
+python build_zip.py --unpacked
 ```
 
 Then in Chrome:
 
 1. Go to `chrome://extensions`
 2. Enable **Developer mode** (top right)
-3. Click **Load unpacked** and select the cloned `tasker/` directory
+3. Click **Load unpacked** and select **`build/unpacked/`**
+4. Click the puzzle-piece icon in the toolbar and pin Tasker
 
-There is no build step and no dependencies — the extension is plain ES modules loaded directly by Chrome.
+The extension itself has no build step and no dependencies — it is plain
+JavaScript loaded directly by Chrome. `--unpacked` only copies the extension
+files into a clean folder, because **the repository root cannot be loaded
+directly**: Chrome rejects any extension whose tree contains a name starting
+with an underscore, and the repo carries a Remotion video project whose
+`node_modules` is full of them. The command re-runs in under a second, so run it
+again after editing and hit reload in Chrome.
+
+> **Drive sync does not work in an unpacked build** unless the extension ID
+> matches the one the OAuth client is registered against. An unpacked extension
+> gets its ID from its folder path, so `chrome.identity` will reject the token
+> request. Add the Web Store item's `"key"` to `manifest.json` to pin the ID, or
+> register the unpacked ID as an additional OAuth client. Everything else —
+> tracking, categorisation, the work profile, PDF export — works without it.
 
 ### Packaged release
 
