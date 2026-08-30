@@ -293,6 +293,33 @@ async function handleAsyncMessage(message, sender) {
       return await ActivitySummarizer.getWorkProfile();
     }
 
+    case 'GET_UNRECOGNISED_SITES': {
+      // The catalogue can never be complete - there is always another SaaS
+      // tool - so the honest fix for the remainder is to show the user which
+      // of THEIR sites went unrecognised and let them place each one in a
+      // click. A long tail nobody can enumerate becomes a short list they can.
+      const days = await TaskerStorage.getRecentDays(RoleDetector.LOOKBACK_DAYS);
+      const totals = {};
+
+      days.forEach(({ day }) => {
+        if (!day || !day.domains) return;
+        Object.keys(day.domains).forEach((domain) => {
+          const seconds = Number(day.domains[domain]) || 0;
+          if (seconds <= 0) return;
+          // Re-categorise from the domain rather than trusting what was stored:
+          // the catalogue has grown since those days were recorded, so a site
+          // filed as Other last week may be recognised now.
+          if (Formatters.categorizeActivity(`https://${domain}/`, '') !== 'Other') return;
+          totals[domain] = (totals[domain] || 0) + seconds;
+        });
+      });
+
+      return Object.keys(totals)
+        .map(domain => ({ domain, seconds: Math.round(totals[domain]) }))
+        .sort((a, b) => b.seconds - a.seconds)
+        .slice(0, 15);
+    }
+
     case 'GET_ROLE_CATALOGUE': {
       // Shipped to the options page so the override picker cannot drift out of
       // step with what the detector actually knows about.

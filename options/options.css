@@ -447,6 +447,47 @@
 
 .weight-row.is-custom .weight-value { color: var(--brand-accent); font-weight: 500; }
 
+/* -------------------------------------------------- unrecognised sites - */
+
+.unknown-list { display: flex; flex-direction: column; gap: 6px; margin: 4px 0; }
+
+.unknown-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 9px 12px;
+  border-radius: var(--r-sm);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-soft);
+}
+
+.unknown-domain {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-md);
+  color: var(--text-strong);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.unknown-time {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.unknown-row .select { min-width: 190px; height: 32px; flex: none; }
+
+.unknown-empty {
+  padding: 12px;
+  border-radius: var(--r-sm);
+  background: var(--ok-tint);
+  color: var(--ok);
+  font-size: var(--fs-sm);
+}
+
 /* ------------------------------------------------------------ site rules - */
 
 .rule-list { display: flex; flex-direction: column; gap: var(--sp-2); margin: 4px 0; }

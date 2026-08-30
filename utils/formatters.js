@@ -138,11 +138,23 @@ const Formatters = {
         bgColor: '#EEEAFD',
         icon: 'code'
       },
+      'AI': {
+        label: 'AI Tools',
+        color: '#7B4FD8',
+        bgColor: '#F0E9FC',
+        icon: 'smart_toy'
+      },
       'Research': {
         label: 'Research & Docs',
         color: '#24735A',
         bgColor: '#E1F1E9',
         icon: 'menu_book'
+      },
+      'Education': {
+        label: 'Learning & Courses',
+        color: '#2C6E9B',
+        bgColor: '#E2EEF6',
+        icon: 'school'
       },
       'Productivity': {
         label: 'Productivity & Work',
@@ -162,17 +174,17 @@ const Formatters = {
         bgColor: '#FBE2F0',
         icon: 'design_services'
       },
-      'Entertainment': {
-        label: 'Media & Entertainment',
-        color: '#A83C55',
-        bgColor: '#FAE0E5',
-        icon: 'movie'
+      'Career': {
+        label: 'Jobs & Career',
+        color: '#7A5C3D',
+        bgColor: '#F2EAE1',
+        icon: 'work'
       },
-      'Social': {
-        label: 'Social & Community',
-        color: '#34659F',
-        bgColor: '#E3ECF9',
-        icon: 'groups'
+      'Finance': {
+        label: 'Finance & Admin',
+        color: '#4E7A1F',
+        bgColor: '#EAF2DE',
+        icon: 'payments'
       },
       'News': {
         label: 'News & Reading',
@@ -180,14 +192,38 @@ const Formatters = {
         bgColor: '#DFEEEB',
         icon: 'newspaper'
       },
+      'Social': {
+        label: 'Social & Community',
+        color: '#34659F',
+        bgColor: '#E3ECF9',
+        icon: 'groups'
+      },
+      'Health': {
+        label: 'Health & Wellbeing',
+        color: '#B04A6E',
+        bgColor: '#FAE3EC',
+        icon: 'stethoscope'
+      },
+      'Travel': {
+        label: 'Travel & Local',
+        color: '#0E8A8A',
+        bgColor: '#DDF0F0',
+        icon: 'flight'
+      },
       'Shopping': {
         label: 'Shopping & E-Commerce',
         color: '#A9601F',
         bgColor: '#FAEADA',
         icon: 'shopping_bag'
       },
+      'Entertainment': {
+        label: 'Media & Games',
+        color: '#A83C55',
+        bgColor: '#FAE0E5',
+        icon: 'movie'
+      },
       'Other': {
-        label: 'General Browsing',
+        label: 'Unrecognised',
         color: '#6E6D69',
         bgColor: '#F1F1EE',
         icon: 'public'
@@ -197,62 +233,649 @@ const Formatters = {
     return categories[categoryKey] || categories['Other'];
   },
 
+  /* ---------------------------------------------------------------------
+     Site catalogue
+     ---------------------------------------------------------------------
+     Keyed by registrable domain and matched by exact host or parent suffix,
+     so one entry covers every subdomain: 'google.com' would catch all of
+     Google, which is why the Google properties that mean different things
+     are listed individually and the bare domain is not listed at all.
+
+     This is long on purpose. The previous version recognised about fifty
+     sites and filed everything else under "Other", which on a real week meant
+     four fifths of the day was reported as unrecognised - a tracker that
+     cannot name where the time went is not telling you where the time went.
+
+     Ordering is irrelevant to matching (it is a map, not a rule list); the
+     grouping is for whoever edits it next.
+     ------------------------------------------------------------------- */
+  SITE_CATEGORIES: {
+    // --- Development ---------------------------------------------------
+    'github.com': 'Development', 'gitlab.com': 'Development', 'bitbucket.org': 'Development',
+    'stackoverflow.com': 'Development', 'stackexchange.com': 'Development',
+    'serverfault.com': 'Development', 'superuser.com': 'Development',
+    'npmjs.com': 'Development', 'pypi.org': 'Development', 'crates.io': 'Development',
+    'packagist.org': 'Development', 'rubygems.org': 'Development', 'nuget.org': 'Development',
+    'maven.org': 'Development', 'mvnrepository.com': 'Development',
+    'react.dev': 'Development', 'reactjs.org': 'Development', 'nextjs.org': 'Development',
+    'vuejs.org': 'Development', 'nuxt.com': 'Development', 'svelte.dev': 'Development',
+    'angular.dev': 'Development', 'angular.io': 'Development', 'solidjs.com': 'Development',
+    'astro.build': 'Development', 'remix.run': 'Development', 'vitejs.dev': 'Development',
+    'webpack.js.org': 'Development', 'tailwindcss.com': 'Development',
+    'nodejs.org': 'Development', 'deno.com': 'Development', 'bun.sh': 'Development',
+    'python.org': 'Development', 'go.dev': 'Development', 'rust-lang.org': 'Development',
+    'java.com': 'Development', 'oracle.com': 'Development', 'kotlinlang.org': 'Development',
+    'swift.org': 'Development', 'php.net': 'Development', 'ruby-lang.org': 'Development',
+    'rubyonrails.org': 'Development', 'djangoproject.com': 'Development',
+    'laravel.com': 'Development', 'spring.io': 'Development', 'nestjs.com': 'Development',
+    'fastapi.tiangolo.com': 'Development', 'flask.palletsprojects.com': 'Development',
+    'postgresql.org': 'Development', 'mysql.com': 'Development', 'sqlite.org': 'Development',
+    'mongodb.com': 'Development', 'redis.io': 'Development', 'clickhouse.com': 'Development',
+    'supabase.com': 'Development', 'planetscale.com': 'Development', 'neon.tech': 'Development',
+    'prisma.io': 'Development', 'drizzle.team': 'Development',
+    'docker.com': 'Development', 'kubernetes.io': 'Development', 'helm.sh': 'Development',
+    'terraform.io': 'Development', 'hashicorp.com': 'Development', 'pulumi.com': 'Development',
+    'ansible.com': 'Development', 'argoproj.github.io': 'Development',
+    'vercel.com': 'Development', 'netlify.com': 'Development', 'render.com': 'Development',
+    'fly.io': 'Development', 'railway.app': 'Development', 'heroku.com': 'Development',
+    'digitalocean.com': 'Development', 'linode.com': 'Development', 'cloudflare.com': 'Development',
+    'firebase.google.com': 'Development', 'console.aws.amazon.com': 'Development',
+    'aws.amazon.com': 'Development', 'portal.azure.com': 'Development',
+    'azure.microsoft.com': 'Development', 'console.cloud.google.com': 'Development',
+    'cloud.google.com': 'Development',
+    'sentry.io': 'Development', 'datadoghq.com': 'Development', 'grafana.com': 'Development',
+    'newrelic.com': 'Development', 'pagerduty.com': 'Development', 'honeycomb.io': 'Development',
+    'circleci.com': 'Development', 'travis-ci.com': 'Development', 'jenkins.io': 'Development',
+    'sonarsource.com': 'Development', 'sonarqube.org': 'Development', 'snyk.io': 'Development',
+    'postman.com': 'Development', 'swagger.io': 'Development', 'insomnia.rest': 'Development',
+    'codepen.io': 'Development', 'jsfiddle.net': 'Development', 'codesandbox.io': 'Development',
+    'stackblitz.com': 'Development', 'replit.com': 'Development', 'glitch.com': 'Development',
+    'regex101.com': 'Development', 'regexr.com': 'Development', 'devdocs.io': 'Development',
+    'caniuse.com': 'Development', 'jetbrains.com': 'Development',
+    'code.visualstudio.com': 'Development', 'visualstudio.com': 'Development',
+    'sourceforge.net': 'Development', 'apache.org': 'Development', 'gnu.org': 'Development',
+    'kernel.org': 'Development', 'archlinux.org': 'Development', 'ubuntu.com': 'Development',
+    'debian.org': 'Development', 'stackshare.io': 'Development', 'localhost': 'Development',
+    'playwright.dev': 'Development', 'cypress.io': 'Development', 'selenium.dev': 'Development',
+    'browserstack.com': 'Development', 'jestjs.io': 'Development', 'vitest.dev': 'Development',
+    'developer.apple.com': 'Development', 'developer.android.com': 'Development',
+    'reactnative.dev': 'Development', 'flutter.dev': 'Development', 'expo.dev': 'Development',
+    'unity.com': 'Development', 'unrealengine.com': 'Development', 'godotengine.org': 'Development',
+    'etherscan.io': 'Development', 'ethereum.org': 'Development', 'solana.com': 'Development',
+    'alchemy.com': 'Development', 'hardhat.org': 'Development',
+    'roadmap.sh': 'Development', 'refactoring.guru': 'Development', 'baeldung.com': 'Development',
+    'geeksforgeeks.org': 'Development', 'w3schools.com': 'Development', 'freecodecamp.org': 'Development',
+    'digitalocean.com/community': 'Development', 'css-tricks.com': 'Development',
+    'smashingmagazine.com': 'Development', 'web.dev': 'Development', 'developers.google.com': 'Development',
+
+    // --- AI ------------------------------------------------------------
+    'chatgpt.com': 'AI', 'openai.com': 'AI', 'claude.ai': 'AI', 'anthropic.com': 'AI',
+    'gemini.google.com': 'AI', 'aistudio.google.com': 'AI', 'ai.google.dev': 'AI',
+    'perplexity.ai': 'AI', 'copilot.microsoft.com': 'AI', 'github.com/copilot': 'AI',
+    'mistral.ai': 'AI', 'cohere.com': 'AI', 'deepseek.com': 'AI', 'x.ai': 'AI',
+    'groq.com': 'AI', 'openrouter.ai': 'AI', 'together.ai': 'AI', 'fireworks.ai': 'AI',
+    'huggingface.co': 'AI', 'replicate.com': 'AI', 'modal.com': 'AI', 'baseten.co': 'AI',
+    'ollama.com': 'AI', 'lmstudio.ai': 'AI', 'vllm.ai': 'AI', 'runpod.io': 'AI',
+    'langchain.com': 'AI', 'llamaindex.ai': 'AI', 'crewai.com': 'AI',
+    'modelcontextprotocol.io': 'AI', 'langfuse.com': 'AI', 'braintrust.dev': 'AI',
+    'promptfoo.dev': 'AI', 'ragas.io': 'AI', 'wandb.ai': 'AI', 'mlflow.org': 'AI',
+    'pinecone.io': 'AI', 'weaviate.io': 'AI', 'qdrant.tech': 'AI', 'trychroma.com': 'AI',
+    'pytorch.org': 'AI', 'tensorflow.org': 'AI', 'scikit-learn.org': 'AI', 'keras.io': 'AI',
+    'midjourney.com': 'AI', 'runwayml.com': 'AI', 'elevenlabs.io': 'AI', 'suno.com': 'AI',
+    'leonardo.ai': 'AI', 'ideogram.ai': 'AI', 'civitai.com': 'AI', 'stability.ai': 'AI',
+    'cursor.com': 'AI', 'codeium.com': 'AI', 'tabnine.com': 'AI', 'v0.dev': 'AI',
+    'lovable.dev': 'AI', 'bolt.new': 'AI', 'windsurf.com': 'AI', 'devin.ai': 'AI',
+    'notebooklm.google.com': 'AI', 'poe.com': 'AI', 'character.ai': 'AI',
+    'scale.com': 'AI', 'surgehq.ai': 'AI', 'labelbox.com': 'AI', 'argilla.io': 'AI',
+    'paperswithcode.com': 'AI', 'openreview.net': 'AI', 'lesswrong.com': 'AI',
+    'alignmentforum.org': 'AI', 'kaggle.com': 'AI', 'colab.research.google.com': 'AI',
+
+    // --- Design --------------------------------------------------------
+    'figma.com': 'Design', 'sketch.com': 'Design', 'framer.com': 'Design',
+    'penpot.app': 'Design', 'invisionapp.com': 'Design', 'zeplin.io': 'Design',
+    'dribbble.com': 'Design', 'behance.net': 'Design', 'awwwards.com': 'Design',
+    'canva.com': 'Design', 'adobe.com': 'Design', 'affinity.serif.com': 'Design',
+    'unsplash.com': 'Design', 'pexels.com': 'Design', 'pixabay.com': 'Design',
+    'freepik.com': 'Design', 'flaticon.com': 'Design', 'thenounproject.com': 'Design',
+    'fontawesome.com': 'Design', 'fonts.google.com': 'Design', 'fontshare.com': 'Design',
+    'myfonts.com': 'Design', 'coolors.co': 'Design', 'colorhunt.co': 'Design',
+    'miro.com': 'Design', 'excalidraw.com': 'Design', 'whimsical.com': 'Design',
+    'lucidchart.com': 'Design', 'lottiefiles.com': 'Design', 'blender.org': 'Design',
+    'shadcn.com': 'Design', 'ui.shadcn.com': 'Design', 'mui.com': 'Design',
+    'chakra-ui.com': 'Design', 'storybook.js.org': 'Design', 'dovetail.com': 'Design',
+    'maze.co': 'Design', 'usertesting.com': 'Design', 'hotjar.com': 'Design',
+
+    // --- Productivity --------------------------------------------------
+    'docs.google.com': 'Productivity', 'sheets.google.com': 'Productivity',
+    'slides.google.com': 'Productivity', 'drive.google.com': 'Productivity',
+    'keep.google.com': 'Productivity', 'forms.google.com': 'Productivity',
+    'calendar.google.com': 'Productivity', 'office.com': 'Productivity',
+    'sharepoint.com': 'Productivity', 'onedrive.live.com': 'Productivity',
+    'notion.so': 'Productivity', 'notion.site': 'Productivity', 'coda.io': 'Productivity',
+    'airtable.com': 'Productivity', 'obsidian.md': 'Productivity', 'evernote.com': 'Productivity',
+    'roamresearch.com': 'Productivity', 'logseq.com': 'Productivity', 'craft.do': 'Productivity',
+    'atlassian.net': 'Productivity', 'atlassian.com': 'Productivity', 'jira.com': 'Productivity',
+    'confluence.com': 'Productivity', 'trello.com': 'Productivity', 'asana.com': 'Productivity',
+    'linear.app': 'Productivity', 'monday.com': 'Productivity', 'clickup.com': 'Productivity',
+    'basecamp.com': 'Productivity', 'shortcut.com': 'Productivity', 'height.app': 'Productivity',
+    'smartsheet.com': 'Productivity', 'wrike.com': 'Productivity', 'productboard.com': 'Productivity',
+    'todoist.com': 'Productivity', 'ticktick.com': 'Productivity', 'things.app': 'Productivity',
+    'calendly.com': 'Productivity', 'cal.com': 'Productivity', 'doodle.com': 'Productivity',
+    'dropbox.com': 'Productivity', 'box.com': 'Productivity', 'wetransfer.com': 'Productivity',
+    'zapier.com': 'Productivity', 'make.com': 'Productivity', 'n8n.io': 'Productivity',
+    'ifttt.com': 'Productivity', 'retool.com': 'Productivity',
+    'salesforce.com': 'Productivity', 'hubspot.com': 'Productivity', 'pipedrive.com': 'Productivity',
+    'zoho.com': 'Productivity', 'zendesk.com': 'Productivity', 'intercom.com': 'Productivity',
+    'freshdesk.com': 'Productivity', 'helpscout.com': 'Productivity', 'front.com': 'Productivity',
+    'docusign.com': 'Productivity', 'pandadoc.com': 'Productivity', 'dropbox.com/sign': 'Productivity',
+    'grammarly.com': 'Productivity', 'deepl.com': 'Productivity', 'translate.google.com': 'Productivity',
+    'ilovepdf.com': 'Productivity', 'smallpdf.com': 'Productivity', 'pdf24.org': 'Productivity',
+    'tinypng.com': 'Productivity', 'cloudconvert.com': 'Productivity', 'remove.bg': 'Productivity',
+    'amplitude.com': 'Productivity', 'mixpanel.com': 'Productivity', 'posthog.com': 'Productivity',
+    'analytics.google.com': 'Productivity', 'looker.com': 'Productivity', 'tableau.com': 'Productivity',
+    'powerbi.microsoft.com': 'Productivity', 'metabase.com': 'Productivity',
+    'snowflake.com': 'Productivity', 'databricks.com': 'Productivity', 'getdbt.com': 'Productivity',
+    'search.google.com': 'Productivity', 'ahrefs.com': 'Productivity', 'semrush.com': 'Productivity',
+    'mailchimp.com': 'Productivity', 'klaviyo.com': 'Productivity', 'beehiiv.com': 'Productivity',
+    'typeform.com': 'Productivity', 'surveymonkey.com': 'Productivity', 'jotform.com': 'Productivity',
+    'bamboohr.com': 'Productivity', 'rippling.com': 'Productivity', 'gusto.com': 'Productivity',
+    'deel.com': 'Productivity', 'vanta.com': 'Productivity', 'drata.com': 'Productivity',
+
+    // --- Communication -------------------------------------------------
+    'mail.google.com': 'Communication', 'gmail.com': 'Communication',
+    'outlook.com': 'Communication', 'outlook.office.com': 'Communication',
+    'outlook.live.com': 'Communication', 'mail.yahoo.com': 'Communication',
+    'proton.me': 'Communication', 'protonmail.com': 'Communication',
+    'fastmail.com': 'Communication', 'hey.com': 'Communication', 'zoho.com/mail': 'Communication',
+    'slack.com': 'Communication', 'teams.microsoft.com': 'Communication',
+    'discord.com': 'Communication', 'telegram.org': 'Communication', 'web.telegram.org': 'Communication',
+    'whatsapp.com': 'Communication', 'web.whatsapp.com': 'Communication',
+    'signal.org': 'Communication', 'messenger.com': 'Communication',
+    'zoom.us': 'Communication', 'meet.google.com': 'Communication', 'webex.com': 'Communication',
+    'gotomeeting.com': 'Communication', 'skype.com': 'Communication', 'whereby.com': 'Communication',
+    'loom.com': 'Communication', 'around.co': 'Communication', 'gather.town': 'Communication',
+
+    // --- Research ------------------------------------------------------
+    'wikipedia.org': 'Research', 'wikimedia.org': 'Research', 'wiktionary.org': 'Research',
+    'arxiv.org': 'Research', 'biorxiv.org': 'Research', 'ssrn.com': 'Research',
+    'scholar.google.com': 'Research', 'semanticscholar.org': 'Research',
+    'researchgate.net': 'Research', 'academia.edu': 'Research', 'jstor.org': 'Research',
+    'sciencedirect.com': 'Research', 'springer.com': 'Research', 'nature.com': 'Research',
+    'science.org': 'Research', 'plos.org': 'Research', 'ieee.org': 'Research',
+    'acm.org': 'Research', 'pubmed.ncbi.nlm.nih.gov': 'Research', 'ncbi.nlm.nih.gov': 'Research',
+    'britannica.com': 'Research', 'wolframalpha.com': 'Research', 'archive.org': 'Research',
+    'ourworldindata.org': 'Research', 'statista.com': 'Research', 'data.gov': 'Research',
+    'census.gov': 'Research', 'worldbank.org': 'Research', 'oecd.org': 'Research',
+    'dictionary.com': 'Research', 'merriam-webster.com': 'Research', 'thesaurus.com': 'Research',
+    'gov.uk': 'Research', 'usa.gov': 'Research', 'europa.eu': 'Research',
+    'readthedocs.io': 'Research', 'gitbook.io': 'Research', 'stackoverflow.blog': 'Research',
+
+    // --- Education -----------------------------------------------------
+    'coursera.org': 'Education', 'udemy.com': 'Education', 'edx.org': 'Education',
+    'khanacademy.org': 'Education', 'udacity.com': 'Education', 'skillshare.com': 'Education',
+    'pluralsight.com': 'Education', 'linkedin.com/learning': 'Education',
+    'frontendmasters.com': 'Education', 'egghead.io': 'Education', 'codecademy.com': 'Education',
+    'datacamp.com': 'Education', 'brilliant.org': 'Education', 'duolingo.com': 'Education',
+    'busuu.com': 'Education', 'babbel.com': 'Education', 'memrise.com': 'Education',
+    'anki.net': 'Education', 'ankiweb.net': 'Education', 'quizlet.com': 'Education',
+    'leetcode.com': 'Education', 'hackerrank.com': 'Education', 'codewars.com': 'Education',
+    'exercism.org': 'Education', 'advent-of-code.com': 'Education', 'adventofcode.com': 'Education',
+    'classroom.google.com': 'Education', 'instructure.com': 'Education',
+    'blackboard.com': 'Education', 'moodle.org': 'Education', 'canvas.net': 'Education',
+    'gradescope.com': 'Education', 'chegg.com': 'Education', 'coursehero.com': 'Education',
+    'openstax.org': 'Education', 'ted.com': 'Education', 'masterclass.com': 'Education',
+    'scrimba.com': 'Education', 'educative.io': 'Education', 'oreilly.com': 'Education',
+
+    // --- News ----------------------------------------------------------
+    'nytimes.com': 'News', 'washingtonpost.com': 'News', 'wsj.com': 'News',
+    'theguardian.com': 'News', 'bbc.co.uk': 'News', 'bbc.com': 'News',
+    'reuters.com': 'News', 'apnews.com': 'News', 'cnn.com': 'News', 'nbcnews.com': 'News',
+    'cbsnews.com': 'News', 'abcnews.go.com': 'News', 'foxnews.com': 'News',
+    'npr.org': 'News', 'aljazeera.com': 'News', 'dw.com': 'News', 'france24.com': 'News',
+    'economist.com': 'News', 'ft.com': 'News', 'bloomberg.com': 'News',
+    'politico.com': 'News', 'axios.com': 'News', 'thehill.com': 'News',
+    'techcrunch.com': 'News', 'theverge.com': 'News', 'arstechnica.com': 'News',
+    'wired.com': 'News', 'engadget.com': 'News', 'zdnet.com': 'News', 'cnet.com': 'News',
+    'venturebeat.com': 'News', 'theinformation.com': 'News', 'news.ycombinator.com': 'News',
+    'slashdot.org': 'News', 'lobste.rs': 'News', 'techmeme.com': 'News',
+    'punchng.com': 'News', 'vanguardngr.com': 'News', 'premiumtimesng.com': 'News',
+    'independent.co.uk': 'News', 'telegraph.co.uk': 'News', 'thetimes.co.uk': 'News',
+    'newsweek.com': 'News', 'time.com': 'News', 'theatlantic.com': 'News',
+    'newyorker.com': 'News', 'vox.com': 'News', 'businessinsider.com': 'News',
+    'forbes.com': 'News', 'fortune.com': 'News', 'cnbc.com': 'News',
+
+    // --- Social --------------------------------------------------------
+    'x.com': 'Social', 'twitter.com': 'Social', 'reddit.com': 'Social',
+    'linkedin.com': 'Social', 'facebook.com': 'Social', 'instagram.com': 'Social',
+    'tiktok.com': 'Social', 'threads.net': 'Social', 'threads.com': 'Social',
+    'bsky.app': 'Social', 'mastodon.social': 'Social', 'pinterest.com': 'Social',
+    'tumblr.com': 'Social', 'snapchat.com': 'Social', 'quora.com': 'Social',
+    'nextdoor.com': 'Social', 'meetup.com': 'Social', 'discourse.org': 'Social',
+    'nairaland.com': 'Social', 'vk.com': 'Social', 'weibo.com': 'Social',
+    'medium.com': 'Social', 'substack.com': 'Social', 'dev.to': 'Social',
+    'hashnode.com': 'Social', 'producthunt.com': 'Social', 'indiehackers.com': 'Social',
+
+    // --- Entertainment (media and games) --------------------------------
+    'youtube.com': 'Entertainment', 'youtu.be': 'Entertainment', 'netflix.com': 'Entertainment',
+    'spotify.com': 'Entertainment', 'twitch.tv': 'Entertainment', 'hulu.com': 'Entertainment',
+    'disneyplus.com': 'Entertainment', 'primevideo.com': 'Entertainment', 'max.com': 'Entertainment',
+    'hbomax.com': 'Entertainment', 'paramountplus.com': 'Entertainment', 'peacocktv.com': 'Entertainment',
+    'appletv.com': 'Entertainment', 'crunchyroll.com': 'Entertainment', 'vimeo.com': 'Entertainment',
+    'dailymotion.com': 'Entertainment', 'soundcloud.com': 'Entertainment',
+    'music.apple.com': 'Entertainment', 'music.youtube.com': 'Entertainment',
+    'bandcamp.com': 'Entertainment', 'tidal.com': 'Entertainment', 'deezer.com': 'Entertainment',
+    'audible.com': 'Entertainment', 'imdb.com': 'Entertainment', 'letterboxd.com': 'Entertainment',
+    'rottentomatoes.com': 'Entertainment', 'goodreads.com': 'Entertainment',
+    'steampowered.com': 'Entertainment', 'steamcommunity.com': 'Entertainment',
+    'epicgames.com': 'Entertainment', 'gog.com': 'Entertainment', 'itch.io': 'Entertainment',
+    'roblox.com': 'Entertainment', 'minecraft.net': 'Entertainment', 'ea.com': 'Entertainment',
+    'playstation.com': 'Entertainment', 'xbox.com': 'Entertainment', 'nintendo.com': 'Entertainment',
+    'chess.com': 'Entertainment', 'lichess.org': 'Entertainment', 'ign.com': 'Entertainment',
+    'gamespot.com': 'Entertainment', 'polygon.com': 'Entertainment', 'kotaku.com': 'Entertainment',
+    'espn.com': 'Entertainment', 'skysports.com': 'Entertainment', 'bbc.co.uk/sport': 'Entertainment',
+    'fifa.com': 'Entertainment', 'nba.com': 'Entertainment', 'premierleague.com': 'Entertainment',
+    'ninegag.com': 'Entertainment', '9gag.com': 'Entertainment', 'giphy.com': 'Entertainment',
+
+    // --- Shopping ------------------------------------------------------
+    'amazon.com': 'Shopping', 'amazon.co.uk': 'Shopping', 'ebay.com': 'Shopping',
+    'etsy.com': 'Shopping', 'aliexpress.com': 'Shopping', 'alibaba.com': 'Shopping',
+    'temu.com': 'Shopping', 'shein.com': 'Shopping', 'walmart.com': 'Shopping',
+    'target.com': 'Shopping', 'bestbuy.com': 'Shopping', 'costco.com': 'Shopping',
+    'ikea.com': 'Shopping', 'wayfair.com': 'Shopping', 'homedepot.com': 'Shopping',
+    'asos.com': 'Shopping', 'zalando.com': 'Shopping', 'zara.com': 'Shopping',
+    'hm.com': 'Shopping', 'uniqlo.com': 'Shopping', 'nike.com': 'Shopping',
+    'adidas.com': 'Shopping', 'argos.co.uk': 'Shopping', 'johnlewis.com': 'Shopping',
+    'currys.co.uk': 'Shopping', 'jumia.com.ng': 'Shopping', 'konga.com': 'Shopping',
+    'shopify.com': 'Shopping', 'woocommerce.com': 'Shopping', 'gumtree.com': 'Shopping',
+    'craigslist.org': 'Shopping', 'vinted.com': 'Shopping', 'depop.com': 'Shopping',
+    'newegg.com': 'Shopping', 'flipkart.com': 'Shopping', 'mercadolibre.com': 'Shopping',
+
+    // --- Finance -------------------------------------------------------
+    'paypal.com': 'Finance', 'wise.com': 'Finance', 'revolut.com': 'Finance',
+    'monzo.com': 'Finance', 'starlingbank.com': 'Finance', 'n26.com': 'Finance',
+    'chase.com': 'Finance', 'bankofamerica.com': 'Finance', 'wellsfargo.com': 'Finance',
+    'citi.com': 'Finance', 'capitalone.com': 'Finance', 'americanexpress.com': 'Finance',
+    'hsbc.com': 'Finance', 'barclays.co.uk': 'Finance', 'lloydsbank.com': 'Finance',
+    'natwest.com': 'Finance', 'santander.com': 'Finance', 'nationwide.co.uk': 'Finance',
+    'gtbank.com': 'Finance', 'zenithbank.com': 'Finance', 'accessbankplc.com': 'Finance',
+    'kuda.com': 'Finance', 'opayweb.com': 'Finance', 'flutterwave.com': 'Finance',
+    'paystack.com': 'Finance', 'stripe.com': 'Finance', 'squareup.com': 'Finance',
+    'venmo.com': 'Finance', 'cash.app': 'Finance', 'remitly.com': 'Finance',
+    'coinbase.com': 'Finance', 'binance.com': 'Finance', 'kraken.com': 'Finance',
+    'crypto.com': 'Finance', 'blockchain.com': 'Finance', 'metamask.io': 'Finance',
+    'robinhood.com': 'Finance', 'fidelity.com': 'Finance', 'vanguard.com': 'Finance',
+    'schwab.com': 'Finance', 'etrade.com': 'Finance', 'interactivebrokers.com': 'Finance',
+    'wealthfront.com': 'Finance', 'betterment.com': 'Finance', 'trading212.com': 'Finance',
+    'quickbooks.intuit.com': 'Finance', 'intuit.com': 'Finance', 'xero.com': 'Finance',
+    'freshbooks.com': 'Finance', 'waveapps.com': 'Finance', 'wave.com': 'Finance',
+    'bill.com': 'Finance', 'ramp.com': 'Finance', 'brex.com': 'Finance',
+    'expensify.com': 'Finance', 'netsuite.com': 'Finance', 'sage.com': 'Finance',
+    'irs.gov': 'Finance', 'hmrc.gov.uk': 'Finance', 'turbotax.intuit.com': 'Finance',
+    'marketwatch.com': 'Finance', 'investopedia.com': 'Finance', 'morningstar.com': 'Finance',
+    'nerdwallet.com': 'Finance', 'creditkarma.com': 'Finance', 'tradingview.com': 'Finance',
+    'yahoo.com/finance': 'Finance', 'finance.yahoo.com': 'Finance', 'coinmarketcap.com': 'Finance',
+
+    // --- Health --------------------------------------------------------
+    'webmd.com': 'Health', 'mayoclinic.org': 'Health', 'healthline.com': 'Health',
+    'nhs.uk': 'Health', 'cdc.gov': 'Health', 'who.int': 'Health', 'nih.gov': 'Health',
+    'medlineplus.gov': 'Health', 'drugs.com': 'Health', 'goodrx.com': 'Health',
+    'zocdoc.com': 'Health', 'patient.info': 'Health', 'medscape.com': 'Health',
+    'uptodate.com': 'Health', 'mychart.com': 'Health', 'teladoc.com': 'Health',
+    'myfitnesspal.com': 'Health', 'strava.com': 'Health', 'fitbit.com': 'Health',
+    'garmin.com': 'Health', 'peloton.com': 'Health', 'whoop.com': 'Health',
+    'headspace.com': 'Health', 'calm.com': 'Health', 'betterhelp.com': 'Health',
+    'sleepfoundation.org': 'Health', 'nutrition.gov': 'Health', 'examine.com': 'Health',
+
+    // --- Travel & local ------------------------------------------------
+    'booking.com': 'Travel', 'airbnb.com': 'Travel', 'expedia.com': 'Travel',
+    'hotels.com': 'Travel', 'agoda.com': 'Travel', 'trivago.com': 'Travel',
+    'skyscanner.net': 'Travel', 'kayak.com': 'Travel', 'momondo.com': 'Travel',
+    'google.com/travel': 'Travel', 'tripadvisor.com': 'Travel', 'lonelyplanet.com': 'Travel',
+    'maps.google.com': 'Travel', 'openstreetmap.org': 'Travel', 'waze.com': 'Travel',
+    'citymapper.com': 'Travel', 'rome2rio.com': 'Travel', 'trainline.com': 'Travel',
+    'nationalrail.co.uk': 'Travel', 'tfl.gov.uk': 'Travel', 'uber.com': 'Travel',
+    'lyft.com': 'Travel', 'bolt.eu': 'Travel', 'ryanair.com': 'Travel',
+    'easyjet.com': 'Travel', 'britishairways.com': 'Travel', 'united.com': 'Travel',
+    'delta.com': 'Travel', 'emirates.com': 'Travel', 'lufthansa.com': 'Travel',
+    'flightradar24.com': 'Travel', 'seatguru.com': 'Travel', 'gov.uk/visas': 'Travel',
+    'yelp.com': 'Travel', 'opentable.com': 'Travel', 'zillow.com': 'Travel',
+    'rightmove.co.uk': 'Travel', 'zoopla.co.uk': 'Travel', 'realtor.com': 'Travel',
+
+    // --- Career --------------------------------------------------------
+    'indeed.com': 'Career', 'glassdoor.com': 'Career', 'monster.com': 'Career',
+    'ziprecruiter.com': 'Career', 'wellfound.com': 'Career', 'angel.co': 'Career',
+    'otta.com': 'Career', 'welcometothejungle.com': 'Career', 'seek.com.au': 'Career',
+    'totaljobs.com': 'Career', 'reed.co.uk': 'Career', 'cv-library.co.uk': 'Career',
+    'greenhouse.io': 'Career', 'lever.co': 'Career', 'ashbyhq.com': 'Career',
+    'workable.com': 'Career', 'smartrecruiters.com': 'Career', 'teamtailor.com': 'Career',
+    'jobvite.com': 'Career', 'workday.com': 'Career', 'myworkdayjobs.com': 'Career',
+    'levels.fyi': 'Career', 'blind.com': 'Career', 'teamblind.com': 'Career',
+    'upwork.com': 'Career', 'fiverr.com': 'Career', 'toptal.com': 'Career',
+    'freelancer.com': 'Career', 'contra.com': 'Career', 'remoteok.com': 'Career',
+    'weworkremotely.com': 'Career', 'hnhiring.com': 'Career', 'resume.io': 'Career',
+    'novoresume.com': 'Career', 'canva.com/resumes': 'Career',
+
+    // --- Reference utilities -------------------------------------------
+    // Small single-purpose tools. They are nobody's job, but they are not
+    // unrecognised either, and "Other" should mean genuinely unknown.
+    'timeanddate.com': 'Productivity', 'worldtimebuddy.com': 'Productivity',
+    'calculator.net': 'Productivity', 'speedtest.net': 'Productivity',
+    'whois.com': 'Development', 'unicode.org': 'Development',
+    'emojipedia.org': 'Design', 'random.org': 'Development',
+    'jsonformatter.org': 'Development', 'base64decode.org': 'Development',
+    'crontab.guru': 'Development', 'explainshell.com': 'Development',
+    'downdetector.com': 'Development', 'ipinfo.io': 'Development',
+    'crunchbase.com': 'Research', 'ycombinator.com': 'Research',
+    'similarweb.com': 'Research', 'builtwith.com': 'Research',
+    'eventbrite.com': 'Social', 'lu.ma': 'Social',
+    'allrecipes.com': 'Health', 'bbcgoodfood.com': 'Health', 'seriouseats.com': 'Health',
+    'weather.com': 'Research', 'accuweather.com': 'Research', 'met.gov.uk': 'Research',
+    'metoffice.gov.uk': 'Research',
+
+    // --- Developer tooling & infrastructure SaaS ------------------------
+    'sourcegraph.com': 'Development', 'raycast.com': 'Development', 'warp.dev': 'Development',
+    'zed.dev': 'Development', 'linear.dev': 'Development', 'koyeb.com': 'Development',
+    'porter.run': 'Development', 'encore.dev': 'Development', 'trigger.dev': 'Development',
+    'inngest.com': 'Development', 'temporal.io': 'Development', 'nats.io': 'Development',
+    'rabbitmq.com': 'Development', 'kafka.apache.org': 'Development', 'celeryq.dev': 'Development',
+    'auth0.com': 'Development', 'okta.com': 'Development', 'clerk.com': 'Development',
+    'workos.com': 'Development', 'logto.io': 'Development', 'keycloak.org': 'Development',
+    'twilio.com': 'Development', 'sendgrid.com': 'Development', 'resend.com': 'Development',
+    'postmarkapp.com': 'Development', 'mailgun.com': 'Development', 'vonage.com': 'Development',
+    'contentful.com': 'Development', 'sanity.io': 'Development', 'strapi.io': 'Development',
+    'payloadcms.com': 'Development', 'directus.io': 'Development', 'storyblok.com': 'Development',
+    'wordpress.org': 'Development', 'webflow.com': 'Design', 'wix.com': 'Design',
+    'squarespace.com': 'Design', 'ghost.org': 'Development',
+    'algolia.com': 'Development', 'typesense.org': 'Development', 'meilisearch.com': 'Development',
+    'elastic.co': 'Development', 'opensearch.org': 'Development',
+    'launchdarkly.com': 'Development', 'statsig.com': 'Development', 'split.io': 'Development',
+    'optimizely.com': 'Development', 'unleash.io': 'Development',
+    'bugsnag.com': 'Development', 'rollbar.com': 'Development', 'logrocket.com': 'Development',
+    'betterstack.com': 'Development', 'uptimerobot.com': 'Development',
+    'downdetector.com': 'Development', 'pcpartpicker.com': 'Development',
+    'lucid.co': 'Productivity', 'dbdiagram.io': 'Development', 'drawsql.app': 'Development',
+
+    // --- Billing, fintech, money ---------------------------------------
+    'lemonsqueezy.com': 'Finance', 'paddle.com': 'Finance', 'chargebee.com': 'Finance',
+    'recurly.com': 'Finance', 'polar.sh': 'Finance', 'gumroad.com': 'Finance',
+    'mercury.com': 'Finance', 'wealthsimple.com': 'Finance', 'trade-republic.com': 'Finance',
+    'freetrade.io': 'Finance', 'plaid.com': 'Finance', 'adyen.com': 'Finance',
+    'klarna.com': 'Finance', 'afterpay.com': 'Finance', 'sumup.com': 'Finance',
+
+    // --- People, HR, hiring ---------------------------------------------
+    'lattice.com': 'Productivity', 'culture-amp.com': 'Productivity',
+    '15five.com': 'Productivity', 'leapsome.com': 'Productivity', 'personio.com': 'Productivity',
+    'hibob.com': 'Productivity', 'justworks.com': 'Productivity',
+    'hired.com': 'Career', 'triplebyte.com': 'Career', 'guru.com': 'Career',
+    'peopleperhour.com': 'Career', 'arc.dev': 'Career', 'dice.com': 'Career',
+    'builtin.com': 'Career', 'jobscan.co': 'Career',
+
+    // --- Community & events ---------------------------------------------
+    'skool.com': 'Social', 'mighty-networks.com': 'Social', 'slack-community.com': 'Social',
+    'lu.ma/events': 'Social', 'seatgeek.com': 'Entertainment', 'stubhub.com': 'Entertainment',
+    'viagogo.com': 'Entertainment', 'ticketmaster.com': 'Entertainment',
+    'bandsintown.com': 'Entertainment', 'songkick.com': 'Entertainment',
+
+    // --- Music, film, games media ---------------------------------------
+    'last.fm': 'Entertainment', 'mixcloud.com': 'Entertainment', 'sofar.fm': 'Entertainment',
+    'discogs.com': 'Entertainment', 'genius.com': 'Entertainment',
+    'backloggd.com': 'Entertainment', 'howlongtobeat.com': 'Entertainment',
+    'opencritic.com': 'Entertainment', 'metacritic.com': 'Entertainment',
+    'speedrun.com': 'Entertainment', 'trueachievements.com': 'Entertainment',
+
+    // --- Travel, property, local ----------------------------------------
+    'omio.com': 'Travel', 'busbud.com': 'Travel', 'flixbus.com': 'Travel',
+    'getyourguide.com': 'Travel', 'viator.com': 'Travel', 'hostelworld.com': 'Travel',
+    'vrbo.com': 'Travel', 'houzz.com': 'Travel', 'apartments.com': 'Travel',
+    'idealista.com': 'Travel', 'seloger.com': 'Travel', 'immobilienscout24.de': 'Travel',
+    'onthemarket.com': 'Travel', 'purplebricks.co.uk': 'Travel',
+
+    // --- Health, fitness, medical ---------------------------------------
+    'noom.com': 'Health', 'cronometer.com': 'Health', 'hevyapp.com': 'Health',
+    'strong.app': 'Health', 'nike.com/run-club': 'Health', 'osmosis.org': 'Health',
+    'amboss.com': 'Health', 'geekymedics.com': 'Health', 'bmj.com': 'Health',
+    'thelancet.com': 'Health', 'nutritionfacts.org': 'Health', 'eatthismuch.com': 'Health',
+
+    // --- Learning ---------------------------------------------------------
+    'outschool.com': 'Education', 'preply.com': 'Education', 'italki.com': 'Education',
+    'wyzant.com': 'Education', 'varsitytutors.com': 'Education', 'mathway.com': 'Education',
+    'symbolab.com': 'Education', 'desmos.com': 'Education', 'geogebra.org': 'Education',
+    'sparknotes.com': 'Education', 'studysmarter.co.uk': 'Education',
+
+    // --- Journalism, science writing, reviews -----------------------------
+    'sciencedaily.com': 'News', 'phys.org': 'News', 'quantamagazine.org': 'News',
+    'undark.org': 'News', 'nautil.us': 'News', 'aeon.co': 'News',
+    'poynter.org': 'News', 'niemanlab.org': 'News', 'pressgazette.co.uk': 'News',
+    'wirecutter.com': 'Shopping', 'rtings.com': 'Shopping',
+    'camelcamelcamel.com': 'Shopping', 'trustpilot.com': 'Shopping',
+    'which.co.uk': 'Shopping', 'consumerreports.org': 'Shopping'
+  },
+
+  /* ---------------------------------------------------------------------
+     Fallbacks, tried in order once the catalogue misses.
+
+     Each is a genuine signal rather than a guess: a hostname that starts
+     with "docs." really is documentation, a .edu really is a university.
+     They exist so an unlisted site still lands somewhere truthful, because
+     a catalogue can never be complete - there is always another SaaS tool.
+     ------------------------------------------------------------------- */
+  HOST_PREFIX_RULES: [
+    ['docs.', 'Research'], ['developer.', 'Development'], ['developers.', 'Development'],
+    ['dev.', 'Development'], ['api.', 'Development'], ['git.', 'Development'],
+    ['jenkins.', 'Development'], ['ci.', 'Development'], ['status.', 'Development'],
+    ['mail.', 'Communication'], ['webmail.', 'Communication'], ['chat.', 'Communication'],
+    ['meet.', 'Communication'], ['calendar.', 'Productivity'], ['drive.', 'Productivity'],
+    ['admin.', 'Productivity'], ['dashboard.', 'Productivity'], ['app.', 'Productivity'],
+    ['portal.', 'Productivity'], ['support.', 'Productivity'], ['help.', 'Productivity'],
+    ['careers.', 'Career'], ['jobs.', 'Career'], ['boards.', 'Career'],
+    ['shop.', 'Shopping'], ['store.', 'Shopping'], ['checkout.', 'Shopping'],
+    ['news.', 'News'], ['blog.', 'News'], ['learn.', 'Education'],
+    ['academy.', 'Education'], ['school.', 'Education'], ['library.', 'Research'],
+    ['bank.', 'Finance'], ['pay.', 'Finance'], ['billing.', 'Finance'],
+    ['health.', 'Health'], ['maps.', 'Travel'], ['music.', 'Entertainment'],
+    ['play.', 'Entertainment'], ['video.', 'Entertainment'], ['tv.', 'Entertainment']
+  ],
+
+  // Suffixes you have to earn: a registrar will not sell you .edu or .gov, and
+  // .bank requires verification. These outrank a page title.
+  STRONG_SUFFIX_RULES: [
+    ['.edu', 'Education'], ['.ac.uk', 'Education'], ['.edu.au', 'Education'],
+    ['.edu.ng', 'Education'], ['.ac.jp', 'Education'], ['.sch.uk', 'Education'],
+    ['.gov', 'Research'], ['.gov.uk', 'Research'], ['.gov.ng', 'Research'],
+    ['.mil', 'Research'], ['.int', 'Research'],
+    ['.bank', 'Finance'], ['.insurance', 'Finance'], ['.travel', 'Travel'],
+    ['.pharmacy', 'Health']
+  ],
+
+  // Suffixes anyone can buy, chosen for what they suggest rather than what
+  // they prove. Tried only after the page title, which is better evidence.
+  //
+  // .io and .sh are deliberately absent. They read as "developer" but are now
+  // the default TLD for any startup - a board-game review site and an AI video
+  // tool both sit on .io - so treating them as Development mislabels a whole
+  // class of site with false confidence.
+  WEAK_SUFFIX_RULES: [
+    ['.dev', 'Development'], ['.app', 'Productivity'],
+    ['.shop', 'Shopping'], ['.store', 'Shopping'],
+    ['.news', 'News'], ['.blog', 'News'],
+    ['.tv', 'Entertainment'], ['.game', 'Entertainment'], ['.games', 'Entertainment']
+  ],
+
+  // Words that carry a category wherever they appear in a hostname. Kept
+  // narrow and unambiguous: "bank" is worth matching, "app" is not.
+  HOST_KEYWORD_RULES: [
+    ['recruit', 'Career'], ['hiring', 'Career'], ['careers', 'Career'],
+    ['bank', 'Finance'], ['invoice', 'Finance'], ['payroll', 'Finance'],
+    ['tax', 'Finance'], ['crypto', 'Finance'], ['wallet', 'Finance'],
+    ['clinic', 'Health'], ['hospital', 'Health'], ['pharmacy', 'Health'],
+    ['medical', 'Health'], ['doctor', 'Health'], ['dental', 'Health'],
+    ['fitness', 'Health'], ['university', 'Education'], ['college', 'Education'],
+    ['course', 'Education'], ['tutorial', 'Education'], ['hotel', 'Travel'],
+    ['flight', 'Travel'], ['airline', 'Travel'], ['airport', 'Travel'],
+    ['travel', 'Travel'], ['booking', 'Travel'], ['realestate', 'Travel'],
+    ['recipe', 'Health'], ['weather', 'Research'], ['wiki', 'Research'],
+    ['journal', 'Research'], ['podcast', 'Entertainment'], ['game', 'Entertainment'],
+    ['sport', 'Entertainment'], ['stream', 'Entertainment'], ['music', 'Entertainment'],
+    ['forum', 'Social'], ['community', 'Social'], ['social', 'Social'],
+    ['shop', 'Shopping'], ['market', 'Shopping'], ['deals', 'Shopping']
+  ],
+
+  // Ordered: the first match wins, so the most specific phrases come first.
+  // Single words that mean different things in different contexts ("home",
+  // "app", "new") are deliberately absent - a wrong category is worse than
+  // "Other", which at least admits it does not know.
+  TITLE_RULES: [
+    // AI first: "AI video generator" is an AI product before it is a video
+    // one, and the later Entertainment rules would otherwise claim it.
+    ['generative ai', 'AI'], ['ai assistant', 'AI'], ['ai agent', 'AI'],
+    ['ai writing', 'AI'], ['ai video', 'AI'], ['ai image', 'AI'],
+    ['ai search', 'AI'], ['ai model', 'AI'], ['chatbot', 'AI'],
+    ['large language model', 'AI'], ['llm', 'AI'], ['prompt engineering', 'AI'],
+    ['machine learning', 'AI'], ['neural network', 'AI'],
+
+    ['api reference', 'Development'], ['api docs', 'Development'],
+    ['api key', 'Development'], ['api client', 'Development'],
+    ['rest api', 'Development'], ['graphql', 'Development'],
+    ['developer doc', 'Development'], ['for developers', 'Development'],
+    ['documentation', 'Research'], ['docs', 'Research'],
+    ['sdk', 'Development'], ['github', 'Development'], ['stack overflow', 'Development'],
+    ['npm', 'Development'], ['changelog', 'Development'], ['release notes', 'Development'],
+    ['pull request', 'Development'], ['merge request', 'Development'],
+    ['open source', 'Development'], ['self-hosted', 'Development'],
+
+    ['pricing', 'Productivity'], ['dashboard', 'Productivity'], ['admin', 'Productivity'],
+    ['spreadsheet', 'Productivity'], ['presentation', 'Productivity'],
+    ['meeting', 'Productivity'], ['agenda', 'Productivity'], ['check-in', 'Productivity'],
+    ['standup', 'Productivity'], ['roadmap', 'Productivity'], ['kanban', 'Productivity'],
+
+    ['careers at', 'Career'], ['job description', 'Career'], ['apply now', 'Career'],
+    ['vacanc', 'Career'], ['hiring', 'Career'], ['salary', 'Career'], ['resume', 'Career'],
+    ['curriculum vitae', 'Career'],
+
+    ['invoice', 'Finance'], ['billing', 'Finance'], ['checkout', 'Shopping'],
+    ['add to cart', 'Shopping'], ['free shipping', 'Shopping'], ['product review', 'Shopping'],
+    ['tax return', 'Finance'], ['exchange rate', 'Finance'], ['stock price', 'Finance'],
+
+    ['course', 'Education'], ['lesson', 'Education'], ['lecture', 'Education'],
+    ['tutorial', 'Education'], ['certification', 'Education'], ['syllabus', 'Education'],
+    ['exam', 'Education'], ['quiz', 'Education'],
+
+    ['recipe', 'Health'], ['symptom', 'Health'], ['workout', 'Health'],
+    ['calories', 'Health'], ['diagnosis', 'Health'], ['treatment', 'Health'],
+
+    ['flight', 'Travel'], ['hotel', 'Travel'], ['itinerary', 'Travel'],
+    ['directions to', 'Travel'], ['for sale', 'Travel'], ['for rent', 'Travel'],
+
+    ['episode', 'Entertainment'], ['playlist', 'Entertainment'], ['soundtrack', 'Entertainment'],
+    ['trailer', 'Entertainment'], ['walkthrough', 'Entertainment'], ['livestream', 'Entertainment'],
+    ['highlights', 'Entertainment'], ['full match', 'Entertainment'],
+
+    ['wikipedia', 'Research'], ['journal of', 'Research'], ['abstract', 'Research'],
+    ['white paper', 'Research'], ['case study', 'Research'],
+
+    ['newsletter', 'News'], ['breaking', 'News'], ['opinion', 'News']
+  ],
+
   /**
-   * Categorize domain based on URL and title
+   * Longest-suffix lookup in the site catalogue.
+   *
+   * Walks the hostname from the most specific label set to the least, so
+   * 'console.aws.amazon.com' matches its own entry rather than falling
+   * through to Amazon's shopping entry. Costs at most one map lookup per
+   * dot in the hostname.
+   */
+  lookupSite(host) {
+    const parts = String(host || '').split('.');
+    // `i < parts.length` rather than `- 1`: stopping a label early never tries
+    // the bare hostname, so a single-label host - 'localhost', an intranet
+    // machine name - could never match its own catalogue entry.
+    for (let i = 0; i < parts.length; i++) {
+      const candidate = parts.slice(i).join('.');
+      const hit = this.SITE_CATEGORIES[candidate];
+      if (hit) return hit;
+    }
+    return null;
+  },
+
+  /**
+   * Subdomains that describe the *use* of a site rather than the site itself.
+   *
+   * docs.stripe.com is API documentation, not banking; developer.spotify.com
+   * is engineering, not music. These beat the catalogue's entry for the parent
+   * domain - but only after an exact whole-host match, because docs.google.com
+   * is Google Docs and has its own entry.
+   */
+  TECHNICAL_PREFIXES: [
+    ['docs.', 'Research'], ['developer.', 'Development'], ['developers.', 'Development'],
+    ['api.', 'Development'], ['dev.', 'Development'], ['devcenter.', 'Development'],
+    ['status.', 'Development'], ['careers.', 'Career'], ['jobs.', 'Career']
+  ],
+
+  /**
+   * Which category a page belongs to.
+   *
+   * Order matters: the user's own rule beats everything, then the exact
+   * catalogue, then structural signals in the hostname, then the page title.
+   * 'Other' is reached only when none of that says anything - it means
+   * "unrecognised", not "unproductive", which is why it is labelled that way
+   * and scored at the midpoint.
    */
   categorizeActivity(url, title = '') {
     const domain = this.getDomain(url).toLowerCase();
     const lowerTitle = (title || '').toLowerCase();
+    const fullUrl = String(url || '').toLowerCase();
 
     // The user's own rule wins over every built-in guess below.
     const override = this.lookupDomainOverride(domain);
     if (override) return override;
 
-    if (domain.includes('github') || domain.includes('gitlab') || domain.includes('stackoverflow') || 
-        domain.includes('localhost') || domain.includes('codepen') || domain.includes('replit') ||
-        domain.includes('npm') || domain.includes('developer.') || lowerTitle.includes('stack overflow')) {
-      return 'Development';
+    // A handful of catalogue entries carry a path because the same host
+    // serves different things ('linkedin.com/learning' is not Social).
+    const pathKeys = this.PATH_QUALIFIED_KEYS ||
+      (this.PATH_QUALIFIED_KEYS = Object.keys(this.SITE_CATEGORIES).filter(k => k.indexOf('/') !== -1));
+    for (let i = 0; i < pathKeys.length; i++) {
+      if (fullUrl.includes(pathKeys[i])) return this.SITE_CATEGORIES[pathKeys[i]];
     }
 
-    if (domain.includes('figma') || domain.includes('dribbble') || domain.includes('behance') || 
-        domain.includes('canva') || domain.includes('unsplash') || domain.includes('miro')) {
-      return 'Design';
+    // An entry naming the whole host is the most specific thing we have.
+    const exact = this.SITE_CATEGORIES[domain];
+    if (exact) return exact;
+
+    // Then "what is this subdomain for", which outranks what the parent site
+    // sells: docs.stripe.com is documentation, stripe.com is payments.
+    for (let i = 0; i < this.TECHNICAL_PREFIXES.length; i++) {
+      if (domain.startsWith(this.TECHNICAL_PREFIXES[i][0])) return this.TECHNICAL_PREFIXES[i][1];
     }
 
-    if (domain.includes('docs.google') || domain.includes('notion') || domain.includes('jira') || 
-        domain.includes('trello') || domain.includes('asana') || domain.includes('linear') || 
-        domain.includes('drive.google') || domain.includes('sheets.google')) {
-      return 'Productivity';
+    const known = this.lookupSite(domain);
+    if (known) return known;
+
+    for (let i = 0; i < this.HOST_PREFIX_RULES.length; i++) {
+      if (domain.startsWith(this.HOST_PREFIX_RULES[i][0])) return this.HOST_PREFIX_RULES[i][1];
     }
 
-    if (domain.includes('gmail') || domain.includes('slack') || domain.includes('teams') || 
-        domain.includes('outlook') || domain.includes('zoom') || domain.includes('discord')) {
-      return 'Communication';
+    for (let i = 0; i < this.STRONG_SUFFIX_RULES.length; i++) {
+      if (domain.endsWith(this.STRONG_SUFFIX_RULES[i][0])) return this.STRONG_SUFFIX_RULES[i][1];
     }
 
-    if (domain.includes('wikipedia') || domain.includes('arxiv') || domain.includes('medium') || 
-        domain.includes('dev.to') || domain.includes('scholar.google') || domain.includes('docs.')) {
-      return 'Research';
+    for (let i = 0; i < this.HOST_KEYWORD_RULES.length; i++) {
+      if (domain.includes(this.HOST_KEYWORD_RULES[i][0])) return this.HOST_KEYWORD_RULES[i][1];
     }
 
-    if (domain.includes('youtube') || domain.includes('netflix') || domain.includes('spotify') || 
-        domain.includes('twitch') || domain.includes('hulu')) {
-      return 'Entertainment';
+    // Last resort: the page title.
+    //
+    // A hostname is opaque - nothing in "algolia.com" says what Algolia is -
+    // but a title is written precisely to say what the page is, and most sites
+    // put their category in it: "API Reference", "Pricing", "Careers at X",
+    // "How to ... - Recipe". This is the only signal that generalises to a site
+    // nobody has catalogued, so it is worth more than a handful of words.
+    for (let i = 0; i < this.TITLE_RULES.length; i++) {
+      if (lowerTitle.includes(this.TITLE_RULES[i][0])) return this.TITLE_RULES[i][1];
     }
 
-    if (domain.includes('twitter') || domain.includes('x.com') || domain.includes('reddit') || 
-        domain.includes('linkedin') || domain.includes('facebook') || domain.includes('instagram')) {
-      return 'Social';
-    }
-
-    if (domain.includes('nytimes') || domain.includes('bbc') || domain.includes('techcrunch') || 
-        domain.includes('news') || domain.includes('hacker news')) {
-      return 'News';
-    }
-
-    if (domain.includes('amazon') || domain.includes('ebay') || domain.includes('shopify') || 
-        domain.includes('store')) {
-      return 'Shopping';
+    // Only now the suffixes anyone can buy, as a hint rather than a finding.
+    for (let i = 0; i < this.WEAK_SUFFIX_RULES.length; i++) {
+      if (domain.endsWith(this.WEAK_SUFFIX_RULES[i][0])) return this.WEAK_SUFFIX_RULES[i][1];
     }
 
     return 'Other';
@@ -266,17 +889,27 @@ const Formatters = {
    * place precisely so they can be overridden per user later without touching
    * the scoring maths.
    *
-   * 'Other' sits at the midpoint deliberately: uncategorised time is unknown,
-   * not unproductive, and scoring it as either extreme would be a guess.
+   * 'Other' sits at the midpoint deliberately: unrecognised time is unknown,
+   * not unproductive, and scoring it as either extreme would be a guess. With
+   * the site catalogue in place it should now be a small slice; if it is large
+   * for you, the sites in it are worth adding as rules in Settings.
    */
   DEFAULT_CATEGORY_WEIGHTS: {
     'Development': 1.0,
     'Productivity': 1.0,
+    'AI': 0.9,
     'Research': 0.9,
     'Design': 0.9,
+    'Education': 0.8,
     'Communication': 0.6,
+    'Finance': 0.6,
+    // Job hunting is real work, but it is not the work you are being paid for
+    // today - which is the thing this score is trying to describe.
+    'Career': 0.5,
     'Other': 0.5,
     'News': 0.4,
+    'Health': 0.3,
+    'Travel': 0.25,
     'Shopping': 0.2,
     'Entertainment': 0.1,
     'Social': 0.1
@@ -293,8 +926,9 @@ const Formatters = {
 
   // Display order for the settings UI, most productive default first.
   CATEGORY_KEYS: [
-    'Development', 'Productivity', 'Research', 'Design', 'Communication',
-    'Other', 'News', 'Social', 'Shopping', 'Entertainment'
+    'Development', 'Productivity', 'AI', 'Research', 'Design', 'Education',
+    'Communication', 'Finance', 'Career', 'Other', 'News', 'Health', 'Travel',
+    'Social', 'Shopping', 'Entertainment'
   ],
 
   /**

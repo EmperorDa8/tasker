@@ -58,7 +58,7 @@ ICONS = [
     # Category glyphs (must cover every key in Formatters.getCategoryMeta)
     "code", "terminal", "design_services", "campaign", "groups", "forum",
     "mail", "shopping_bag", "newspaper", "movie", "public", "menu_book",
-    "school", "checklist",
+    "school", "checklist", "flight",
 
     # Role detection
     "badge", "work", "person_search", "psychology", "science", "smart_toy",

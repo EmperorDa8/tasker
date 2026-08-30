@@ -81,12 +81,18 @@
      Held here as well as in formatters.js so a chart, a pill and a PDF bar
      can never disagree about what "Development" looks like. */
   --cat-development: #5A3BE0;
+  --cat-ai: #7B4FD8;
   --cat-productivity: #A8760F;
   --cat-research: #24735A;
+  --cat-education: #2C6E9B;
   --cat-design: #B8478A;
   --cat-communication: #C05F3C;
+  --cat-career: #7A5C3D;
+  --cat-finance: #4E7A1F;
   --cat-news: #3F7A72;
   --cat-social: #34659F;
+  --cat-health: #B04A6E;
+  --cat-travel: #0E8A8A;
   --cat-shopping: #A9601F;
   --cat-entertainment: #A83C55;
   --cat-other: #6E6D69;

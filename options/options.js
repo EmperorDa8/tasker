@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     weightList: $('weightList'),
     resetWeights: $('resetWeightsBtn'),
     domainRuleList: $('domainRuleList'),
+    unrecognisedList: $('unrecognisedList'),
     addDomainRule: $('addDomainRuleBtn'),
 
     blacklist: $('blacklistedDomains'),
@@ -352,8 +353,85 @@ document.addEventListener('DOMContentLoaded', async () => {
     return map;
   }
 
+  /**
+   * The user's own long tail: sites that reached "Other" in the last three
+   * weeks, biggest first, each with a one-click category picker.
+   *
+   * Saving happens immediately rather than on the Save button. The row
+   * disappears the moment it is placed, so leaving it pending would show a
+   * list that disagrees with itself.
+   */
+  async function renderUnrecognised() {
+    let sites;
+    try {
+      sites = await send('GET_UNRECOGNISED_SITES');
+    } catch (err) {
+      el.unrecognisedList.textContent = '';
+      return;
+    }
+
+    el.unrecognisedList.textContent = '';
+
+    if (!sites.length) {
+      const done = document.createElement('p');
+      done.className = 'unknown-empty';
+      done.textContent = 'Nothing unrecognised - every site you visited in the last three weeks was categorised.';
+      el.unrecognisedList.appendChild(done);
+      return;
+    }
+
+    sites.forEach((site) => {
+      const row = document.createElement('div');
+      row.className = 'unknown-row';
+
+      const name = document.createElement('span');
+      name.className = 'unknown-domain';
+      name.textContent = site.domain;
+      name.title = site.domain;
+
+      const time = document.createElement('span');
+      time.className = 'unknown-time';
+      time.textContent = Formatters.formatDuration(site.seconds);
+
+      const select = document.createElement('select');
+      select.className = 'select';
+      const blank = document.createElement('option');
+      blank.value = '';
+      blank.textContent = 'Place this site…';
+      select.appendChild(blank);
+      Formatters.CATEGORY_KEYS.forEach((key) => {
+        if (key === 'Other') return;
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = Formatters.getCategoryMeta(key).label;
+        select.appendChild(option);
+      });
+
+      select.addEventListener('change', async () => {
+        if (!select.value) return;
+        // Written straight through as a site rule, which is the same mechanism
+        // the rules list below uses - so a choice made here shows up there and
+        // can be changed or removed in one place.
+        const current = await TaskerStorage.getSettings();
+        const rules = { ...(current.domainCategories || {}), [site.domain]: select.value };
+        await send('SAVE_SETTINGS', { settings: { domainCategories: rules } });
+
+        domainRules = Object.keys(rules).map(d => ({ domain: d, category: rules[d] }));
+        renderDomainRules();
+        row.remove();
+        toast(`${site.domain} is now ${Formatters.getCategoryMeta(select.value).label}`);
+      });
+
+      row.appendChild(name);
+      row.appendChild(time);
+      row.appendChild(select);
+      el.unrecognisedList.appendChild(row);
+    });
+  }
+
   renderWeights();
   renderDomainRules();
+  renderUnrecognised();
 
   /* -------------------------------------------------------------- privacy - */
 

@@ -19,7 +19,7 @@ Most people rebuild their week from memory. Timesheets, client invoices, status 
 ## Features
 
 - **Automatic tracking.** Time on the active tab is attributed to a domain and page title. No timers to start or stop. `chrome.idle` pauses tracking when you step away, so idle time is never counted as work.
-- **Automatic categorisation.** Development, Research, Productivity, Communication, Design, Media, Social, News, Shopping.
+- **Automatic categorisation.** Sixteen categories — Development, AI, Productivity, Research, Education, Design, Communication, Career, Finance, News, Health, Travel, Social, Shopping, Media — from a catalogue of over a thousand sites, plus hostname and page-title heuristics for everything not in it. Whatever still lands in "Unrecognised" is listed back to you in Settings, biggest first, to place in one click.
 - **Daily focus score.** A 0–100 index derived from how your time was distributed, plus manual accomplishment notes you log as they happen.
 - **Monthly recap hub.** Total focus time, active days, monthly focus score, milestones, and a category allocation breakdown.
 - **Branded PDF reports.** Daily logs and monthly recaps render as real vector PDFs — cover page, stat tiles, category meters, running header and page numbers — written by a dependency-free PDF writer in `utils/pdf.js`. A typical daily report is ~26 KB. Markdown remains available as a setting.

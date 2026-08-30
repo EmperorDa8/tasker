@@ -165,14 +165,23 @@ TaskerPDF.BRAND = {
   tagline: 'Activity intelligence, generated on your own device'
 };
 
+// Must match Formatters.getCategoryMeta() and the --cat-* tokens. A category
+// missing here renders as the grey "Other" bar in a report while showing its
+// real colour on screen, which reads as a bug in the report.
 TaskerPDF.CATEGORY_COLORS = {
   Development: '#5A3BE0',
+  AI: '#7B4FD8',
   Productivity: '#A8760F',
   Research: '#24735A',
+  Education: '#2C6E9B',
   Design: '#B8478A',
   Communication: '#C05F3C',
+  Career: '#7A5C3D',
+  Finance: '#4E7A1F',
   News: '#3F7A72',
   Social: '#34659F',
+  Health: '#B04A6E',
+  Travel: '#0E8A8A',
   Shopping: '#A9601F',
   Entertainment: '#A83C55',
   Other: '#6E6D69'

@@ -26,7 +26,7 @@ Tasker automatically records how you spend your time in Chrome and turns it into
 
 WHAT IT DOES
 - Tracks time on your active tab automatically. There are no timers to start or stop, and nothing to remember.
-- Sorts your browsing into categories as you go: Development, Research, Productivity, Communication, Design, and more.
+- Sorts your browsing into sixteen categories as you go - Development, AI, Productivity, Research, Education, Design, Communication, Career, Finance, News, Health, Travel, Social, Shopping and Media - recognising over a thousand sites out of the box. Anything it cannot place is listed back to you in Settings so you can categorise it in one click.
 - Gives you a daily focus score, and lets you log accomplishments the moment they happen so wins are not forgotten by Friday.
 - Turns each day into a branded PDF report - cover page, focus score, category charts, page numbers - that you can download or send as it is. Prefer plain text? Markdown is one setting away.
 - Writes a monthly recap report of your accomplishments, category mix, and the repositories or tickets your time went into.
@@ -133,5 +133,7 @@ Branded PDF reports. Daily logs and monthly recaps are now finished documents wi
 A work profile, built on evidence. Tasker reads the tools you spend time in and tells you what kind of work that resembles, with the evidence behind it. It says "not enough evidence yet" rather than guessing, and you can override it.
 
 A rebuilt interface. New design system across the popup, dashboard and settings, with sharper typography and a clearer layout.
+
+Far better categorisation. Sixteen categories instead of ten, and a site catalogue that recognises over a thousand sites rather than the few dozen it knew before.
 
 Drive reports are now filed into Daily Logs and Monthly Recaps subfolders.
