@@ -82,6 +82,12 @@ const TaskerAuth = {
     const j = res.json || {};
     if (res.status === 501) return serviceError('Accounts are not switched on yet.', 'not_configured');
     if (res.status === 429) return serviceError(j.message || 'Too many attempts. Try again in an hour.', 'rate_limited');
+    // The service only answers extensions on its allow-list. A copy loaded
+    // unpacked has its own ID, so it lands here until that ID is added.
+    if (res.status === 403 && j.error === 'forbidden_origin') {
+      return serviceError('The Tasker service does not recognise this copy of the extension. ' +
+        `Its ID (${chrome.runtime.id}) must be added to ALLOWED_EXTENSION_IDS.`, 'forbidden_origin');
+    }
     return serviceError(j.message || `Tasker returned ${res.status}.`, j.error || 'error');
   },
 
