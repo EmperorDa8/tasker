@@ -45,7 +45,7 @@ WHY INSTALL IT
 Most people rebuild their week from memory. Timesheets, client invoices, status updates, performance reviews — all written days later, from a vague recollection of what happened. Tasker keeps that record for you while you work. When someone asks what you got done last month, you have an answer instead of a guess.
 
 PRIVATE BY DESIGN
-Your browsing history stays on your device. Every site you visit, every page title, and every second tracked is stored in your browser's local storage. There is no Tasker account, no login, and no analytics. Your PDF reports are generated on your device too, and your work profile is worked out there and never sent anywhere at all.
+Your browsing history stays on your device. Every site you visit, every page title, and every second tracked is stored in your browser's local storage. Tracking needs no account and no login, and there are no analytics. An optional account exists only if you buy Tasker Pro, so your purchase follows you to a new computer. Your PDF reports are generated on your device too, and your work profile is worked out there and never sent anywhere at all.
 
 Two things leave your machine, both under your control. First, if you turn on Google Drive sync, your own reports are saved to a folder in your own Google Drive using Google's official sign-in - Tasker requests the minimum Drive permission available, so it can only see files it created and never the rest of your Drive. Second, if you leave AI monthly summaries switched on, Tasker sends category totals only - the month, your total hours, active days, and time per category - to write the narrative. No URLs, page titles, domains or notes are ever sent, and switching it off keeps recaps fully offline.
 
@@ -58,6 +58,14 @@ The work profile is an inference from your browsing, not a verified fact about y
 
 AI monthly summaries are included, with no API key or account to set up. A fair-use limit of 3 AI summaries per month applies. You can switch the feature off at any time in Settings, and recaps are then generated entirely on your device.
 
+## Notes for reviewers (the "Test instructions" box)
+
+> Every core feature (tracking, daily log, monthly recap, PDF report, Drive sync) works immediately after install with no account or login.
+>
+> The only gated feature is Tasker Pro (history older than 90 days, CSV export), which needs an optional account. To see it: Settings → Your plan → create an account with any email and a password of 8+ characters. Upgrade opens a hosted checkout on our payment provider Bachs in a new tab; no payment is needed to review anything else. Payment details are entered on Bachs' page, never in the extension.
+>
+> The extension's only network destination is https://tasker-extension.onrender.com, used for the optional AI summary, the optional account, and the Pro licence check. It never contacts any site the user visits, injects no content scripts, and has no broad host permissions.
+
 ## Single-purpose statement (for the CWS "single purpose" field)
 
 Tasker's single purpose is to track the user's own browsing activity time and turn it into daily and monthly activity summaries, which the user can optionally back up to their own Google Drive.
@@ -69,15 +77,15 @@ Everything the extension does serves that purpose and uses only the activity dat
 ## Permission justifications (paste into the Privacy practices tab)
 
 - **tabs** — Required to read the URL and title of the active tab so time spent can be attributed to the correct website. This is the core tracking function of the extension. Tab data is stored locally only.
-- **storage** — Stores all activity logs, user notes, and settings locally via chrome.storage. This is the extension's only data store; there is no external server.
+- **storage** — Stores all activity logs, user notes, and settings locally via chrome.storage. This is where all activity data lives; none of it is sent to a server.
 - **unlimitedStorage** — Activity logs accumulate over months of daily use and can exceed default storage quotas. Needed so long-term local history and monthly recaps are not truncated or lost.
 - **idle** — Detects when the user is away from the keyboard so idle time is excluded and tracked time stays accurate. No idle data is transmitted.
 - **identity** — Used solely to obtain a Google OAuth token (drive.file scope) when the user explicitly enables Google Drive sync, so their logs can be saved to their own Drive. Never used without user action.
-- **alarms** — Keeps the timer accurate. Chrome suspends an MV3 service worker after a few seconds of inactivity, so Tasker registers a repeating alarm (every 30 seconds) that wakes the worker to record elapsed time on the active tab; without it, time spent reading a single page goes uncounted. A second, six-hourly alarm runs the optional Drive sync and prunes history past the retention window.
+- **alarms** — Keeps the timer accurate. Chrome suspends an MV3 service worker after a few seconds of inactivity, so Tasker registers a repeating alarm (every 30 seconds) that wakes the worker to record elapsed time on the active tab; without it, time spent reading a single page goes uncounted. A second, six-hourly alarm runs the optional Drive sync and prunes free-plan history past the retention window. Two more serve the optional Pro purchase only: a 30-second alarm that exists only while a checkout the user opened is awaiting payment (it detects the payment and then removes itself), and a daily alarm that re-confirms an active Pro licence has not been refunded.
 
 **Note:** Version 1.3.0 adds branded PDF reports and the on-device work profile, and requests **no new permissions** for either. The PDF is generated locally from data already stored under `storage`, and the work profile is computed locally from that same data.
 
-**Note:** Tasker declares **one narrow host permission**, for its own summary-service endpoint only. Earlier drafts declared `<all_urls>`; it was removed because the `tabs` permission alone supplies the tab URL and title needed for time attribution. The extension injects no content scripts and never reads or modifies page content, and it has no host access to any site the user visits. If a reviewer asks why a tracker needs no broad host access, this is the answer.
+**Note:** Tasker declares **one narrow host permission**, for its own service endpoint only (AI summaries, optional accounts, and the Pro licence check). Earlier drafts declared `<all_urls>`; it was removed because the `tabs` permission alone supplies the tab URL and title needed for time attribution. The extension injects no content scripts and never reads or modifies page content, and it has no host access to any site the user visits. If a reviewer asks why a tracker needs no broad host access, this is the answer.
 
 ---
 
@@ -86,6 +94,10 @@ Everything the extension does serves that purpose and uses only the activity dat
 Data collected — check exactly these:
 - **Web history** (list of pages visited with titles and timestamps — stored locally on the user's device)
 - **User activity** (time-on-site / interaction timing — stored locally on the user's device)
+- **Personally identifiable information** (an email address, only if the user creates the optional account needed to buy Pro)
+- **Authentication information** (the optional account's password, passed to our authentication provider and never stored by the extension)
+
+Do **not** tick *Financial and payment information*: card, bank and mobile-money details are entered on the payment provider's own hosted page and never pass through the extension or our service.
 
 Certifications / attestations — answer:
 - Data is NOT sold to third parties. ✔ certify

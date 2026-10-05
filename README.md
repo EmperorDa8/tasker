@@ -2,7 +2,7 @@
 
 A local-first Chrome extension that records how you actually spend your time in the browser and turns it into something you can hand to someone: a branded PDF report for the day and a monthly recap, optionally backed up to your own Google Drive.
 
-No account. No login. No analytics. Your browsing history stays in `chrome.storage.local` on your machine.
+No account or login needed to track (an optional one exists only for Pro). No analytics. Your browsing history stays in `chrome.storage.local` on your machine.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ![Manifest V3](https://img.shields.io/badge/Chrome-Manifest%20V3-blue)
