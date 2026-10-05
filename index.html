@@ -358,6 +358,103 @@
   .step h3 { font-size: 21px; margin-bottom: 8px; }
   .step p { font-size: 15.5px; }
 
+  /* ---------- Pricing ---------- */
+  .plans {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    align-items: stretch;
+  }
+  .plan {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 34px 32px;
+    display: flex;
+    flex-direction: column;
+  }
+  .plan.is-pro {
+    background: var(--ink);
+    color: #CBB9BD;
+    position: relative;
+  }
+  .plan-name {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 14px;
+  }
+  .plan.is-pro .plan-name { color: var(--bright-yellow); }
+  .plan-price {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 46px;
+    line-height: 1;
+    letter-spacing: -1px;
+    color: var(--ink);
+  }
+  .plan.is-pro .plan-price { color: var(--bg); }
+  .plan-price .unit {
+    font-family: var(--mono);
+    font-size: 14px;
+    letter-spacing: 0.03em;
+    color: var(--muted);
+    margin-left: 8px;
+    font-weight: 400;
+  }
+  .plan.is-pro .plan-price .unit { color: #CBB9BD; }
+  .plan-sub {
+    font-size: 15px;
+    margin-top: 10px;
+    color: var(--body);
+  }
+  .plan.is-pro .plan-sub { color: #CBB9BD; }
+  .plan-list {
+    list-style: none;
+    margin: 24px 0 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+    flex: 1;
+  }
+  .plan-list li {
+    display: flex;
+    gap: 11px;
+    align-items: flex-start;
+    font-size: 15.5px;
+    line-height: 1.45;
+  }
+  .plan-list .tick {
+    width: 21px;
+    height: 21px;
+    border-radius: 50%;
+    background: var(--sage);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .plan.is-pro .plan-list .tick { background: var(--bright-yellow); }
+  .plan .btn { width: 100%; justify-content: center; }
+  .plan.is-pro .btn-primary { background: var(--bright-yellow); color: var(--ink); }
+  .plan-note {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.03em;
+    color: var(--muted);
+    margin-top: 14px;
+    text-align: center;
+  }
+  .plan.is-pro .plan-note { color: #9E8B8F; }
+  .pricing-foot {
+    margin-top: 26px;
+    font-size: 15px;
+    color: var(--body);
+    text-align: center;
+  }
+  .pricing-foot a { color: var(--ink); }
+
   /* ---------- Bottom CTA ---------- */
   .bottom-cta {
     text-align: center;
@@ -468,7 +565,8 @@
   @media (max-width: 860px) {
     .new-grid { grid-template-columns: 1fr; }
     .feature-grid, .privacy-grid { grid-template-columns: 1fr; }
-    .steps { grid-template-columns: 1fr; }
+    .plans { grid-template-columns: 1fr; }
+  .steps { grid-template-columns: 1fr; }
     .hero-cards { grid-template-columns: 1fr; }
     .privacy-panel { padding: 44px 28px; }
     .nav-links a.nav-hide { display: none; }
@@ -493,6 +591,7 @@
       <a class="nav-hide" href="#features">Features</a>
       <a class="nav-hide" href="#privacy">Privacy</a>
       <a class="nav-hide" href="#how">How it works</a>
+      <a class="nav-hide" href="#pro">Pricing</a>
       <a class="btn btn-primary" href="https://chromewebstore.google.com/detail/tasker-activity-tracker-g/nfdjclnanladapnhofbmnhclkhlndeak" target="_blank" rel="noopener">Add to Chrome</a>
     </nav>
   </div>
@@ -718,6 +817,57 @@
     </div>
   </section>
 
+  <!-- Pricing -->
+  <section id="pro">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Pricing</span>
+        <h2>Free forever. Pro when you need the whole year.</h2>
+        <p>Tasker records every day regardless of plan. The free tier shows you the last 90 days; Pro opens everything that is already on your machine.</p>
+      </div>
+
+      <div class="plans">
+        <div class="plan">
+          <span class="plan-name">Free</span>
+          <div class="plan-price">$0</div>
+          <p class="plan-sub">Everything you need to stop guessing where the day went.</p>
+          <ul class="plan-list">
+            <li><span class="tick"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2A0F14" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Automatic tracking, categories and focus score</li>
+            <li><span class="tick"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2A0F14" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Daily logs and monthly recaps</li>
+            <li><span class="tick"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2A0F14" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Branded PDF reports</li>
+            <li><span class="tick"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2A0F14" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Sync to your own Google Drive</li>
+            <li><span class="tick"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2A0F14" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>The last 90 days of history</li>
+            <li><span class="tick"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2A0F14" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>3 AI monthly summaries a month</li>
+            <li><span class="tick"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2A0F14" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Client tagging and per-client totals</li>
+          </ul>
+          <a class="btn btn-secondary" href="https://chromewebstore.google.com/detail/tasker-activity-tracker-g/nfdjclnanladapnhofbmnhclkhlndeak" target="_blank" rel="noopener">Add to Chrome</a>
+          <p class="plan-note">no account &middot; no card</p>
+        </div>
+
+        <div class="plan is-pro">
+          <span class="plan-name">Pro &mdash; one payment, yours for good</span>
+          <div class="plan-price">$29<span class="unit">once</span></div>
+          <p class="plan-sub">No subscription. Tasker runs on your machine, so there is nothing to rent.</p>
+          <ul class="plan-list">
+            <li><span class="tick"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2A0F14" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span><strong style="color:#F8FAF7">Unlimited history</strong> &mdash; every month you have tracked</li>
+            <li><span class="tick"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2A0F14" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span><strong style="color:#F8FAF7">CSV export</strong> &mdash; a row per day per site, with client hours</li>
+            <li><span class="tick"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2A0F14" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Export any range, not just the last 90 days</li>
+            <li><span class="tick"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2A0F14" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>15 AI monthly summaries a month</li>
+            <li><span class="tick"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2A0F14" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Every future update included</li>
+          </ul>
+          <button class="btn btn-primary" data-checkout type="button">Get Tasker Pro</button>
+          <p class="plan-note">30-day refund, no questions asked</p>
+        </div>
+      </div>
+
+      <p class="pricing-foot">
+        Bought it here? Open Tasker&rsquo;s <strong>Settings &rarr; Your plan</strong>, sign in or create an
+        account, and paste the order reference (it starts with <code style="font-family:var(--mono)">chk_</code>)
+        from your receipt. Buying from inside Tasker needs none of that. Questions: <a href="mailto:uabdul88@gmail.com">uabdul88@gmail.com</a>
+      </p>
+    </div>
+  </section>
+
   <!-- Bottom CTA -->
   <section>
     <div class="wrap">
@@ -749,6 +899,72 @@
     </div>
   </div>
 </footer>
+
+<!--
+  Checkout.
+
+  The button asks the Tasker service to open a hosted Bachs checkout and sends
+  the buyer there. No payment key lives on this page - the secret stays on the
+  service, which is the only thing that can create a checkout or say one was
+  paid. The buyer lands on thanks.html afterwards, where the order reference is
+  shown for pasting into the extension.
+
+  The service is on a free host that sleeps when idle, so the first click can
+  take a while; the button says so rather than appearing to do nothing.
+-->
+<script>
+  (function () {
+    var SERVICE = 'https://tasker-extension.onrender.com';
+    var buttons = document.querySelectorAll('[data-checkout]');
+    if (!buttons.length) return;
+
+    // Anonymous and per page-load. It only lets a payment be traced to a visit
+    // from the Bachs dashboard if someone writes in.
+    function visitorId() {
+      if (window.crypto && crypto.randomUUID) return 'web_' + crypto.randomUUID();
+      return 'web_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 12);
+    }
+
+    function fallback() {
+      window.location.href = 'mailto:uabdul88@gmail.com' +
+        '?subject=Tasker%20Pro&body=I%27d%20like%20to%20buy%20Tasker%20Pro.';
+    }
+
+    Array.prototype.forEach.call(buttons, function (btn) {
+      var label = btn.textContent;
+      btn.addEventListener('click', function () {
+        btn.disabled = true;
+        btn.textContent = 'Opening checkout\u2026';
+
+        var controller = new AbortController();
+        var timer = setTimeout(function () { controller.abort(); }, 60000);
+
+        fetch(SERVICE + '/v1/checkout/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ installId: visitorId() }),
+          signal: controller.signal
+        })
+          .then(function (res) {
+            if (!res.ok) throw new Error('status ' + res.status);
+            return res.json();
+          })
+          .then(function (data) {
+            // Only ever navigate to an https page.
+            if (!data || !/^https:\/\//i.test(data.checkoutUrl || '')) throw new Error('bad response');
+            window.location.href = data.checkoutUrl;
+          })
+          .catch(function () {
+            // Better than a button that silently does nothing.
+            btn.disabled = false;
+            btn.textContent = label;
+            fallback();
+          })
+          .then(function () { clearTimeout(timer); });
+      });
+    });
+  })();
+</script>
 
 </body>
 </html>

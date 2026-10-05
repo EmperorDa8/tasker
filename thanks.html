@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Thank you — Tasker Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600&family=Figtree:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F8FAF7; --surface: #F0F2EF; --card: #FFFFFF; --ink: #2A0F14;
+    --body: #544145; --muted: #766E70; --sage: #DDEEE4; --green: #3E7A5E;
+    --yellow: #FAE261; --border: rgba(42, 15, 20, 0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--body);
+    font-family: 'Figtree', system-ui, sans-serif; font-size: 17px; line-height: 1.6;
+    min-height: 100vh; display: grid; place-items: center; padding: 24px;
+  }
+  main {
+    background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+    padding: 40px 36px; max-width: 520px; width: 100%;
+  }
+  .tick {
+    width: 44px; height: 44px; border-radius: 50%; background: var(--sage);
+    display: grid; place-items: center; margin-bottom: 20px;
+  }
+  h1 {
+    font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600;
+    color: var(--ink); font-size: 30px; line-height: 1.15; margin-bottom: 10px;
+  }
+  p { margin-bottom: 14px; }
+  .ref {
+    display: flex; gap: 8px; align-items: center; margin: 18px 0 6px;
+    background: var(--surface); border-radius: 12px; padding: 10px 12px;
+  }
+  .ref code {
+    font-family: 'DM Mono', monospace; font-size: 15px; color: var(--ink);
+    flex: 1; overflow-wrap: anywhere;
+  }
+  button {
+    font: inherit; font-weight: 600; font-size: 14px; cursor: pointer;
+    background: var(--ink); color: #fff; border: 0; border-radius: 999px; padding: 8px 16px;
+  }
+  .small { font-size: 14px; color: var(--muted); }
+  ol { padding-left: 20px; margin-bottom: 14px; }
+  li { margin-bottom: 6px; }
+  a { color: var(--ink); }
+</style>
+</head>
+<body>
+<main>
+  <div class="tick" aria-hidden="true">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3E7A5E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  </div>
+  <h1>Thank you &mdash; payment received.</h1>
+  <p>If you started from inside the Tasker extension, Pro switches on by itself within a minute. Nothing to do.</p>
+
+  <div id="refBlock" hidden>
+    <p>Bought it from the website? Use this order reference to attach it to your Tasker account:</p>
+    <div class="ref">
+      <code id="refValue"></code>
+      <button id="copyBtn" type="button">Copy</button>
+    </div>
+    <ol>
+      <li>Open Tasker &rarr; <strong>Settings &rarr; Your plan</strong>.</li>
+      <li>Sign in, or create a free account &mdash; Pro is tied to it, so it follows you to any computer.</li>
+      <li>Paste the reference under <strong>Already paid? Restore Pro</strong>.</li>
+    </ol>
+    <p class="small">Keep it somewhere safe &mdash; it is also in your emailed receipt.</p>
+  </div>
+
+  <p class="small">Bank transfers can take a few minutes to clear. If Pro has not appeared after that,
+    write to <a href="mailto:uabdul88@gmail.com">uabdul88@gmail.com</a> and include the reference.</p>
+</main>
+
+<script>
+  (function () {
+    var id = new URLSearchParams(window.location.search).get('checkout_id') || '';
+    // Rendered with textContent, and only if it looks like one of ours.
+    if (!/^chk_[A-Za-z0-9]{8,64}$/.test(id)) return;
+
+    document.getElementById('refValue').textContent = id;
+    document.getElementById('refBlock').hidden = false;
+
+    document.getElementById('copyBtn').addEventListener('click', function () {
+      var btn = this;
+      function done() { btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = 'Copy'; }, 1800); }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(id).then(done, function () {});
+      }
+    });
+  })();
+</script>
+</body>
+</html>

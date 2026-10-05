@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Reset your password — Tasker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F8FAF7; --surface: #F0F2EF; --card: #FFFFFF; --ink: #2A0F14;
+    --body: #544145; --muted: #766E70; --green: #3E7A5E; --danger: #B3261E;
+    --border: rgba(42, 15, 20, 0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--body);
+    font-family: 'Figtree', system-ui, sans-serif; font-size: 17px; line-height: 1.6;
+    min-height: 100vh; display: grid; place-items: center; padding: 24px;
+  }
+  main {
+    background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+    padding: 40px 36px; max-width: 460px; width: 100%;
+  }
+  h1 {
+    font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600;
+    color: var(--ink); font-size: 28px; line-height: 1.15; margin-bottom: 10px;
+  }
+  p { margin-bottom: 14px; }
+  label { display: block; font-weight: 600; font-size: 14px; color: var(--ink); margin: 14px 0 6px; }
+  input {
+    width: 100%; font: inherit; padding: 10px 12px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--surface); color: var(--ink);
+  }
+  input:focus { outline: 2px solid #5F44E6; outline-offset: 1px; }
+  button {
+    font: inherit; font-weight: 600; font-size: 15px; cursor: pointer; margin-top: 20px;
+    background: var(--ink); color: #fff; border: 0; border-radius: 999px; padding: 10px 22px;
+  }
+  button:disabled { opacity: .6; cursor: default; }
+  .msg { margin-top: 16px; font-size: 15px; }
+  .msg.err { color: var(--danger); }
+  .msg.ok { color: var(--green); }
+  .small { font-size: 14px; color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Choose a new password</h1>
+  <p id="lead">Enter a new password for your Tasker account.</p>
+
+  <form id="form" novalidate hidden>
+    <label for="pw">New password</label>
+    <input id="pw" type="password" autocomplete="new-password" minlength="8" placeholder="8+ characters">
+    <label for="pw2">Confirm password</label>
+    <input id="pw2" type="password" autocomplete="new-password">
+    <button id="go" type="submit">Save password</button>
+  </form>
+
+  <p class="msg" id="msg" role="status"></p>
+  <p class="small" id="after" hidden>You can close this tab and sign in from Tasker&rsquo;s <strong>Settings &rarr; Your plan</strong>.</p>
+</main>
+
+<script>
+  (function () {
+    var SERVICE = 'https://tasker-extension.onrender.com';
+    var msg = document.getElementById('msg');
+    var form = document.getElementById('form');
+
+    function say(text, kind) { msg.textContent = text; msg.className = 'msg' + (kind ? ' ' + kind : ''); }
+
+    // The recovery link brings the visitor here signed in, with the session in the
+    // URL fragment (never the query string, so it stays out of server logs).
+    var frag = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    var token = frag.get('access_token');
+    var problem = frag.get('error_description');
+
+    // Take the token out of the address bar and history straight away.
+    if (window.history && history.replaceState) history.replaceState(null, '', window.location.pathname);
+
+    if (!token) {
+      document.getElementById('lead').textContent = '';
+      say(problem ? problem.replace(/\+/g, ' ') : 'This reset link is missing or has expired. Request a new one from Tasker.', 'err');
+      return;
+    }
+    form.hidden = false;
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var pw = document.getElementById('pw').value;
+      if (pw.length < 8) return say('Use at least 8 characters.', 'err');
+      if (pw !== document.getElementById('pw2').value) return say('The two passwords do not match.', 'err');
+
+      var btn = document.getElementById('go');
+      btn.disabled = true; say('Saving…');
+
+      var controller = new AbortController();
+      var timer = setTimeout(function () { controller.abort(); }, 60000);
+
+      fetch(SERVICE + '/v1/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessToken: token, password: pw }),
+        signal: controller.signal
+      })
+        .then(function (res) { return res.json().catch(function () { return {}; }).then(function (j) { return { ok: res.ok, j: j }; }); })
+        .then(function (r) {
+          if (!r.ok) throw new Error(r.j.message || 'That did not work. Request a new reset link.');
+          form.hidden = true;
+          document.getElementById('lead').textContent = '';
+          say('Password updated.', 'ok');
+          document.getElementById('after').hidden = false;
+        })
+        .catch(function (err) {
+          btn.disabled = false;
+          say(err.name === 'AbortError' ? 'Tasker took too long to answer. Try again.' : err.message, 'err');
+        })
+        .then(function () { clearTimeout(timer); });
+    });
+  })();
+</script>
+</body>
+</html>
