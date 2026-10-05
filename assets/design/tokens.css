@@ -14,6 +14,12 @@
    light surfaces, which looks broken rather than themed.
    ========================================================================== */
 
+/* The `hidden` attribute is only a user-agent `display: none`, which any class
+   that sets `display` (.field is flex, for one) silently beats - so an element
+   marked hidden stays on screen. Making it win here means `el.hidden = true`
+   does what it says on every surface, whatever the element's own styling. */
+[hidden] { display: none !important; }
+
 :root {
   /* --- Brand -------------------------------------------------------------
      The warm plum-and-cream palette the product has always used. Plum is the
