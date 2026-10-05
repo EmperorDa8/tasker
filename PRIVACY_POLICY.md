@@ -26,21 +26,22 @@ Tasker does **not** collect or handle: personally identifiable information beyon
 
 All tracked activity, notes, and reports are stored **locally in your browser** using `chrome.storage.local`. Your browsing history — the sites you visit, page titles, and time per site — never leaves your device. There is no account, no login, and no analytics.
 
-Tasker operates one small service, used only to write the optional AI monthly summary described in section 3. It receives category totals only, never your browsing history, and only when that feature is switched on.
+Tasker operates one small service, used only to write the optional AI monthly summary and to run optional accounts and Tasker Pro, both described in section 3. It never receives your browsing history, and it is contacted only when you use one of those two features.
 
 ## 3. When Data Leaves Your Device
 
-Data leaves your device **only** in these two cases, both fully under your control:
+Data leaves your device **only** in these three cases, all fully under your control:
 
 1. **Google Drive sync (optional).** When you click Sync (or enable automatic sync), Tasker uploads your daily log and monthly recap files (PDF documents by default, or Markdown if you choose) to a folder in **your own Google Drive account**, authorized through Google's official OAuth 2.0 sign-in (`chrome.identity`). The files are visible only to you under your Google account. Tasker requests the minimum Drive scope needed to create and update its own files. You can revoke this access at any time at [myaccount.google.com/permissions](https://myaccount.google.com/permissions). These reports are generated on your device; if the work profile is switched on, the report includes it, labelled as an inference.
 2. **AI monthly summaries (optional, switchable off).** When you open a monthly recap, Tasker asks our summary service to write a short narrative for that month. Only aggregate totals are sent: the month, your total tracked seconds, the number of active days, and seconds per category (e.g. "Development: 58 hours"). **No URLs, page titles, domains, notes, milestones or work profile are ever sent.** Your browsing history cannot be reconstructed from this data. A random identifier generated on your device accompanies the request purely to apply a fair-use limit; it is tied to no account and nothing identifying. The service forwards the totals to Google's Gemini API, returns the text, and does not retain the request. Turn this off in Settings and monthly recaps are generated entirely on your device.
+3. **A Tasker account, and buying Tasker Pro (only if you choose to upgrade).** Free use needs no account. To buy Pro you create one with an email address and password, so your purchase follows you to a new computer. Your email and password go to our service and on to our authentication provider, [Powabase](https://powabase.ai), which keeps the email, a salted hash of the password (never the password itself) and a record of which order you own. You pay on our payment provider [Bachs](https://bachs.io)'s own hosted page: **Tasker never sees your card, bank or mobile-money details**, and Bachs collects what it needs to take the payment and send a receipt, under its own privacy policy. While you are signed in, Tasker checks with our service about once a day that your order has not been refunded. The random on-device identifier described above is sent when you open a checkout, only so a payment can be traced if you write in. **Nothing about your browsing or activity is part of any of this.** Sign out in Settings and Pro leaves that device; to delete your account and its licence record, email uabdul88@gmail.com.
 
-Google's handling of data in both cases is governed by the [Google Privacy Policy](https://policies.google.com/privacy).
+Google's handling of data in the first two cases is governed by the [Google Privacy Policy](https://policies.google.com/privacy). Powabase's and Bachs' handling of account and payment data in the third is governed by their own privacy policies.
 
 ## 4. What We Never Do
 
 - We do **not** sell, rent, or trade your data.
-- We do **not** transfer your data to third parties (there is no server to transfer it from).
+- We do **not** transfer your browsing data to third parties — it stays on your device. The only third parties involved are Google (Drive sync and AI summaries, as above), and Powabase and Bachs (account and payment, only if you upgrade).
 - We do **not** use your data for advertising, ad targeting, marketing profiling, or creditworthiness/lending purposes.
 - We do **not** share, sell or transmit the work profile described in section 1. It is computed on your device, shown only to you, and leaves your device only inside a report you choose to sync to your own Google Drive.
 - We do **not** use your data for any purpose unrelated to the extension's single purpose of personal activity tracking.
@@ -63,7 +64,7 @@ Google's handling of data in both cases is governed by the [Google Privacy Polic
 | `idle` | To pause the timer when you step away from the computer, keeping stats honest. |
 | `identity` | To sign in to your own Google account for Drive sync, via Google's official OAuth flow. |
 | `alarms` | To keep the timer accurate. Chrome shuts a background extension down when idle, so Tasker sets a repeating alarm to wake up and record the time you have spent, roughly twice a minute. The same mechanism schedules optional automatic Drive backups. |
-| `tasker-extension.onrender.com` (host access) | Host access to Tasker's own summary service, and to no other site. Used only when AI monthly summaries are switched on, and it receives category totals only — never a URL, page title or note. With the feature off, Tasker contacts nothing. |
+| `tasker-extension.onrender.com` (host access) | Host access to Tasker's own service, and to no other site. Used when AI monthly summaries are switched on (category totals only — never a URL, page title or note) and when you create an account or upgrade to Pro (your email and password, then the order reference). With both unused, Tasker contacts nothing. |
 
 ## 7. Children's Privacy
 

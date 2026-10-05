@@ -117,11 +117,14 @@ Deploy it anywhere that runs Node — no install step, no build. Configuration i
 
 If the service is down or misconfigured, the extension silently falls back to its offline rule-based summary. Nothing breaks.
 
+The same service runs optional accounts ([Powabase](https://docs.powabase.ai)) and sells Pro through [Bachs](https://docs.bachs.io): it creates the hosted checkout with the secret key, asks Bachs whether it was paid, and records which account owns the licence. The extension holds no keys of any kind, and free use needs no account. See [server/README.md](server/README.md#accounts-and-licences-powabase).
+
 ## Running your own build
 
 To point a fork at your own infrastructure:
 
 1. **Summary service** — set `SUMMARY_SERVICE_URL` in `background/summarizer.js`, and update `host_permissions` in `manifest.json` to match your host.
+   For accounts and payments, also set the `POWABASE_*` and `BACHS_*` variables, run `server/db/001_licenses.sql`, and set the `SERVICE` constant in `index.html` and `reset.html`.
 2. **Google OAuth** — create an OAuth 2.0 client in the Google Cloud Console with the `https://www.googleapis.com/auth/drive.file` scope, and replace `oauth2.client_id` in `manifest.json`. A custom client ID can also be entered at runtime in the extension's Options page, with the redirect URI set to `https://<YOUR_EXTENSION_ID>.chromiumapp.org/`.
 
 The client ID committed here is a public OAuth identifier, not a secret — but it is bound to this extension's ID, so a fork needs its own.
