@@ -3,177 +3,474 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tasker - Settings & Options</title>
-  <link rel="stylesheet" href="options.css">
+  <title>Tasker Settings</title>
   <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../assets/design/tokens.css">
+  <link rel="stylesheet" href="options.css">
 </head>
 <body>
-  <div class="options-container">
-    <header class="header">
-      <div class="logo-box">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-        </svg>
-      </div>
-      <div>
-        <h1>Tasker Settings</h1>
-        <p>Configure Google Drive authentication, privacy rules, and AI summarization.</p>
-      </div>
-    </header>
+  <div class="shell">
 
-    <main class="main-form">
-      <!-- Quick Info Banner for Non-Technical Users -->
-      <section class="banner-card">
-        <div class="banner-icon">⚡</div>
-        <div class="banner-text">
-          <strong>Zero Configuration Needed!</strong>
-          <p>Tasker works automatically out of the box. Adjust settings below only if you want custom Google Drive folders or domain exclusions.</p>
+    <!-- ================= Sidebar ================= -->
+    <aside class="side">
+      <div class="side-brand">
+        <span class="brand-mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+        </span>
+        <span class="side-brand-text">
+          <strong>Tasker</strong>
+          <span>Settings</span>
+        </span>
+      </div>
+
+      <nav class="side-nav" id="sideNav">
+        <a class="side-link is-active" href="#sec-profile"><span data-icon="badge" data-size="sm"></span>Work profile</a>
+        <a class="side-link" href="#sec-reports"><span data-icon="picture_as_pdf" data-size="sm"></span>Reports &amp; Drive</a>
+        <a class="side-link" href="#sec-ai"><span data-icon="auto_awesome" data-size="sm"></span>Written summaries</a>
+        <a class="side-link" href="#sec-plan"><span data-icon="workspace_premium" data-size="sm"></span>Your plan</a>
+        <a class="side-link" href="#sec-scoring"><span data-icon="tune" data-size="sm"></span>Focus scoring</a>
+        <a class="side-link" href="#sec-privacy"><span data-icon="shield" data-size="sm"></span>Privacy</a>
+        <a class="side-link" href="#sec-shortcut"><span data-icon="keyboard" data-size="sm"></span>Shortcut</a>
+        <a class="side-link" href="#sec-data"><span data-icon="storage" data-size="sm"></span>Your data</a>
+      </nav>
+
+      <div class="side-foot">
+        <span data-icon="lock" data-size="sm"></span>
+        <p>Activity stays in this browser. Nothing is uploaded unless you ask for it.</p>
+      </div>
+    </aside>
+
+    <!-- ================= Content ================= -->
+    <main class="content">
+      <header class="content-head">
+        <div>
+          <h1>Settings</h1>
+          <p>Tasker works out of the box. Everything here is optional.</p>
+        </div>
+        <div class="head-actions">
+          <button id="resetDefaultsBtn" class="btn btn-quiet">
+            <span data-icon="refresh" data-size="sm"></span> Reset to defaults
+          </button>
+          <button id="saveSettingsBtn" class="btn btn-primary">
+            <span data-icon="check" data-size="sm"></span> Save changes
+          </button>
+        </div>
+      </header>
+
+      <!-- ---------------- Work profile ---------------- -->
+      <section class="card" id="sec-profile">
+        <div class="card-head">
+          <span class="card-icon"><span data-icon="badge" data-size="lg"></span></span>
+          <div>
+            <h2>Work profile</h2>
+            <p>What the tools in your browsing resemble &mdash; and what Tasker refuses to guess.</p>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="switch-row">
+            <label class="switch">
+              <input type="checkbox" id="workProfileEnabled" checked>
+              <span class="switch-track"><span class="switch-thumb"></span></span>
+            </label>
+            <div class="switch-copy">
+              <strong>Infer a work profile from my browsing</strong>
+              <span>
+                Runs entirely on this device against activity already stored here. It is never sent
+                anywhere &mdash; not to Tasker, not to the summary service, not into your Drive
+                reports unless you sync one.
+              </span>
+            </div>
+          </div>
+
+          <div class="profile-preview" id="workProfileBody">
+            <div class="wp-loading">Reading your recent activity&hellip;</div>
+          </div>
+
+          <div class="field" id="overrideField">
+            <label for="roleOverride">Set it yourself</label>
+            <span class="field-help">
+              Your answer replaces the inference everywhere &mdash; the popup, the dashboard and the
+              PDF, where it is labelled as stated by you rather than detected.
+            </span>
+            <div class="field-inline">
+              <select id="roleOverride" class="select"></select>
+              <button type="button" id="clearOverrideBtn" class="btn btn-quiet">
+                <span data-icon="close" data-size="sm"></span> Clear
+              </button>
+            </div>
+          </div>
+
+          <div class="note note-plain">
+            <span data-icon="info" data-size="sm"></span>
+            <p>
+              Tasker will report <strong>"not enough evidence yet"</strong> rather than guess. It needs
+              at least 45 minutes on recognisable tools, more than one kind of tool, four distinct
+              sites and three separate days &mdash; and when two profiles score too closely it shows
+              the shortlist instead of picking one.
+            </p>
+            <p style="margin-top: var(--sp-3); font-size: var(--fs-sm); color: var(--text-muted); line-height: var(--lh-normal);">
+              Job titles that describe the same work are reported as one profile with the other
+              names listed beside it. AI Engineer, Applied AI Engineer, GenAI Engineer and LLM
+              Engineer are the same tools in the same tabs, so browsing cannot separate them &mdash;
+              and the pay difference between those titles is not something Tasker should pretend to
+              detect.
+            </p>
+          </div>
         </div>
       </section>
 
-      <!-- Section 1: Google Drive Sync -->
-      <section class="card">
-        <div class="card-header">
-          <h2>☁️ Google Drive Cloud Backup</h2>
+      <!-- ---------------- Reports & Drive ---------------- -->
+      <section class="card" id="sec-reports">
+        <div class="card-head">
+          <span class="card-icon"><span data-icon="picture_as_pdf" data-size="lg"></span></span>
+          <div>
+            <h2>Reports &amp; Google Drive</h2>
+            <p>What gets written, in what format, and where it is filed.</p>
+          </div>
         </div>
+
         <div class="card-body">
-          <div class="form-group">
-            <label for="driveFolderName">Google Drive Storage Folder Name:</label>
-            <input type="text" id="driveFolderName" class="text-input" value="Tasker Activity Logs">
-            <span class="help-text">Your daily logs and monthly accomplishment reports will be saved in this folder on your Google Drive.</span>
+          <div class="field">
+            <label>Report format</label>
+            <span class="field-help">PDF is a finished document you can forward as is. Markdown is for piping into your own notes.</span>
+            <div class="segmented" id="driveFormat">
+              <button type="button" class="seg is-active" data-value="pdf">
+                <span data-icon="picture_as_pdf" data-size="sm"></span> Branded PDF
+              </button>
+              <button type="button" class="seg" data-value="markdown">
+                <span data-icon="description" data-size="sm"></span> Markdown
+              </button>
+              <button type="button" class="seg" data-value="both">
+                <span data-icon="content_copy" data-size="sm"></span> Both
+              </button>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label for="autoSyncDrive">Automatic Drive Sync:</label>
-            <div class="toggle-switch">
+          <div class="field">
+            <label for="driveFolderName">Drive folder</label>
+            <input type="text" id="driveFolderName" class="input" value="Tasker Activity Logs">
+            <span class="field-help">Created in your own Drive the first time you sync. Tasker can only see files it created.</span>
+          </div>
+
+          <div class="switch-row">
+            <label class="switch">
+              <input type="checkbox" id="driveOrganizeFolders" checked>
+              <span class="switch-track"><span class="switch-thumb"></span></span>
+            </label>
+            <div class="switch-copy">
+              <strong>File reports into subfolders</strong>
+              <span>Daily logs and monthly recaps get their own folders, so a year of history stays navigable.</span>
+            </div>
+          </div>
+
+          <div class="switch-row">
+            <label class="switch">
               <input type="checkbox" id="autoSyncDrive">
-              <label for="autoSyncDrive">Automatically sync daily notes & monthly recaps to Google Drive</label>
+              <span class="switch-track"><span class="switch-thumb"></span></span>
+            </label>
+            <div class="switch-copy">
+              <strong>Sync automatically</strong>
+              <span>Uploads today's report every few hours. Off by default, because turning it on means a Google sign-in.</span>
             </div>
+          </div>
+
+          <div class="field">
+            <button type="button" id="testDriveBtn" class="btn btn-quiet">
+              <span data-icon="cloud_sync" data-size="sm"></span> Test connection &amp; create folders
+            </button>
+            <p class="drive-result hidden" id="driveResult"></p>
           </div>
         </div>
       </section>
 
-      <!-- Section 2: AI Summarization Key -->
-      <section class="card">
-        <div class="card-header">
-          <h2>🤖 AI Monthly Summaries</h2>
+      <!-- ---------------- Written summaries ---------------- -->
+      <section class="card" id="sec-ai">
+        <div class="card-head">
+          <span class="card-icon"><span data-icon="auto_awesome" data-size="lg"></span></span>
+          <div>
+            <h2>Written monthly summaries</h2>
+            <p>A short narrative at the top of each monthly recap.</p>
+          </div>
         </div>
+
         <div class="card-body">
-          <div class="form-group">
-            <label for="aiSummariesEnabled">Written monthly summary:</label>
-            <div class="toggle-switch">
+          <div class="switch-row">
+            <label class="switch">
               <input type="checkbox" id="aiSummariesEnabled" checked>
-              <label for="aiSummariesEnabled">Let Tasker write a short narrative summary for each monthly recap</label>
+              <span class="switch-track"><span class="switch-thumb"></span></span>
+            </label>
+            <div class="switch-copy">
+              <strong>Let Tasker write a summary paragraph</strong>
+              <span>No API key or account needed. Turn this off and recaps are generated entirely offline.</span>
             </div>
-            <span class="help-text">
-              No API key or account needed. When you open a monthly recap, Tasker sends only
-              <strong>totals</strong> &mdash; the month, your total tracked hours, how many days were active,
-              and time per category. Your URLs, page titles, notes and milestones never leave this device.
-              Turn this off and recaps are generated entirely offline. Fair-use limit: 3 AI summaries per month.
+          </div>
+
+          <div class="note note-plain">
+            <span data-icon="shield" data-size="sm"></span>
+            <p>
+              Only <strong>totals</strong> leave this device: the month, your tracked hours, how many
+              days were active, and seconds per category. URLs, page titles, notes, milestones and
+              your work profile are never sent. Fair-use limit: 3 written summaries per month.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------------- Plan ---------------- -->
+      <section class="card" id="sec-plan">
+        <div class="card-head">
+          <span class="card-icon"><span data-icon="workspace_premium" data-size="lg"></span></span>
+          <div>
+            <h2>Your plan</h2>
+            <p>Free covers the last 90 days. Pro opens everything you have tracked.</p>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="plan-state" id="planState">
+            <span class="plan-badge" id="planBadge">Free</span>
+            <p id="planCopy">
+              Tasker is recording every day either way &mdash; the free plan simply shows
+              the most recent 90 of them.
+            </p>
+          </div>
+
+          <div class="field" id="accountSignedOut">
+            <label for="accountEmail">Account</label>
+            <div class="field-inline">
+              <input type="email" id="accountEmail" class="input" autocomplete="username"
+                     placeholder="you@example.com" spellcheck="false">
+              <input type="password" id="accountPassword" class="input" autocomplete="current-password"
+                     placeholder="Password (8+ characters)">
+            </div>
+            <div class="field-inline">
+              <button id="signInBtn" class="btn btn-primary">Sign in</button>
+              <button id="signUpBtn" class="btn btn-quiet">Create account</button>
+              <button id="forgotBtn" class="btn btn-quiet">Forgot password</button>
+            </div>
+            <span class="field-help">
+              Only needed for Pro, so your purchase follows you to a new computer. Tracking
+              never needs an account, and your browsing history never leaves your device.
+            </span>
+            <p class="plan-result" id="accountResult" hidden></p>
+          </div>
+
+          <div class="field" id="accountSignedIn" hidden>
+            <label>Account</label>
+            <div class="field-inline">
+              <strong id="accountEmailShown"></strong>
+              <button id="signOutBtn" class="btn btn-quiet">Sign out</button>
+            </div>
+            <span class="field-help" id="signOutHelp">
+              Signing out removes Pro from this device. Sign in again to bring it back &mdash;
+              your purchase is not affected.
             </span>
           </div>
+
+          <div id="planActivate">
+            <div class="field">
+              <label>Upgrade</label>
+              <div class="field-inline">
+                <button id="upgradeBtn" class="btn btn-primary">Upgrade to Pro</button>
+                <button id="reopenCheckoutBtn" class="btn btn-quiet" hidden>Reopen checkout</button>
+              </div>
+              <span class="field-help">
+                Opens a secure checkout in a new tab. Pay by card, bank transfer or mobile
+                money &mdash; Pro unlocks here by itself once the payment clears.
+                <a href="https://emperorda8.github.io/tasker-extension/#pro"
+                target="_blank" rel="noopener">See what it unlocks</a>.
+              </span>
+              <p class="plan-result" id="checkoutStatus" hidden></p>
+            </div>
+
+            <div class="field">
+              <label for="licenseReference">Already paid? Restore Pro</label>
+              <div class="field-inline">
+                <input type="text" id="licenseReference" class="input" spellcheck="false"
+                       placeholder="chk_..." autocomplete="off">
+                <button id="activateLicenseBtn" class="btn btn-quiet">Restore</button>
+              </div>
+              <span class="field-help">
+                Bought Pro on the website? Paste the order reference from the page you landed on, or from
+                your receipt, to attach it to this account. If you paid from inside Tasker there is nothing to do &mdash;
+                signing in on any computer brings Pro with it.
+              </span>
+              <p class="plan-result" id="planResult" hidden></p>
+            </div>
+          </div>
+
+          <div class="field" id="clientField">
+            <label>Clients</label>
+            <span class="field-help">
+              Tag the sites you work in, and Tasker can total your hours per client and
+              export them as CSV for invoicing. A site with no tag is reported as
+              <em>Unassigned</em> rather than guessed at.
+            </span>
+            <div id="clientList" class="client-list"></div>
+            <div class="field-inline">
+              <input type="text" id="newClientName" class="input" placeholder="Client name" autocomplete="off">
+              <button id="addClientBtn" class="btn btn-quiet">Add client</button>
+            </div>
+          </div>
+
         </div>
       </section>
 
-      <!-- Section 3: Focus Scoring -->
-      <section class="card">
-        <div class="card-header">
-          <h2>⚖️ What Counts as Productive</h2>
+      <!-- ---------------- Focus scoring ---------------- -->
+      <section class="card" id="sec-scoring">
+        <div class="card-head">
+          <span class="card-icon"><span data-icon="tune" data-size="lg"></span></span>
+          <div>
+            <h2>What counts as productive</h2>
+            <p>The focus score is a weighted average of where your time went.</p>
+          </div>
         </div>
+
         <div class="card-body">
-          <p class="section-intro">
-            Your focus score is a weighted average of where your time went. The defaults suit
-            a developer's week &mdash; if your job lives on LinkedIn, YouTube or Reddit, move
-            those up so a good day reads like one. Changes apply to every day, past and present:
+          <p class="lede">
+            The defaults suit a developer's week. If your job lives on LinkedIn, YouTube or Reddit,
+            move those up so a good day reads like one. Changes apply to every day, past and present:
             the score is always recalculated, never stored.
           </p>
 
           <div id="weightList" class="weight-list"></div>
 
-          <button type="button" class="preset-btn" id="resetWeightsBtn">Reset weights to defaults</button>
+          <button type="button" class="btn btn-quiet" id="resetWeightsBtn">
+            <span data-icon="refresh" data-size="sm"></span> Reset weights
+          </button>
 
-          <div class="form-group" style="margin-top: 26px;">
-            <label>Site Rules</label>
-            <span class="help-text">
-              Overrides the built-in guess for a site. Covers subdomains too, so
-              <code>linkedin.com</code> also matches <code>business.linkedin.com</code>.
+          <div class="field" style="margin-top: var(--sp-6);">
+            <label>Sites Tasker could not place</label>
+            <span class="field-help">
+              Tasker recognises well over a thousand sites, but no list covers
+              everything &mdash; there is always another internal tool or niche
+              site. These are yours, from the last three weeks, longest first.
+              Place one and it is remembered for good.
+            </span>
+            <div id="unrecognisedList" class="unknown-list"></div>
+          </div>
+
+          <div class="field" style="margin-top: var(--sp-5);">
+            <label>Site rules</label>
+            <span class="field-help">
+              Overrides the built-in guess for a site, subdomains included &mdash; so
+              <code>linkedin.com</code> also covers <code>business.linkedin.com</code>.
             </span>
             <div id="domainRuleList" class="rule-list"></div>
-            <button type="button" class="preset-btn" id="addDomainRuleBtn">+ Add site rule</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- Section 4: Privacy & Blacklist -->
-      <section class="card">
-        <div class="card-header">
-          <h2>🛡️ Privacy & Excluded Websites</h2>
-        </div>
-        <div class="card-body">
-          <div class="form-group">
-            <label for="blacklistedDomains">Excluded Domain Patterns (comma-separated):</label>
-            <textarea id="blacklistedDomains" class="textarea-input" rows="3" placeholder="bank, paypal, passwords, accounts.google.com"></textarea>
-            <span class="help-text">Websites matching these keywords are ignored and will <strong>never be tracked</strong>.</span>
-          </div>
-
-          <!-- 1-Click Privacy Presets -->
-          <div class="presets-box">
-            <span class="presets-title">1-Click Exclusion Presets:</span>
-            <div class="preset-buttons">
-              <button type="button" class="preset-btn" id="presetBankingBtn">🏦 Add Banking & Financial Sites</button>
-              <button type="button" class="preset-btn" id="presetAuthBtn">🔑 Add Password Managers & Auth</button>
-              <button type="button" class="preset-btn" id="presetPrivacyBtn">✉️ Add Email & Personal Health</button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Section 5: Keyboard Shortcut -->
-      <section class="card">
-        <div class="card-header">
-          <h2>⌨️ Keyboard Shortcut</h2>
-        </div>
-        <div class="card-body">
-          <div class="form-group">
-            <label>Log the current page as a win</label>
-            <span class="help-text">
-              Press <kbd class="kbd">Alt+Shift+L</kbd> to record whatever you are looking at as
-              an accomplishment, without opening anything. Chrome owns this binding, so it is
-              changed on Chrome's own shortcuts page.
-            </span>
-            <button type="button" class="preset-btn" id="openShortcutsBtn" style="margin-top: 10px;">
-              Change shortcut in Chrome
+            <button type="button" class="btn btn-quiet" id="addDomainRuleBtn">
+              <span data-icon="add" data-size="sm"></span> Add site rule
             </button>
           </div>
         </div>
       </section>
 
-      <!-- Section 6: Web Store Privacy Notice -->
-      <section class="card">
-        <div class="card-header">
-          <h2>🔒 User Data & Privacy Notice</h2>
+      <!-- ---------------- Privacy ---------------- -->
+      <section class="card" id="sec-privacy">
+        <div class="card-head">
+          <span class="card-icon"><span data-icon="shield" data-size="lg"></span></span>
+          <div>
+            <h2>Privacy &amp; excluded sites</h2>
+            <p>Sites matching these patterns are never recorded at all.</p>
+          </div>
         </div>
+
         <div class="card-body">
-          <p style="font-size:12px; color:#544145; line-height:1.6;">
-            <strong>Tasker is privacy-first and local by default.</strong> All tracked activity durations, daily notes, and monthly recaps are stored strictly on your local browser using <code>chrome.storage.local</code>. Your browsing history never leaves this device. Only two things are ever sent out, both optional and controlled by you above: your own reports uploaded to your own Google Drive when you enable sync, and — if written monthly summaries are on — category totals only, with no URLs, page titles or notes attached.
-          </p>
+          <div class="field">
+            <label for="blacklistedDomains">Excluded patterns</label>
+            <textarea id="blacklistedDomains" class="input textarea" rows="3"
+                      placeholder="bank, paypal, passwords, accounts.google.com"></textarea>
+            <span class="field-help">Comma separated. Matched anywhere in the URL, so <code>bank</code> covers every bank you use.</span>
+          </div>
+
+          <div class="field">
+            <label>One-click presets</label>
+            <div class="preset-row">
+              <button type="button" class="preset" id="presetBankingBtn">
+                <span data-icon="account_balance" data-size="sm"></span> Banking &amp; finance
+              </button>
+              <button type="button" class="preset" id="presetAuthBtn">
+                <span data-icon="lock" data-size="sm"></span> Password managers &amp; sign-in
+              </button>
+              <button type="button" class="preset" id="presetPrivacyBtn">
+                <span data-icon="mail" data-size="sm"></span> Email &amp; health
+              </button>
+            </div>
+          </div>
+
+          <div class="note note-plain">
+            <span data-icon="visibility_off" data-size="sm"></span>
+            <p>
+              Even on sites you have not excluded, Tasker keeps page titles out of the record for
+              banks, brokerages, mail, health and tax services &mdash; a title there tends to be the
+              content itself. That list is a safety net; this exclusion list is the guarantee.
+            </p>
+          </div>
         </div>
       </section>
 
-      <!-- Section 7: Save & Data Management -->
-      <div class="actions-row">
-        <button id="saveSettingsBtn" class="btn-primary">Save Settings</button>
-        <button id="resetDefaultsBtn" class="btn-secondary">Reset to Recommended</button>
-        <button id="exportDataBtn" class="btn-secondary">Export History (JSON)</button>
-        <button id="clearDataBtn" class="btn-danger">Clear Local History</button>
-      </div>
+      <!-- ---------------- Shortcut ---------------- -->
+      <section class="card" id="sec-shortcut">
+        <div class="card-head">
+          <span class="card-icon"><span data-icon="keyboard" data-size="lg"></span></span>
+          <div>
+            <h2>Keyboard shortcut</h2>
+            <p>Log whatever is on screen without opening anything.</p>
+          </div>
+        </div>
 
-      <div id="saveToast" class="toast hidden">Settings saved successfully!</div>
+        <div class="card-body">
+          <p class="lede">
+            Press <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>L</kbd> to record the current page as an
+            accomplishment. Chrome owns this binding, so it is changed on Chrome's own page.
+          </p>
+          <button type="button" class="btn btn-quiet" id="openShortcutsBtn">
+            <span data-icon="open_in_new" data-size="sm"></span> Change shortcut in Chrome
+          </button>
+        </div>
+      </section>
+
+      <!-- ---------------- Data ---------------- -->
+      <section class="card" id="sec-data">
+        <div class="card-head">
+          <span class="card-icon"><span data-icon="storage" data-size="lg"></span></span>
+          <div>
+            <h2>Your data</h2>
+            <p>All of it lives in this browser, and all of it is yours to take or delete.</p>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="data-actions">
+            <button type="button" class="btn btn-quiet" id="exportDataBtn">
+              <span data-icon="download" data-size="sm"></span> Export everything (JSON)
+            </button>
+            <button type="button" class="btn btn-danger" id="clearDataBtn">
+              <span data-icon="delete" data-size="sm"></span> Delete all local history
+            </button>
+          </div>
+          <span class="field-help">On the free plan, history older than 180 days is pruned automatically. Pro keeps everything.</span>
+        </div>
+      </section>
+
+      <div class="content-foot">
+        <button id="saveSettingsBtnBottom" class="btn btn-primary">
+          <span data-icon="check" data-size="sm"></span> Save changes
+        </button>
+      </div>
     </main>
   </div>
 
+  <div id="saveToast" class="toast hidden" role="status"></div>
+
+  <script src="../assets/icons/icons.js"></script>
   <script src="../utils/formatters.js"></script>
   <script src="../utils/storage.js"></script>
+  <script src="../utils/license.js"></script>
+  <script src="../utils/ui.js"></script>
   <script src="options.js"></script>
 </body>
 </html>

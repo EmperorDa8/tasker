@@ -1,0 +1,336 @@
+/* ============================================================================
+   Tasker Design System - shared tokens
+   ----------------------------------------------------------------------------
+   One source of truth for colour, type, spacing, radius and elevation across
+   the popup, the dashboard and the settings page. Each surface used to carry
+   its own copy of the palette, which is how the three of them drifted apart.
+
+   Loaded before every surface stylesheet, so a surface only ever declares
+   layout and its own components - never a raw hex value.
+
+   The palette is light, deliberately and only. `color-scheme: light` below is
+   what holds that: without it a viewer whose OS is set to dark gets dark
+   native form controls, scrollbars and date pickers rendered against these
+   light surfaces, which looks broken rather than themed.
+   ========================================================================== */
+
+/* The `hidden` attribute is only a user-agent `display: none`, which any class
+   that sets `display` (.field is flex, for one) silently beats - so an element
+   marked hidden stays on screen. Making it win here means `el.hidden = true`
+   does what it says on every surface, whatever the element's own styling. */
+[hidden] { display: none !important; }
+
+:root {
+  /* --- Brand -------------------------------------------------------------
+     The warm plum-and-cream palette the product has always used. Plum is the
+     action colour - it is what a primary button and a selected nav item are
+     painted in - and indigo is reserved for links, focus and selection, so
+     the two never compete for the same job.
+
+     The accent surfaces below (soft yellow, pink, sage, lilac, peach) are the
+     character of the thing. They are tints, not decoration: a card painted in
+     one of them is saying what kind of card it is. */
+  --brand-ink: #2A0F14;
+  --brand-ink-soft: #4E2134;
+  --brand-accent: #5F44E6;
+  --brand-accent-hover: #4E35C9;
+  --brand-accent-press: #4029AB;
+  --brand-accent-tint: #EAE5FC;
+  --brand-accent-ring: rgba(95, 68, 230, 0.32);
+  --brand-gold: #FAE261;
+  --brand-gold-tint: #FDF1B0;
+
+  /* --- Accent surfaces ---------------------------------------------------- */
+  --accent-yellow: #FAE261;
+  --accent-yellow-soft: #FDF1B0;
+  --accent-pink: #FFDCEF;
+  --accent-peach: #FFAB8D;
+  --accent-sage: #DDEEE4;
+  --accent-lilac: #EAE5FC;
+  --accent-rose: #B5485E;
+
+  /* --- Action -------------------------------------------------------------
+     Named separately from the brand so "what a primary button looks like" is
+     one decision in one place rather than a colour repeated across three
+     stylesheets. */
+  --action-bg: var(--brand-ink);
+  --action-bg-hover: var(--brand-ink-soft);
+  --action-fg: #FFFFFF;
+
+  /* --- Neutrals ----------------------------------------------------------
+     Warm and very slightly green, which is what stops the cream background
+     reading as dirty white and keeps the plum text from looking purple. */
+  --n-0:  #FFFFFF;
+  --n-25: #FCFDFB;
+  --n-50: #F8FAF7;
+  --n-100:#F0F2EF;
+  --n-150:#E8EBE6;
+  --n-200:#DFE3DC;
+  --n-300:#C7CDC4;
+  --n-400:#9C9496;
+  --n-500:#766E70;
+  --n-600:#635B5D;
+  --n-700:#544145;
+  --n-800:#3B2A2E;
+  --n-900:#2A0F14;
+  --n-950:#1C0A0D;
+
+  /* --- Semantic surfaces -------------------------------------------------- */
+  --bg-app: var(--n-50);
+  --bg-raised: var(--n-0);
+  --bg-sunken: var(--n-100);
+  --bg-inset: var(--n-150);
+  --bg-hover: rgba(42, 15, 20, 0.045);
+  --bg-active: rgba(42, 15, 20, 0.075);
+  --bg-overlay: rgba(42, 15, 20, 0.45);
+
+  --text-strong: var(--n-900);
+  --text-body: var(--n-700);
+  --text-muted: var(--n-500);
+  --text-faint: var(--n-400);
+  --text-inverse: var(--n-0);
+  --text-accent: var(--brand-accent);
+
+  --border-hairline: rgba(42, 15, 20, 0.09);
+  --border-soft: rgba(42, 15, 20, 0.06);
+  --border-strong: rgba(42, 15, 20, 0.17);
+
+  /* --- Status ------------------------------------------------------------- */
+  --ok: #3E7A5E;
+  --ok-tint: #DDEEE4;
+  --warn: #A1740F;
+  --warn-tint: #FDF1B0;
+  --danger: #B5485E;
+  --danger-tint: #FFE0E6;
+  --info: #5F44E6;
+  --info-tint: #EAE5FC;
+
+  /* --- Category palette ---------------------------------------------------
+     Held here as well as in formatters.js so a chart, a pill and a PDF bar
+     can never disagree about what "Development" looks like. */
+  --cat-development: #5A3BE0;
+  --cat-ai: #7B4FD8;
+  --cat-productivity: #A8760F;
+  --cat-research: #24735A;
+  --cat-education: #2C6E9B;
+  --cat-design: #B8478A;
+  --cat-communication: #C05F3C;
+  --cat-career: #7A5C3D;
+  --cat-finance: #4E7A1F;
+  --cat-news: #3F7A72;
+  --cat-social: #34659F;
+  --cat-health: #B04A6E;
+  --cat-travel: #0E8A8A;
+  --cat-shopping: #A9601F;
+  --cat-entertainment: #A83C55;
+  --cat-other: #6E6D69;
+
+  /* --- Type --------------------------------------------------------------- */
+  --font-display: 'Bricolage Grotesque', 'Inter', system-ui, sans-serif;
+  --font-ui: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'DM Mono', 'SFMono-Regular', Consolas, monospace;
+
+  --fs-2xs: 10px;
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  --fs-md: 13px;
+  --fs-lg: 15px;
+  --fs-xl: 18px;
+  --fs-2xl: 22px;
+  --fs-3xl: 28px;
+  --fs-4xl: 36px;
+
+  --lh-tight: 1.15;
+  --lh-snug: 1.35;
+  --lh-normal: 1.55;
+
+  /* Optical letterspacing: display type tightens as it grows, small caps
+     labels open up so they stay readable at 10-11px. */
+  --ls-display: -0.022em;
+  --ls-heading: -0.012em;
+  --ls-label: 0.06em;
+
+  /* --- Space -------------------------------------------------------------- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-7: 32px;
+  --sp-8: 40px;
+  --sp-9: 56px;
+
+  /* --- Radius ------------------------------------------------------------- */
+  --r-xs: 6px;
+  --r-sm: 9px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 22px;
+  --r-full: 9999px;
+
+  /* --- Elevation ----------------------------------------------------------
+     Two-part shadows: a tight contact shadow plus a wide ambient one. A
+     single blurred box-shadow is what makes cards look like stickers. */
+  --el-1: 0 1px 2px rgba(20, 19, 19, 0.05);
+  --el-2: 0 1px 2px rgba(20, 19, 19, 0.05), 0 4px 12px -4px rgba(20, 19, 19, 0.10);
+  --el-3: 0 2px 4px rgba(20, 19, 19, 0.05), 0 12px 28px -10px rgba(20, 19, 19, 0.16);
+  --el-4: 0 4px 8px rgba(20, 19, 19, 0.06), 0 24px 48px -16px rgba(20, 19, 19, 0.22);
+  --el-focus: 0 0 0 3px var(--brand-accent-ring);
+
+  /* --- Motion -------------------------------------------------------------- */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
+}
+
+/* The whole UI is light. Native controls must follow, whatever the OS says. */
+:root {
+  color-scheme: light;
+}
+
+/* ---------------------------------------------------------------------------
+   Primitives shared by every surface.
+   ------------------------------------------------------------------------- */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--fs-md);
+  line-height: var(--lh-normal);
+  color: var(--text-body);
+  background: var(--bg-app);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'cv05' 1, 'ss03' 1;
+}
+
+h1, h2, h3, h4 {
+  margin: 0;
+  font-family: var(--font-display);
+  color: var(--text-strong);
+  font-weight: 600;
+  letter-spacing: var(--ls-heading);
+  line-height: var(--lh-tight);
+}
+
+p { margin: 0; }
+
+/* Numerals that do not jitter as a timer ticks. */
+.tnum, .stat-value, .time-display {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+/* --- Icon primitive -------------------------------------------------------
+   TaskerIcons paints an <svg> into any [data-icon]. Sizing and colour live
+   here so markup never repeats width/height/fill. */
+[data-icon] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 1em;
+  height: 1em;
+  font-size: 16px;
+  line-height: 0;
+  color: inherit;
+}
+
+[data-icon] > svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  fill: currentColor;
+}
+
+[data-icon][data-size="xs"] { font-size: 12px; }
+[data-icon][data-size="sm"] { font-size: 14px; }
+[data-icon][data-size="md"] { font-size: 16px; }
+[data-icon][data-size="lg"] { font-size: 20px; }
+[data-icon][data-size="xl"] { font-size: 26px; }
+
+/* --- Focus ----------------------------------------------------------------
+   One visible ring everywhere, keyboard only. Removing outlines without a
+   replacement is the single most common accessibility regression in a
+   redesign, so the ring is defined once at the root. */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--el-focus);
+  border-radius: var(--r-sm);
+}
+
+/* --- Scrollbars ----------------------------------------------------------- */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--n-300) transparent;
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: var(--r-full);
+}
+::-webkit-scrollbar-thumb:hover { background-color: var(--text-faint); background-clip: content-box; }
+
+/* --- Shared atoms --------------------------------------------------------- */
+
+.t-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  font-weight: 500;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.t-card {
+  background: var(--bg-raised);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--r-lg);
+  box-shadow: var(--el-1);
+}
+
+.t-divider {
+  height: 1px;
+  background: var(--border-soft);
+  border: 0;
+  margin: var(--sp-4) 0;
+}
+
+/* Evidence / confidence chips, used by the role panel on every surface. */
+.t-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border-radius: var(--r-full);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-soft);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  color: var(--text-body);
+  white-space: nowrap;
+}
+
+.t-chip.is-accent { background: var(--brand-accent-tint); border-color: transparent; color: var(--brand-accent); }
+.t-chip.is-ok     { background: var(--ok-tint);   border-color: transparent; color: var(--ok); }
+.t-chip.is-warn   { background: var(--warn-tint); border-color: transparent; color: var(--warn); }
+.t-chip.is-muted  { background: var(--bg-sunken); color: var(--text-muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

@@ -1,646 +1,867 @@
 /**
- * Tasker - Main Dashboard Controller
+ * Tasker - dashboard controller
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Navigation Tabs
-  const navItems = document.querySelectorAll('.nav-item');
-  const tabContents = document.querySelectorAll('.tab-content');
-  const pageTitle = document.getElementById('pageTitle');
-  const pageSubtitle = document.getElementById('pageSubtitle');
+  const $ = id => document.getElementById(id);
 
-  // Topbar Actions
-  const quickSyncBtn = document.getElementById('quickSyncBtn');
-  const optionsPageBtn = document.getElementById('optionsPageBtn');
+  const el = {
+    navItems: document.querySelectorAll('.nav-item'),
+    tabs: document.querySelectorAll('.tab'),
+    pageTitle: $('pageTitle'),
+    pageSubtitle: $('pageSubtitle'),
+    quickSync: $('quickSyncBtn'),
+    downloadTodayPdf: $('downloadTodayPdfBtn'),
+    optionsPage: $('optionsPageBtn'),
+    toast: $('dashToast'),
 
-  // Overview Tab Elements
-  const overviewTodayTime = document.getElementById('overviewTodayTime');
-  const overviewProductivity = document.getElementById('overviewProductivity');
-  const overviewHighlightsCount = document.getElementById('overviewHighlightsCount');
-  const overviewDriveStatus = document.getElementById('overviewDriveStatus');
-  const coverageBanner = document.getElementById('coverageBanner');
-  const coverageHeadline = document.getElementById('coverageHeadline');
-  const coverageDetail = document.getElementById('coverageDetail');
-  const workRollupRow = document.getElementById('workRollupRow');
-  const workRollupList = document.getElementById('workRollupList');
-  const categoryChartContainer = document.getElementById('categoryChartContainer');
-  const topDomainsGroup = document.getElementById('topDomainsGroup');
-  const todayActivityGroup = document.getElementById('todayActivityGroup');
+    coverageBanner: $('coverageBanner'),
+    coverageHeadline: $('coverageHeadline'),
+    coverageDetail: $('coverageDetail'),
+    overviewTodayTime: $('overviewTodayTime'),
+    overviewProductivity: $('overviewProductivity'),
+    overviewHighlights: $('overviewHighlightsCount'),
+    overviewDriveStatus: $('overviewDriveStatus'),
+    categoryChart: $('categoryChartContainer'),
+    topDomains: $('topDomainsGroup'),
+    workRollupRow: $('workRollupRow'),
+    workRollupList: $('workRollupList'),
+    todayActivity: $('todayActivityGroup'),
 
-  // Monthly Recap Tab Elements
-  const monthSelect = document.getElementById('monthSelect');
-  const syncMonthToDriveBtn = document.getElementById('syncMonthToDriveBtn');
-  const copyMonthMarkdownBtn = document.getElementById('copyMonthMarkdownBtn');
-  const downloadMonthMarkdownBtn = document.getElementById('downloadMonthMarkdownBtn');
-  const recapMonthTitle = document.getElementById('recapMonthTitle');
-  const recapExecutiveSummary = document.getElementById('recapExecutiveSummary');
-  const recapTotalTime = document.getElementById('recapTotalTime');
-  const recapDaysCount = document.getElementById('recapDaysCount');
-  const recapScore = document.getElementById('recapScore');
-  const monthlyMilestonesList = document.getElementById('monthlyMilestonesList');
-  const monthlyActivityGroup = document.getElementById('monthlyActivityGroup');
-  const monthlyCategoryBars = document.getElementById('monthlyCategoryBars');
-  const monthlyMarkdownPreview = document.getElementById('monthlyMarkdownPreview');
+    workProfileBody: $('workProfileBody'),
+    openProfileSettings: $('openProfileSettingsBtn'),
 
-  // Daily Activity Logs Tab Elements
-  const dailyDatePicker = document.getElementById('dailyDatePicker');
-  const syncDayToDriveBtn = document.getElementById('syncDayToDriveBtn');
-  const dailyFocusDetails = document.getElementById('dailyFocusDetails');
-  const dailyNoteInput = document.getElementById('dailyNoteInput');
-  const addDailyNoteBtn = document.getElementById('addDailyNoteBtn');
-  const dailyNotesList = document.getElementById('dailyNotesList');
+    monthSelect: $('monthSelect'),
+    downloadMonthPdf: $('downloadMonthPdfBtn'),
+    copyMonthMarkdown: $('copyMonthMarkdownBtn'),
+    syncMonthToDrive: $('syncMonthToDriveBtn'),
+    recapMonthTitle: $('recapMonthTitle'),
+    recapSummary: $('recapExecutiveSummary'),
+    recapTotalTime: $('recapTotalTime'),
+    recapDaysCount: $('recapDaysCount'),
+    recapScore: $('recapScore'),
+    monthlyMilestones: $('monthlyMilestonesList'),
+    monthlyCategoryBars: $('monthlyCategoryBars'),
+    monthlyActivity: $('monthlyActivityGroup'),
+    monthlyMarkdown: $('monthlyMarkdownPreview'),
 
-  // Drive Sync Tab Elements
-  const driveFolderNameInput = document.getElementById('driveFolderNameInput');
-  const autoSyncFreqSelect = document.getElementById('autoSyncFreqSelect');
-  const saveDriveSettingsBtn = document.getElementById('saveDriveSettingsBtn');
-  const testDriveConnBtn = document.getElementById('testDriveConnBtn');
-  const sidebarDriveFolder = document.getElementById('sidebarDriveFolder');
+    exportCsv: $('exportCsvBtn'),
+    monthlyClients: $('monthlyClients'),
+
+    recapLock: $('recapLock'),
+    recapLockTitle: $('recapLockTitle'),
+    recapLockCopy: $('recapLockCopy'),
+    recapUnlock: $('recapUnlockBtn'),
+    recapUpsell: $('recapUpsell'),
+    recapUpsellCopy: $('recapUpsellCopy'),
+    recapUpsellCta: $('recapUpsellCta'),
+    recapUpsellDismiss: $('recapUpsellDismiss'),
+    // Everything in the recap tab that the lock card stands in for.
+    recapContent: Array.from(
+      document.querySelectorAll('#tab-monthly-recap > .recap-hero, #tab-monthly-recap > .row, #tab-monthly-recap > .card')
+    ),
+
+    datePicker: $('dailyDatePicker'),
+    downloadDayPdf: $('downloadDayPdfBtn'),
+    syncDayToDrive: $('syncDayToDriveBtn'),
+    dailyFocusDetails: $('dailyFocusDetails'),
+    dailyNoteInput: $('dailyNoteInput'),
+    addDailyNote: $('addDailyNoteBtn'),
+    dailyNotes: $('dailyNotesList'),
+
+    sidebarDriveFolder: $('sidebarDriveFolder'),
+    driveSummaryFolder: $('driveSummaryFolder'),
+    driveSummaryFormat: $('driveSummaryFormat'),
+    driveSummaryFiling: $('driveSummaryFiling'),
+    driveSummaryAuto: $('driveSummaryAuto'),
+    testDriveConn: $('testDriveConnBtn'),
+    openDriveSettings: $('openDriveSettingsBtn'),
+    driveResult: $('driveResult')
+  };
 
   let currentMonthKey = Formatters.getMonthKey();
-  let currentSelectedDateKey = Formatters.getDateKey();
+  let currentDateKey = Formatters.getDateKey();
+  let monthlyMarkdownText = '';
 
-  // Dashboard toast helper
-  const dashboardToast = (() => {
-    const el = document.createElement('div');
-    el.style.cssText = 'position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#2A0F14; color:#fff; padding:8px 18px; border-radius:9999px; font-size:12px; font-weight:700; box-shadow:0 4px 12px rgba(0,0,0,0.2); z-index:9999; display:none; transition:opacity 0.3s;';
-    document.body.appendChild(el);
-    return {
-      show(msg) {
-        el.textContent = msg;
-        el.style.display = 'block';
-        clearTimeout(el._timer);
-        el._timer = setTimeout(() => { el.style.display = 'none'; }, 2400);
-      }
-    };
-  })();
+  /* ------------------------------------------------------------ helpers - */
 
-  // 1. Initialize Nav Menu Click Handlers
-  navItems.forEach(item => {
-    item.addEventListener('click', () => {
-      const tab = item.getAttribute('data-tab');
-      switchTab(tab);
-    });
-  });
-
-  function switchTab(tabId) {
-    navItems.forEach(n => n.classList.remove('active'));
-    tabContents.forEach(c => c.classList.remove('active'));
-
-    const activeNav = document.querySelector(`.nav-item[data-tab="${tabId}"]`);
-    const activeTab = document.getElementById(`tab-${tabId}`);
-
-    if (activeNav) activeNav.classList.add('active');
-    if (activeTab) activeTab.classList.add('active');
-
-    // Update Header Text
-    const tabTitles = {
-      'overview': { title: 'Overview Dashboard', sub: 'Monitor active focus time, daily trends, and top categories.' },
-      'monthly-recap': { title: 'Monthly Accomplishment Recap', sub: 'Comprehensive monthly summary of achievements, focus metrics, and highlights.' },
-      'daily-logs': { title: 'Daily Activity Logs & Journal', sub: 'Inspect detailed web logs and custom journal notes for any date.' },
-      'drive-sync': { title: 'Google Drive Integration Settings', sub: 'Configure automatic background backup to your Google Drive.' }
-    };
-
-    if (tabTitles[tabId]) {
-      pageTitle.textContent = tabTitles[tabId].title;
-      pageSubtitle.textContent = tabTitles[tabId].sub;
-    }
-
-    // Refresh specific tab contents
-    if (tabId === 'overview') loadOverviewData();
-    if (tabId === 'monthly-recap') loadMonthlyRecapData(currentMonthKey);
-    if (tabId === 'daily-logs') loadDailyLogData(currentSelectedDateKey);
+  function toast(message, isError) {
+    el.toast.textContent = message;
+    el.toast.classList.remove('hidden');
+    el.toast.style.background = isError ? 'var(--danger)' : '';
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => el.toast.classList.add('hidden'), 3000);
   }
 
-  // 2. Setup Topbar Actions
-  quickSyncBtn.addEventListener('click', async () => {
-    const originalHTML = quickSyncBtn.innerHTML;
-    quickSyncBtn.disabled = true;
-    quickSyncBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg><span>Syncing...</span>`;
-    try {
-      const res = await chrome.runtime.sendMessage({ action: 'SYNC_DRIVE_TODAY' });
-      if (res && res.success) {
-        dashboardToast.show('Today\'s log synced to Google Drive!');
-      } else {
-        alert('Google Drive Sync Notice:\n' + (res.error || 'Please ensure you are signed in to Google Chrome.'));
-      }
-    } catch (e) {
-      alert('Google Drive Sync Notice:\nPlease ensure you are signed into your Chrome browser profile with a Google Account.');
-    } finally {
-      quickSyncBtn.disabled = false;
-      quickSyncBtn.innerHTML = originalHTML;
+  async function send(action, payload) {
+    const res = await chrome.runtime.sendMessage({ action, ...(payload || {}) });
+    if (!res || !res.success) {
+      const err = new Error((res && res.error) || 'The extension did not respond');
+      err.code = res && res.code;
+      throw err;
     }
-  });
+    return res.data;
+  }
 
-  optionsPageBtn.addEventListener('click', () => {
-    if (chrome.runtime.openOptionsPage) {
-      chrome.runtime.openOptionsPage();
-    } else {
-      window.open(chrome.runtime.getURL('options/options.html'));
-    }
-  });
+  function icon(name, size) {
+    return TaskerIcons.markup(name, size || 'sm');
+  }
 
   /**
-   * Show what today's total does not include.
+   * Run an async button action with a pending state that is always cleared.
+   */
+  async function withPending(button, label, task) {
+    const original = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = `<span data-icon="sync" data-size="sm" class="spin"></span> ${Formatters.escapeHtml(label)}`;
+    TaskerIcons.hydrate(button);
+    try {
+      return await task();
+    } finally {
+      button.innerHTML = original;
+      button.disabled = false;
+      TaskerIcons.hydrate(button);
+    }
+  }
+
+  function openOptions() {
+    if (chrome.runtime.openOptionsPage) chrome.runtime.openOptionsPage();
+    else window.open(chrome.runtime.getURL('options/options.html'));
+  }
+
+  /** One meter row: name, value and a proportion bar. */
+  function meterRow(name, value, fraction, color, glyph) {
+    const pct = Math.max(0, Math.min(100, Math.round(fraction * 100)));
+    const glyphMarkup = glyph
+      ? `<span class="meter-glyph" style="background:${glyph.bg}; color:${glyph.color}"
+              data-icon="${glyph.icon}" data-size="sm"></span>`
+      : '';
+    return `
+      <div class="meter">
+        <div class="meter-top">
+          <span class="meter-name">${glyphMarkup}${Formatters.escapeHtml(name)}</span>
+          <span class="meter-value">${Formatters.escapeHtml(value)}</span>
+        </div>
+        <div class="meter-track">
+          <div class="meter-fill" style="width:${pct}%; background:${color}"></div>
+        </div>
+      </div>`;
+  }
+
+  function emptyNote(message) {
+    return `<p class="empty-note">${Formatters.escapeHtml(message)}</p>`;
+  }
+
+  /* --------------------------------------------------------------- tabs - */
+
+  const TAB_COPY = {
+    'overview': {
+      title: 'Overview',
+      sub: "Today's focus time, categories and what you actually worked on."
+    },
+    'work-profile': {
+      title: 'Work profile',
+      sub: 'What your browsing resembles, the evidence behind it, and where it stops short.'
+    },
+    'monthly-recap': {
+      title: 'Monthly recap',
+      sub: 'The month as a document: milestones, category mix and a branded PDF.'
+    },
+    'daily-logs': {
+      title: 'Daily logs',
+      sub: 'Any single day in detail, with the notes attached to it.'
+    },
+    'drive-sync': {
+      title: 'Google Drive',
+      sub: 'Where reports are filed, in what format, and what Tasker can see.'
+    }
+  };
+
+  function switchTab(tabId) {
+    el.navItems.forEach(n => n.classList.toggle('active', n.getAttribute('data-tab') === tabId));
+    el.tabs.forEach(t => t.classList.toggle('active', t.id === `tab-${tabId}`));
+
+    const copy = TAB_COPY[tabId];
+    if (copy) {
+      el.pageTitle.textContent = copy.title;
+      el.pageSubtitle.textContent = copy.sub;
+    }
+
+    // The topbar's PDF and Sync buttons act on today, which only makes sense on
+    // the tabs that are about today. Elsewhere each tab carries its own.
+    const todayActions = tabId === 'overview' || tabId === 'work-profile';
+    el.downloadTodayPdf.classList.toggle('hidden', !todayActions);
+    el.quickSync.classList.toggle('hidden', !todayActions);
+
+    if (tabId === 'overview') loadOverview();
+    if (tabId === 'work-profile') loadWorkProfile();
+    if (tabId === 'monthly-recap') loadMonthlyRecap(currentMonthKey);
+    if (tabId === 'daily-logs') loadDailyLog(currentDateKey);
+    if (tabId === 'drive-sync') loadDriveSummary();
+  }
+
+  el.navItems.forEach((item) => {
+    item.addEventListener('click', () => switchTab(item.getAttribute('data-tab')));
+  });
+
+  /* ------------------------------------------------------------ overview - */
+
+  /**
+   * Say what today's total does not include.
    *
-   * Stays hidden until there is a long enough span to reconcile - on a short
-   * morning the gap is noise, and a banner that always fires is one nobody reads.
+   * Hidden until there is a long enough span to reconcile: on a short morning
+   * the gap is noise, and a banner that always fires is one nobody reads.
    */
   function renderCoverage(dayData) {
     const coverage = Formatters.computeCoverage(dayData || {});
     if (!coverage) {
-      coverageBanner.classList.add('hidden');
+      el.coverageBanner.classList.add('hidden');
+      return;
+    }
+    el.coverageHeadline.textContent =
+      `Browser time only - ${coverage.coveragePercent}% of this span is visible here`;
+    el.coverageDetail.textContent = Formatters.formatCoverageNote(coverage);
+    el.coverageBanner.classList.remove('hidden');
+  }
+
+  function renderCategories(container, categories, totalSeconds) {
+    const keys = Object.keys(categories || {})
+      .filter(k => categories[k] > 0)
+      .sort((a, b) => categories[b] - categories[a]);
+
+    if (keys.length === 0) {
+      container.innerHTML = emptyNote('Nothing tracked yet.');
       return;
     }
 
-    coverageHeadline.textContent =
-      `Browser time only — ${coverage.coveragePercent}% of your day is visible here`;
-    coverageDetail.textContent = Formatters.formatCoverageNote(coverage);
-    coverageBanner.classList.remove('hidden');
+    container.innerHTML = keys.map((key) => {
+      const seconds = categories[key];
+      const meta = Formatters.getCategoryMeta(key);
+      const fraction = totalSeconds > 0 ? seconds / totalSeconds : 0;
+      return meterRow(
+        meta.label,
+        `${Formatters.formatDuration(seconds)} · ${Math.round(fraction * 100)}%`,
+        fraction,
+        meta.color,
+        { icon: meta.icon, bg: meta.bgColor, color: meta.color }
+      );
+    }).join('');
+
+    TaskerIcons.hydrate(container);
+  }
+
+  function renderTopDomains(domains) {
+    const sorted = Object.keys(domains || {})
+      .sort((a, b) => domains[b] - domains[a])
+      .slice(0, 8);
+
+    if (sorted.length === 0) {
+      el.topDomains.innerHTML = emptyNote('No sites recorded yet.');
+      return;
+    }
+
+    el.topDomains.innerHTML = sorted.map(domain => `
+      <div class="list-row">
+        <span>${Formatters.escapeHtml(domain)}</span>
+        <span class="mono">${Formatters.formatDuration(domains[domain])}</span>
+      </div>`).join('');
   }
 
   /**
    * Time grouped by the repo or ticket it went into.
    *
-   * The whole card is hidden when nothing resolves to a repo or ticket - for a
-   * marketer or a student it never applies, and an empty "Repos & Tickets" panel
-   * would just be a permanent reminder that the tool was built for someone else.
+   * The whole card stays hidden when nothing resolves to either - for a
+   * marketer or a student it never applies, and an empty "Repositories &
+   * tickets" panel is a permanent reminder that the tool was built for
+   * somebody else.
    */
-  function renderWorkRollup(dayData) {
-    const groups = Formatters.rollupWork(dayData || {}, 8);
-    workRollupList.textContent = '';
-
+  function renderWorkRollup(source) {
+    const groups = Formatters.rollupWork(source || {}, 8);
     if (groups.length === 0) {
-      workRollupRow.classList.add('hidden');
+      el.workRollupRow.classList.add('hidden');
       return;
     }
 
-    groups.forEach((group) => {
-      const row = document.createElement('div');
-      row.className = 'rollup-row';
-
-      const main = document.createElement('div');
-      main.className = 'rollup-main';
-
-      const key = document.createElement('div');
-      key.className = 'rollup-key';
-      const kind = document.createElement('span');
-      kind.className = `rollup-kind ${group.type}`;
-      kind.textContent = group.type;
-      key.appendChild(kind);
-      key.appendChild(document.createTextNode(group.key));
-
-      main.appendChild(key);
-
+    el.workRollupList.innerHTML = groups.map((group) => {
       const detail = Formatters.formatRollupItems(group);
-      if (detail) {
-        const items = document.createElement('div');
-        items.className = 'rollup-items';
-        items.textContent = detail;
-        main.appendChild(items);
-      }
+      return `
+        <div class="rollup">
+          <div class="rollup-main">
+            <span class="rollup-key">
+              <span class="rollup-kind ${Formatters.escapeHtml(group.type)}">${Formatters.escapeHtml(group.type)}</span>
+              ${Formatters.escapeHtml(group.key)}
+            </span>
+            ${detail ? `<span class="rollup-items">${Formatters.escapeHtml(detail)}</span>` : ''}
+          </div>
+          <span class="rollup-time">${Formatters.formatDuration(group.seconds)}</span>
+        </div>`;
+    }).join('');
 
-      const time = document.createElement('div');
-      time.className = 'rollup-time';
-      time.textContent = Formatters.formatDuration(group.seconds);
-
-      row.appendChild(main);
-      row.appendChild(time);
-      workRollupList.appendChild(row);
-    });
-
-    workRollupRow.classList.remove('hidden');
-  }
-
-  // 3. Load Overview Tab Data
-  async function loadOverviewData() {
-    try {
-      const res = await chrome.runtime.sendMessage({ action: 'GET_STATUS' });
-      if (res && res.success && res.data) {
-        const d = res.data;
-        overviewTodayTime.textContent = d.formattedTime;
-        overviewProductivity.textContent = Formatters.formatScore(d.dayData.productivityScore, ' / 100');
-        overviewHighlightsCount.textContent = `${d.highlightsCount} items`;
-        overviewDriveStatus.textContent = d.lastSync ? 'Synced Today' : 'Ready';
-
-        renderCoverage(d.dayData);
-        renderWorkRollup(d.dayData);
-        renderOverviewCategories(d.dayData.categories || {}, d.totalSeconds || 0);
-        renderOverviewTopDomains(d.dayData.domains || {});
-        renderActivityList(
-          todayActivityGroup,
-          Formatters.rankActivities(d.dayData, 12),
-          'No activity recorded yet today.'
-        );
-
-        // Settings sync to sidebar
-        if (d.settings && d.settings.googleDriveFolderName) {
-          sidebarDriveFolder.textContent = d.settings.googleDriveFolderName;
-          driveFolderNameInput.value = d.settings.googleDriveFolderName;
-        }
-      }
-    } catch (err) {
-      console.warn('Unable to load overview status:', err);
-    }
-  }
-
-  function renderOverviewCategories(categoriesObj, totalSecs) {
-    categoryChartContainer.innerHTML = '';
-    const keys = Object.keys(categoriesObj).sort((a,b) => categoriesObj[b] - categoriesObj[a]);
-
-    if (keys.length === 0) {
-      categoryChartContainer.innerHTML = `<p style="color:#9C9496; text-align:center; padding: 20px;">No activity logged for today yet.</p>`;
-      return;
-    }
-
-    keys.forEach(catKey => {
-      const seconds = categoriesObj[catKey];
-      const meta = Formatters.getCategoryMeta(catKey);
-      const percentage = totalSecs > 0 ? Math.round((seconds / totalSecs) * 100) : 0;
-
-      const row = document.createElement('div');
-      row.className = 'chart-row';
-      row.innerHTML = `
-        <div class="chart-row-meta">
-          <span style="color: ${meta.color}">${Formatters.escapeHtml(catKey)}</span>
-          <span>${Formatters.formatDuration(seconds)} (${percentage}%)</span>
-        </div>
-        <div class="chart-bar-bg">
-          <div class="chart-bar-fill" style="width: ${percentage}%; background-color: ${meta.color};"></div>
-        </div>
-      `;
-      categoryChartContainer.appendChild(row);
-    });
-  }
-
-  function renderOverviewTopDomains(domainsObj) {
-    topDomainsGroup.innerHTML = '';
-    const sorted = Object.keys(domainsObj).sort((a,b) => domainsObj[b] - domainsObj[a]).slice(0, 5);
-
-    if (sorted.length === 0) {
-      topDomainsGroup.innerHTML = `<p style="color:#9C9496; text-align:center; padding:20px;">No domain activity yet.</p>`;
-      return;
-    }
-
-    sorted.forEach(domain => {
-      const seconds = domainsObj[domain];
-      const div = document.createElement('div');
-      div.className = 'domain-item';
-      div.innerHTML = `
-        <span class="domain-name">${Formatters.escapeHtml(domain)}</span>
-        <span class="domain-time">${Formatters.formatDuration(seconds)}</span>
-      `;
-      topDomainsGroup.appendChild(div);
-    });
+    el.workRollupRow.classList.remove('hidden');
   }
 
   /**
-   * Render the "what you worked on" list.
-   * Shared by the Overview tab and the Monthly Recap tab - both show the same
-   * shape of row, only the source data differs.
+   * The "what you worked on" list, shared by the overview, the month and the
+   * daily log - all three show the same shape of row.
    */
-  function renderActivityList(container, activities, emptyMessage) {
-    container.innerHTML = '';
-
+  function renderActivities(container, activities, emptyMessage) {
     if (!activities || activities.length === 0) {
-      container.innerHTML = `<p style="color:#9C9496; text-align:center; padding:20px;">${Formatters.escapeHtml(emptyMessage)}</p>`;
+      container.innerHTML = emptyNote(emptyMessage);
       return;
     }
 
-    activities.forEach(item => {
+    // Every interpolated value below is page-controlled (titles, URLs), so all
+    // of it goes through escapeHtml.
+    container.innerHTML = activities.map((item) => {
       const meta = Formatters.getCategoryMeta(item.category);
       const visits = item.visits > 1 ? `${item.visits} visits` : '1 visit';
-      const div = document.createElement('div');
-      div.className = 'activity-item';
-      // Every interpolated value here is page-controlled (titles, URLs), so all
-      // of it goes through escapeHtml.
-      div.innerHTML = `
-        <span class="activity-action" style="background:${meta.bgColor}; color:${meta.color};">${Formatters.escapeHtml(item.action)}</span>
-        <div class="activity-main">
-          <span class="activity-label">${Formatters.escapeHtml(item.label)}</span>
-          <span class="activity-meta">${Formatters.escapeHtml(item.domain || '')} · ${visits}</span>
-        </div>
-        <span class="activity-time">${Formatters.formatDuration(item.seconds)}</span>
-      `;
-      container.appendChild(div);
-    });
+      const where = item.domain ? `${Formatters.escapeHtml(item.domain)} · ` : '';
+      return `
+        <div class="activity">
+          <span class="activity-action" style="background:${meta.bgColor}; color:${meta.color}">
+            ${Formatters.escapeHtml(item.action)}
+          </span>
+          <div class="activity-main">
+            <span class="activity-label" title="${Formatters.escapeHtml(item.label)}">${Formatters.escapeHtml(item.label)}</span>
+            <span class="activity-meta">${where}${visits}</span>
+          </div>
+          <span class="activity-time">${Formatters.formatDuration(item.seconds)}</span>
+        </div>`;
+    }).join('');
   }
 
-  // 4. Monthly Recap Tab Setup & Populate Months
-  populateMonthSelect();
-
-  function populateMonthSelect() {
-    monthSelect.innerHTML = '';
-    const now = new Date();
-    for (let i = 0; i < 6; i++) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const mKey = Formatters.getMonthKey(d);
-      const mLabel = Formatters.formatMonthDisplay(mKey);
-      const opt = document.createElement('option');
-      opt.value = mKey;
-      opt.textContent = mLabel;
-      if (i === 0) opt.selected = true;
-      monthSelect.appendChild(opt);
-    }
-  }
-
-  monthSelect.addEventListener('change', (e) => {
-    currentMonthKey = e.target.value;
-    loadMonthlyRecapData(currentMonthKey);
-  });
-
-  async function loadMonthlyRecapData(monthKey) {
-    recapMonthTitle.textContent = `${Formatters.formatMonthDisplay(monthKey)} Recap`;
-    monthlyMarkdownPreview.textContent = 'Generating monthly summary report...';
-
+  async function loadOverview() {
     try {
-      const res = await chrome.runtime.sendMessage({ action: 'GET_MONTHLY_RECAP', monthKey });
-      if (res && res.success && res.data) {
-        const recap = res.data;
-        const stats = recap.monthStats;
+      const data = await send('GET_STATUS');
+      el.overviewTodayTime.textContent = data.formattedTime;
+      el.overviewProductivity.textContent = Formatters.formatScore(data.dayData.productivityScore, ' / 100');
+      el.overviewHighlights.textContent = String(data.highlightsCount || 0);
+      el.overviewDriveStatus.textContent = data.lastSync ? 'Synced today' : 'Not synced';
 
-        recapTotalTime.textContent = Formatters.formatDuration(stats.totalSeconds || 0);
-        recapDaysCount.textContent = `${stats.daysTrackedCount || 0} days`;
-        recapScore.textContent = Formatters.formatScore(stats.monthlyScore, '%');
+      renderCoverage(data.dayData);
+      renderWorkRollup(data.dayData);
+      renderCategories(el.categoryChart, data.dayData.categories || {}, data.totalSeconds || 0);
+      renderTopDomains(data.dayData.domains || {});
+      renderActivities(el.todayActivity, Formatters.rankActivities(data.dayData, 12),
+        'No activity recorded yet today.');
 
-        // Executive summary text. The score clause is dropped entirely when
-        // there is not enough data, rather than padded with a placeholder.
-        const scoreClause = stats.monthlyScore === null || stats.monthlyScore === undefined
-          ? ''
-          : `, maintaining an overall focus score of ${stats.monthlyScore}%`;
-        recapExecutiveSummary.textContent = stats.aiSummaryParagraph ||
-          `During ${Formatters.formatMonthDisplay(monthKey)}, you tracked ${stats.daysTrackedCount || 0} active days with a total focus duration of ${Formatters.formatDuration(stats.totalSeconds || 0)}. Your top domain category was ${stats.topCategory || 'Development'}${scoreClause}.`;
-
-        // Render Milestones
-        renderMonthlyMilestones(stats.milestones || []);
-
-        renderActivityList(
-          monthlyActivityGroup,
-          stats.topActivities || [],
-          'No detailed activity recorded for this month.'
-        );
-
-        // Render Monthly Category Bars
-        renderMonthlyCategoryBars(stats.categories || {}, stats.totalSeconds || 0);
-
-        // Render Markdown Preview
-        monthlyMarkdownPreview.textContent = recap.markdown || '';
+      if (data.settings && data.settings.googleDriveFolderName) {
+        el.sidebarDriveFolder.textContent = data.settings.googleDriveFolderName;
       }
     } catch (err) {
-      console.error('Failed to generate monthly recap:', err);
+      console.warn('Tasker dashboard: could not load overview', err);
+      el.categoryChart.innerHTML = emptyNote('The extension is waking up. Try again in a moment.');
     }
   }
 
-  function renderMonthlyMilestones(milestonesArr) {
-    monthlyMilestonesList.innerHTML = '';
-    if (milestonesArr.length === 0) {
-      monthlyMilestonesList.innerHTML = `<li style="color:#9C9496; text-align:center; padding: 15px;">No major milestones logged yet for this month.</li>`;
+  /* -------------------------------------------------------- work profile - */
+
+  async function loadWorkProfile() {
+    try {
+      const profile = await send('GET_WORK_PROFILE');
+      TaskerUI.renderWorkProfile(el.workProfileBody, profile, { onCorrect: openOptions });
+      TaskerIcons.hydrate(el.workProfileBody);
+    } catch (err) {
+      el.workProfileBody.innerHTML = `<p class="wp-note">${Formatters.escapeHtml(err.message)}</p>`;
+    }
+  }
+
+  el.openProfileSettings.addEventListener('click', openOptions);
+
+  /* ------------------------------------------------------- monthly recap - */
+
+  async function populateMonthSelect() {
+    const now = new Date();
+    const pro = await TaskerLicense.isPro();
+    el.monthSelect.textContent = '';
+
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = Formatters.getMonthKey(d);
+      const option = document.createElement('option');
+      option.value = key;
+
+      // Locked months stay selectable. Hiding them would leave the user
+      // wondering where their year went; marking them explains it.
+      const locked = !pro && TaskerLicense.monthState(key) !== 'open';
+      option.textContent = Formatters.formatMonthDisplay(key) + (locked ? ' — locked' : '');
+
+      if (i === 0) option.selected = true;
+      el.monthSelect.appendChild(option);
+    }
+  }
+
+  /** Swap the recap body for the lock card, or back. */
+  function setRecapLocked(locked) {
+    el.recapContent.forEach(node => { node.hidden = locked; });
+    el.recapLock.hidden = !locked;
+    [el.downloadMonthPdf, el.copyMonthMarkdown, el.syncMonthToDrive, el.exportCsv]
+      .forEach(btn => { if (btn) btn.disabled = locked; });
+    if (locked) el.recapUpsell.hidden = true;
+  }
+
+  function renderRecapLock(monthKey, info) {
+    const label = Formatters.formatMonthDisplay(monthKey);
+    const days = TaskerLicense.FREE_HISTORY_DAYS;
+
+    el.recapLockTitle.textContent = `${label} is outside your ${days}-day window`;
+    el.recapLockCopy.textContent = info.state === 'partial'
+      // A clipped month would under-report itself, which is worse than saying so.
+      ? `Your free history covers the last ${days} days, which starts part-way through ` +
+        `${label}. A recap built from only part of the month would under-count it, so ` +
+        `Tasker holds it back rather than showing you a wrong total.`
+      : `Free installs can open the last ${days} days of history. ${label} is older than that.`;
+
+    setRecapLocked(true);
+  }
+
+  /**
+   * Raise the upgrade question, but only once the recap has proved useful.
+   */
+  async function maybeShowUpsell() {
+    if (!(await TaskerLicense.shouldPromptUpgrade())) {
+      el.recapUpsell.hidden = true;
+      return;
+    }
+    el.recapUpsellCopy.textContent =
+      `You have read recaps for more than one month now. Tasker Pro keeps every month ` +
+      `open instead of the last ${TaskerLicense.FREE_HISTORY_DAYS} days, and adds ` +
+      `client tagging and CSV export for invoicing.`;
+    // The href is the fallback if the click handler never runs; the handler
+    // below opens a real checkout.
+    el.recapUpsellCta.href = TaskerLicense.UPGRADE_URL;
+    el.recapUpsell.hidden = false;
+    TaskerIcons.hydrate(el.recapUpsell);
+  }
+
+  el.recapUpsellDismiss.addEventListener('click', async () => {
+    el.recapUpsell.hidden = true;
+    await TaskerLicense.dismissPrompt();
+  });
+
+  /**
+   * Open a checkout. If the payment service cannot be reached the buyer still
+   * gets somewhere useful - the pricing page - instead of a dead button.
+   */
+  async function startUpgrade() {
+    try {
+      await send('START_CHECKOUT');
+      toast('Checkout opened in a new tab. Pro unlocks here once you have paid.');
+    } catch (err) {
+      if (err.code === 'signin_required') {
+        // Buying needs an account, and the sign-in form lives in Settings.
+        toast('Sign in first \u2014 opening Settings.');
+        chrome.tabs.create({ url: chrome.runtime.getURL('options/options.html#sec-plan') });
+      } else {
+        toast(err.message, true);
+        window.open(TaskerLicense.UPGRADE_URL, '_blank', 'noopener');
+      }
+    }
+  }
+
+  el.recapUnlock.addEventListener('click', startUpgrade);
+
+  el.recapUpsellCta.addEventListener('click', (e) => {
+    e.preventDefault();
+    startUpgrade();
+  });
+
+  // The worker finishes the unlock after the buyer pays, in another tab, so the
+  // page has to notice on its own that what it is showing is now stale.
+  chrome.storage.onChanged.addListener((changes, area) => {
+    const license = changes[TaskerLicense.LICENSE_KEY];
+    if (area === 'local' && license && license.newValue && !license.oldValue) {
+      location.reload();
+    }
+  });
+
+  function renderMilestones(milestones) {
+    if (!milestones || milestones.length === 0) {
+      el.monthlyMilestones.innerHTML = `<li>${emptyNote('Nothing logged for this month yet.')}</li>`;
       return;
     }
 
-    milestonesArr.forEach((m, idx) => {
-      const li = document.createElement('li');
-      li.className = 'milestone-item';
-      li.innerHTML = `
-        <div class="milestone-badge">${idx + 1}</div>
+    el.monthlyMilestones.innerHTML = milestones.map((m, index) => `
+      <li class="milestone">
+        <span class="milestone-badge">${index + 1}</span>
         <div class="milestone-body">
-          <strong>${Formatters.escapeHtml(m.title)} ${m.date ? `<span style="font-size:11px; font-weight:normal; color:#766E70;">(${Formatters.escapeHtml(m.date)})</span>` : ''}</strong>
-          <p>${Formatters.escapeHtml(m.description || m.detail || 'Accomplished key task.')}</p>
+          <strong>
+            ${Formatters.escapeHtml(m.title || 'Accomplishment')}
+            ${m.date ? `<time>${Formatters.escapeHtml(m.date)}</time>` : ''}
+          </strong>
+          ${m.description ? `<p>${Formatters.escapeHtml(m.description)}</p>` : ''}
         </div>
-      `;
-      monthlyMilestonesList.appendChild(li);
-    });
+      </li>`).join('');
   }
 
-  function renderMonthlyCategoryBars(categoriesObj, totalSecs) {
-    monthlyCategoryBars.innerHTML = '';
-    const keys = Object.keys(categoriesObj).sort((a,b) => categoriesObj[b] - categoriesObj[a]);
+  async function loadMonthlyRecap(monthKey) {
+    el.recapMonthTitle.textContent = Formatters.formatMonthDisplay(monthKey);
+    el.recapSummary.textContent = 'Generating the recap…';
+    el.monthlyMarkdown.textContent = '';
 
-    if (keys.length === 0) {
-      monthlyCategoryBars.innerHTML = `<p style="color:#9C9496; padding: 10px;">No category stats recorded.</p>`;
-      return;
-    }
+    try {
+      const recap = await send('GET_MONTHLY_RECAP', { monthKey });
 
-    keys.forEach(catKey => {
-      const seconds = categoriesObj[catKey];
-      const meta = Formatters.getCategoryMeta(catKey);
-      const percentage = totalSecs > 0 ? Math.round((seconds / totalSecs) * 100) : 0;
-
-      const row = document.createElement('div');
-      row.className = 'chart-row';
-      row.innerHTML = `
-        <div class="chart-row-meta">
-          <span style="color: ${meta.color}; font-weight:700;">${Formatters.escapeHtml(catKey)}</span>
-          <span>${Formatters.formatDuration(seconds)} (${percentage}%)</span>
-        </div>
-        <div class="chart-bar-bg">
-          <div class="chart-bar-fill" style="width: ${percentage}%; background-color: ${meta.color};"></div>
-        </div>
-      `;
-      monthlyCategoryBars.appendChild(row);
-    });
-  }
-
-  // Monthly Actions: Copy to Clipboard, Sync to Drive & Download
-  if (copyMonthMarkdownBtn) {
-    copyMonthMarkdownBtn.addEventListener('click', async () => {
-      const text = monthlyMarkdownPreview ? monthlyMarkdownPreview.textContent : '';
-      if (!text || text.includes('Select a month')) {
-        dashboardToast.show('No report to copy yet - select a month first.');
+      if (recap && recap.locked) {
+        renderRecapLock(monthKey, recap);
         return;
       }
-      try {
-        await navigator.clipboard.writeText(text);
-        const originalHTML = copyMonthMarkdownBtn.innerHTML;
-        copyMonthMarkdownBtn.innerHTML = 'Copied!';
-        setTimeout(() => { copyMonthMarkdownBtn.innerHTML = originalHTML; }, 2200);
-        dashboardToast.show('Monthly report copied to clipboard!');
-      } catch {
-        dashboardToast.show('Copy failed - try the download button instead.');
-      }
-    });
-  }
+      setRecapLocked(false);
 
-  syncMonthToDriveBtn.addEventListener('click', async () => {
-    const originalHTML = syncMonthToDriveBtn.innerHTML;
-    syncMonthToDriveBtn.disabled = true;
-    syncMonthToDriveBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg><span>Syncing...</span>`;
-    try {
-      const res = await chrome.runtime.sendMessage({ action: 'SYNC_DRIVE_MONTH', monthKey: currentMonthKey });
-      if (res && res.success) {
-        dashboardToast.show(`${Formatters.formatMonthDisplay(currentMonthKey)} recap synced to Google Drive!`);
-      } else {
-        alert('Google Drive Sync Notice:\n' + (res.error || 'Please ensure you are signed in to Google Chrome.'));
-      }
-    } catch (e) {
-      alert('Google Drive Sync Notice:\nPlease ensure you are signed into your Chrome browser profile with a Google Account.');
-    } finally {
-      syncMonthToDriveBtn.disabled = false;
-      syncMonthToDriveBtn.innerHTML = originalHTML;
-    }
-  });
+      const stats = recap.monthStats;
+      monthlyMarkdownText = recap.markdown || '';
 
-  downloadMonthMarkdownBtn.addEventListener('click', () => {
-    const text = monthlyMarkdownPreview ? monthlyMarkdownPreview.textContent : '';
-    if (!text || text.includes('Select a month')) {
-      dashboardToast.show('No report to download - select a month first.');
-      return;
-    }
-    const blob = new Blob([text], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Tasker_Monthly_Recap_${currentMonthKey}.md`;
-    a.click();
-    URL.revokeObjectURL(url);
-    dashboardToast.show('Monthly report downloaded!');
-  });
+      el.recapTotalTime.textContent = Formatters.formatDuration(stats.totalSeconds || 0);
+      el.recapDaysCount.textContent = String(stats.daysTrackedCount || 0);
+      el.recapScore.textContent = Formatters.formatScore(stats.monthlyScore, '%');
 
-  // 5. Daily Activity Logs Tab Setup
-  dailyDatePicker.value = currentSelectedDateKey;
+      // The score clause is dropped entirely when there is not enough data,
+      // rather than padded out with a placeholder number.
+      const scoreClause = stats.monthlyScore == null
+        ? ''
+        : `, at an overall focus score of ${stats.monthlyScore}%`;
+      el.recapSummary.textContent = stats.aiSummaryParagraph ||
+        `In ${Formatters.formatMonthDisplay(monthKey)} you tracked ${stats.daysTrackedCount || 0} active ` +
+        `day${stats.daysTrackedCount === 1 ? '' : 's'} totalling ${Formatters.formatDuration(stats.totalSeconds || 0)} ` +
+        `in Chrome. Your largest category was ${stats.topCategory || 'Development'}${scoreClause}.`;
 
-  dailyDatePicker.addEventListener('change', (e) => {
-    currentSelectedDateKey = e.target.value;
-    loadDailyLogData(currentSelectedDateKey);
-  });
+      renderMilestones(stats.milestones || []);
+      renderCategories(el.monthlyCategoryBars, stats.categories || {}, stats.totalSeconds || 0);
+      renderActivities(el.monthlyActivity, stats.topActivities || [],
+        'No detailed activity recorded for this month.');
+      el.monthlyMarkdown.textContent = monthlyMarkdownText;
 
-  async function loadDailyLogData(dateKey) {
-    try {
-      const res = await chrome.runtime.sendMessage({ action: 'GET_DAILY_SUMMARY', dateKey });
-      if (res && res.success && res.data) {
-        const summary = res.data;
-        const dayData = summary.dayData;
+      await renderClientRollup(monthKey);
 
-        // Render Daily Focus Details
-        dailyFocusDetails.innerHTML = `
-          <div style="display:flex; justify-content:space-between; margin-bottom:14px;">
-            <div><strong>Total Active Time:</strong> ${summary.formattedTime}</div>
-            <div><strong>Productivity Score:</strong> ${Formatters.formatScore(dayData.productivityScore)}</div>
-          </div>
-          <h4 style="margin-bottom:8px; font-size:12px; color:#766E70;">What You Worked On:</h4>
-          <div class="activity-list-group" id="dailyActivityGroup" style="margin-bottom:18px;"></div>
-          <h4 style="margin-bottom:8px; font-size:12px; color:#766E70;">Top Domains Logged:</h4>
-          <ul style="list-style:none; display:flex; flex-direction:column; gap:6px;">
-            ${Object.keys(dayData.domains || {}).map(dom => `
-              <li style="display:flex; justify-content:space-between; font-size:12px; background:#F0F2EF; padding:6px 10px; border-radius:6px;">
-                <span><code>${Formatters.escapeHtml(dom)}</code></span>
-                <span style="font-weight:700;">${Formatters.formatDuration(dayData.domains[dom])}</span>
-              </li>
-            `).join('') || '<li style="color:#9C9496;">No domains recorded for this date.</li>'}
-          </ul>
-        `;
-
-        // Populated after the innerHTML assignment above, which is what creates
-        // the container this writes into.
-        renderActivityList(
-          document.getElementById('dailyActivityGroup'),
-          Formatters.rankActivities(dayData, 12),
-          'No detailed activity recorded for this date.'
-        );
-
-        // Render Notes List
-        renderDailyNotesList(summary.notes || []);
-      }
+      // Counted only once the recap has actually rendered, so a failed load or
+      // a locked month never advances the user toward being asked to pay.
+      await TaskerLicense.recordRecapView(monthKey);
+      await maybeShowUpsell();
     } catch (err) {
-      console.error('Failed to load daily log data:', err);
+      el.recapSummary.textContent = `Could not build the recap: ${err.message}`;
     }
   }
 
-  function renderDailyNotesList(notesArr) {
-    dailyNotesList.innerHTML = '';
-    if (notesArr.length === 0) {
-      dailyNotesList.innerHTML = `<li style="color:#9C9496; font-size:12px;">No journal notes for this date yet.</li>`;
+  /** First and last day of a YYYY-MM, as date keys. */
+  function monthBounds(monthKey) {
+    const [y, m] = String(monthKey).split('-').map(n => parseInt(n, 10));
+    const last = new Date(y, m, 0).getDate();
+    const pad = n => String(n).padStart(2, '0');
+    return { from: `${y}-${pad(m)}-01`, to: `${y}-${pad(m)}-${pad(last)}` };
+  }
+
+  async function renderClientRollup(monthKey) {
+    const { from, to } = monthBounds(monthKey);
+    let data;
+    try {
+      data = await send('GET_CLIENT_ROLLUP', { from, to });
+    } catch (err) {
+      el.monthlyClients.innerHTML = emptyNote(err.message);
       return;
     }
 
-    notesArr.forEach(n => {
-      const li = document.createElement('li');
-      li.style.cssText = 'background:#F0F2EF; padding:8px 10px; border-radius:8px; margin-bottom:6px; display:flex; justify-content:space-between; font-size:12px;';
-      li.innerHTML = `
-        <div>
-          <span style="font-weight:700; color:#766E70;">[${Formatters.escapeHtml(n.time || 'Note')}]</span>
-          <span>${Formatters.escapeHtml(n.text)}</span>
-        </div>
-        <button class="btn-icon" data-id="${Formatters.escapeHtml(n.id)}" style="padding:2px; height:20px; width:20px;">&times;</button>
-      `;
+    const rows = data.clients || [];
+    const tagged = rows.filter(r => r.clientId !== TaskerClients.UNASSIGNED);
 
-      li.querySelector('button').addEventListener('click', async (e) => {
-        const id = e.currentTarget.getAttribute('data-id');
-        await chrome.runtime.sendMessage({ action: 'DELETE_NOTE', dateKey: currentSelectedDateKey, id });
-        await loadDailyLogData(currentSelectedDateKey);
+    if (tagged.length === 0) {
+      el.monthlyClients.innerHTML = emptyNote(
+        'No sites are tagged to a client yet. Add clients in Settings and Tasker will ' +
+        'split each month by who the work was for.');
+      return;
+    }
+
+    const total = rows.reduce((sum, r) => sum + r.seconds, 0) || 1;
+
+    // Unassigned is drawn in a muted grey so it reads as a gap to be filled in
+    // rather than as another client competing for the month.
+    el.monthlyClients.innerHTML = rows.map((row) => {
+      const fraction = row.seconds / total;
+      const unassigned = row.clientId === TaskerClients.UNASSIGNED;
+      return meterRow(
+        row.name,
+        `${Formatters.formatDuration(row.seconds)} · ${Math.round(fraction * 100)}%`,
+        fraction,
+        unassigned ? 'var(--text-faint)' : 'var(--brand-ink)'
+      );
+    }).join('');
+    TaskerIcons.hydrate(el.monthlyClients);
+  }
+
+  el.exportCsv.addEventListener('click', async () => {
+    const { from, to } = monthBounds(currentMonthKey);
+    withPending(el.exportCsv, 'Building…', async () => {
+      try {
+        const res = await send('BUILD_CSV_EXPORT', { from, to });
+
+        // A data: URL would hit length limits on a long export; a Blob does not.
+        const blob = new Blob([res.csv], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = res.filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 30000);
+
+        toast(`Saved ${res.filename}`);
+      } catch (err) {
+        toast(err.message, true);
+      }
+    });
+  });
+
+  el.monthSelect.addEventListener('change', (event) => {
+    currentMonthKey = event.target.value;
+    loadMonthlyRecap(currentMonthKey);
+  });
+
+  el.copyMonthMarkdown.addEventListener('click', async () => {
+    if (!monthlyMarkdownText) return toast('No recap to copy yet');
+    try {
+      await navigator.clipboard.writeText(monthlyMarkdownText);
+      toast('Markdown copied');
+    } catch (err) {
+      toast('Could not reach the clipboard', true);
+    }
+  });
+
+  el.downloadMonthPdf.addEventListener('click', () => {
+    withPending(el.downloadMonthPdf, 'Building…', async () => {
+      try {
+        const filename = await TaskerUI.downloadReportPdf('monthly', { monthKey: currentMonthKey });
+        toast(`Saved ${filename}`);
+      } catch (err) {
+        toast(err.message, true);
+      }
+    });
+  });
+
+  el.syncMonthToDrive.addEventListener('click', () => {
+    withPending(el.syncMonthToDrive, 'Syncing…', async () => {
+      try {
+        await send('SYNC_DRIVE_MONTH', { monthKey: currentMonthKey });
+        toast(`${Formatters.formatMonthDisplay(currentMonthKey)} recap is in your Drive folder`);
+      } catch (err) {
+        toast(err.message, true);
+      }
+    });
+  });
+
+  /* ----------------------------------------------------------- daily log - */
+
+  function renderNotes(notes) {
+    if (!notes || notes.length === 0) {
+      el.dailyNotes.innerHTML = `<li>${emptyNote('No notes for this date.')}</li>`;
+      return;
+    }
+
+    el.dailyNotes.innerHTML = notes.map(note => `
+      <li class="note-item">
+        <time>${Formatters.escapeHtml(note.time || '')}</time>
+        <span>${Formatters.escapeHtml(note.text)}</span>
+        <button class="note-delete" data-id="${Formatters.escapeHtml(note.id)}"
+                title="Delete note" aria-label="Delete note">
+          <span data-icon="close" data-size="xs"></span>
+        </button>
+      </li>`).join('');
+
+    TaskerIcons.hydrate(el.dailyNotes);
+
+    el.dailyNotes.querySelectorAll('.note-delete').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        try {
+          await send('DELETE_NOTE', { dateKey: currentDateKey, id: btn.getAttribute('data-id') });
+          await loadDailyLog(currentDateKey);
+        } catch (err) {
+          toast(err.message, true);
+        }
       });
-
-      dailyNotesList.appendChild(li);
     });
   }
 
-  addDailyNoteBtn.addEventListener('click', async () => {
-    const text = dailyNoteInput.value.trim();
-    if (!text) return;
+  async function loadDailyLog(dateKey) {
+    try {
+      const summary = await send('GET_DAILY_SUMMARY', { dateKey });
 
-    await chrome.runtime.sendMessage({ action: 'ADD_NOTE', dateKey: currentSelectedDateKey, text });
-    dailyNoteInput.value = '';
-    await loadDailyLogData(currentSelectedDateKey);
+      if (summary && summary.locked) {
+        el.dailyFocusDetails.innerHTML = emptyNote(
+          `${Formatters.formatFullDate(dateKey)} is outside your ` +
+          `${TaskerLicense.FREE_HISTORY_DAYS}-day history window. The day is still stored ` +
+          `on this machine and opens again with Tasker Pro.`);
+        renderNotes([]);
+        return;
+      }
+
+      const dayData = summary.dayData;
+      const total = dayData.totalSeconds || 0;
+
+      const domains = dayData.domains || {};
+      const sortedDomains = Object.keys(domains).sort((a, b) => domains[b] - domains[a]).slice(0, 10);
+
+      el.dailyFocusDetails.innerHTML = `
+        <div class="stat-grid">
+          <div class="stat">
+            <span class="t-label">Time in Chrome</span>
+            <span class="stat-value">${Formatters.formatDuration(total)}</span>
+          </div>
+          <div class="stat">
+            <span class="t-label">Focus score</span>
+            <span class="stat-value">${Formatters.formatScore(dayData.productivityScore, ' / 100')}</span>
+          </div>
+          <div class="stat">
+            <span class="t-label">Accomplishments</span>
+            <span class="stat-value">${(summary.highlights || []).length}</span>
+          </div>
+        </div>
+        <h4 class="t-label" style="margin-top:var(--sp-4)">What you worked on</h4>
+        <div id="dailyActivityGroup"></div>
+        <h4 class="t-label" style="margin-top:var(--sp-4)">Top sites</h4>
+        <div id="dailyDomainGroup"></div>`;
+
+      // Populated after the innerHTML above, which is what creates the
+      // containers these write into.
+      renderActivities(document.getElementById('dailyActivityGroup'),
+        Formatters.rankActivities(dayData, 12), 'No detailed activity for this date.');
+
+      const domainGroup = document.getElementById('dailyDomainGroup');
+      domainGroup.innerHTML = sortedDomains.length
+        ? sortedDomains.map(domain => `
+            <div class="list-row">
+              <span>${Formatters.escapeHtml(domain)}</span>
+              <span class="mono">${Formatters.formatDuration(domains[domain])}</span>
+            </div>`).join('')
+        : emptyNote('No sites recorded for this date.');
+
+      renderNotes(summary.notes || []);
+    } catch (err) {
+      el.dailyFocusDetails.innerHTML = emptyNote(err.message);
+    }
+  }
+
+  el.datePicker.value = currentDateKey;
+
+  // The picker itself refuses out-of-window dates for free installs, so the
+  // usual way of reaching a locked day is blocked before it is requested. The
+  // worker still checks, for anything that arrives another way.
+  (async () => {
+    if (!(await TaskerLicense.isPro())) {
+      el.datePicker.min = TaskerLicense.oldestVisibleDateKey();
+    }
+  })();
+
+  el.datePicker.addEventListener('change', (event) => {
+    currentDateKey = event.target.value;
+    loadDailyLog(currentDateKey);
   });
 
-  syncDayToDriveBtn.addEventListener('click', async () => {
-    syncDayToDriveBtn.disabled = true;
-    syncDayToDriveBtn.textContent = 'Syncing...';
+  el.addDailyNote.addEventListener('click', async () => {
+    const text = el.dailyNoteInput.value.trim();
+    if (!text) return;
     try {
-      const res = await chrome.runtime.sendMessage({ action: 'SYNC_DRIVE_TODAY', dateKey: currentSelectedDateKey });
-      if (res && res.success) {
-        alert(`Daily log for ${currentSelectedDateKey} uploaded to Google Drive!`);
-      } else {
-        alert('Sync Error: ' + (res.error || 'Failed to sync to Drive.'));
-      }
-    } catch (e) {
-      alert('Sync error occurred.');
-    } finally {
-      syncDayToDriveBtn.disabled = false;
-      syncDayToDriveBtn.innerHTML = `
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-        </svg>
-        <span>Sync Day to Google Drive</span>
-      `;
+      await send('ADD_NOTE', { dateKey: currentDateKey, text });
+      el.dailyNoteInput.value = '';
+      await loadDailyLog(currentDateKey);
+      toast('Note saved');
+    } catch (err) {
+      toast(err.message, true);
     }
   });
 
-  // 6. Settings & Drive Tab Logic
-  saveDriveSettingsBtn.addEventListener('click', async () => {
-    const folderName = driveFolderNameInput.value.trim() || 'Tasker Activity Logs';
-    const freq = autoSyncFreqSelect.value;
-    
-    await chrome.runtime.sendMessage({
-      action: 'SAVE_SETTINGS',
-      settings: {
-        googleDriveFolderName: folderName,
-        autoSyncIntervalHours: freq
+  el.downloadDayPdf.addEventListener('click', () => {
+    withPending(el.downloadDayPdf, 'Building…', async () => {
+      try {
+        const filename = await TaskerUI.downloadReportPdf('daily', { dateKey: currentDateKey });
+        toast(`Saved ${filename}`);
+      } catch (err) {
+        toast(err.message, true);
       }
     });
-
-    sidebarDriveFolder.textContent = folderName;
-    alert('Drive Sync settings saved successfully!');
   });
 
-  testDriveConnBtn.addEventListener('click', async () => {
-    testDriveConnBtn.disabled = true;
-    testDriveConnBtn.textContent = 'Connecting...';
-    try {
-      const res = await chrome.runtime.sendMessage({ action: 'SYNC_DRIVE_TODAY' });
-      if (res && res.success) {
-        alert('Successfully connected to Google Drive and validated folder access!');
-      } else {
-        alert('Google OAuth Notice: ' + (res.error || 'Authentication required in Chrome settings.'));
+  el.syncDayToDrive.addEventListener('click', () => {
+    withPending(el.syncDayToDrive, 'Syncing…', async () => {
+      try {
+        await send('SYNC_DRIVE_TODAY', { dateKey: currentDateKey });
+        toast(`${currentDateKey} is in your Drive folder`);
+      } catch (err) {
+        toast(err.message, true);
       }
-    } catch (e) {
-      alert('Drive Connection error. Please verify OAuth client ID or Chrome Login.');
-    } finally {
-      testDriveConnBtn.disabled = false;
-      testDriveConnBtn.textContent = 'Test Connection & Create Folder';
-    }
+    });
   });
 
-  // Load Overview Initially
-  loadOverviewData();
+  /* --------------------------------------------------------------- drive - */
+
+  const FORMAT_LABELS = {
+    pdf: 'Branded PDF',
+    markdown: 'Markdown',
+    both: 'Branded PDF and Markdown'
+  };
+
+  async function loadDriveSummary() {
+    try {
+      const settings = await TaskerStorage.getSettings();
+      el.driveSummaryFolder.textContent = settings.googleDriveFolderName || 'Tasker Activity Logs';
+      el.driveSummaryFormat.textContent = FORMAT_LABELS[settings.driveFormat] || FORMAT_LABELS.pdf;
+      el.driveSummaryFiling.textContent = settings.driveOrganizeFolders === false
+        ? 'All reports at the top level'
+        : 'Daily Logs / Monthly Recaps subfolders';
+      el.driveSummaryAuto.textContent = settings.autoSyncDrive ? 'On, every 6 hours' : 'Off';
+      el.sidebarDriveFolder.textContent = settings.googleDriveFolderName || 'Tasker Activity Logs';
+    } catch (err) {
+      console.warn('Tasker dashboard: could not read settings', err);
+    }
+  }
+
+  el.testDriveConn.addEventListener('click', () => {
+    withPending(el.testDriveConn, 'Checking…', async () => {
+      try {
+        const result = await send('TEST_DRIVE_CONNECTION');
+        const where = result.subfolders && result.subfolders.length
+          ? ` Reports will be filed under ${result.subfolders.join(' and ')}.`
+          : '';
+        el.driveResult.textContent = `Connected. Folder "${result.folderName}" is ready.${where}`;
+        el.driveResult.classList.remove('hidden', 'is-error');
+      } catch (err) {
+        el.driveResult.textContent = err.message;
+        el.driveResult.classList.remove('hidden');
+        el.driveResult.classList.add('is-error');
+      }
+    });
+  });
+
+  el.openDriveSettings.addEventListener('click', openOptions);
+
+  /* ------------------------------------------------------------- topbar - */
+
+  el.optionsPage.addEventListener('click', openOptions);
+
+  el.quickSync.addEventListener('click', () => {
+    withPending(el.quickSync, 'Syncing…', async () => {
+      try {
+        await send('SYNC_DRIVE_TODAY');
+        el.overviewDriveStatus.textContent = 'Synced today';
+        toast("Today's report is in your Drive folder");
+      } catch (err) {
+        toast(err.message, true);
+      }
+    });
+  });
+
+  el.downloadTodayPdf.addEventListener('click', () => {
+    withPending(el.downloadTodayPdf, 'Building…', async () => {
+      try {
+        const filename = await TaskerUI.downloadReportPdf('daily', { dateKey: Formatters.getDateKey() });
+        toast(`Saved ${filename}`);
+      } catch (err) {
+        toast(err.message, true);
+      }
+    });
+  });
+
+  /* --------------------------------------------------------------- start - */
+
+  populateMonthSelect();
+  loadOverview();
+  loadDriveSummary();
 });

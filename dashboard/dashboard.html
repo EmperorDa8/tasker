@@ -3,443 +3,437 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tasker - Analytics & Monthly Recap Dashboard</title>
-  <link rel="stylesheet" href="dashboard.css">
+  <title>Tasker Dashboard</title>
   <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../assets/design/tokens.css">
+  <link rel="stylesheet" href="dashboard.css">
 </head>
 <body>
-  <div class="dashboard-layout">
-    <!-- Left Navigation Sidebar -->
+  <div class="layout">
+
+    <!-- ================= Sidebar ================= -->
     <aside class="sidebar">
-      <div class="sidebar-header">
-        <div class="sidebar-logo">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <div class="sidebar-brand">
+        <span class="brand-mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
           </svg>
-        </div>
-        <div class="sidebar-title">
-          <h2>Tasker</h2>
-          <span>Activity & Recaps</span>
-        </div>
+        </span>
+        <span class="brand-copy">
+          <strong>Tasker</strong>
+          <span>Activity &amp; recaps</span>
+        </span>
       </div>
 
-      <nav class="nav-menu">
+      <nav class="nav">
         <button class="nav-item active" data-tab="overview">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="7" height="7"></rect>
-            <rect x="14" y="3" width="7" height="7"></rect>
-            <rect x="14" y="14" width="7" height="7"></rect>
-            <rect x="3" y="14" width="7" height="7"></rect>
-          </svg>
-          <span>Overview</span>
+          <span data-icon="dashboard" data-size="sm"></span><span>Overview</span>
         </button>
-
+        <button class="nav-item" data-tab="work-profile">
+          <span data-icon="badge" data-size="sm"></span><span>Work profile</span>
+        </button>
         <button class="nav-item" data-tab="monthly-recap">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="8" r="7"></circle>
-            <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
-          </svg>
-          <span>Monthly Recap</span>
-          <span class="badge-new">Recap</span>
+          <span data-icon="workspace_premium" data-size="sm"></span><span>Monthly recap</span>
         </button>
-
         <button class="nav-item" data-tab="daily-logs">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-            <line x1="16" y1="13" x2="8" y2="13"></line>
-            <line x1="16" y1="17" x2="8" y2="17"></line>
-          </svg>
-          <span>Daily Activity Logs</span>
+          <span data-icon="today" data-size="sm"></span><span>Daily logs</span>
         </button>
-
         <button class="nav-item" data-tab="drive-sync">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-            <polyline points="17 21 17 13 7 13 7 21"></polyline>
-            <polyline points="7 3 7 8 15 8"></polyline>
-          </svg>
-          <span>Google Drive Sync</span>
+          <span data-icon="cloud_done" data-size="sm"></span><span>Google Drive</span>
         </button>
       </nav>
 
-      <div class="sidebar-footer">
-        <div class="user-drive-card">
-          <div class="drive-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-            </svg>
-          </div>
-          <div class="drive-details">
-            <span class="drive-label">Google Drive</span>
-            <span class="drive-status-sub" id="sidebarDriveFolder">Tasker Activity Logs</span>
+      <div class="sidebar-foot">
+        <div class="drive-card">
+          <span class="drive-card-icon"><span data-icon="folder" data-size="md"></span></span>
+          <div class="drive-card-copy">
+            <span class="t-label">Drive folder</span>
+            <strong id="sidebarDriveFolder">Tasker Activity Logs</strong>
           </div>
         </div>
+        <p class="sidebar-privacy">
+          <span data-icon="lock" data-size="xs"></span>
+          Everything here is read from this device.
+        </p>
       </div>
     </aside>
 
-    <!-- Main Content Area -->
-    <main class="main-area">
-      <!-- Top Bar Header -->
+    <!-- ================= Main ================= -->
+    <main class="main">
       <header class="topbar">
-        <div class="topbar-left">
+        <div class="topbar-copy">
           <h1 id="pageTitle">Overview</h1>
-          <p id="pageSubtitle">Track your browsing activities, accomplishments, and summaries.</p>
+          <p id="pageSubtitle">Today's focus time, categories and what you actually worked on.</p>
         </div>
-        <div class="topbar-right">
-          <button id="quickSyncBtn" class="btn-secondary">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
-            </svg>
-            <span>Sync Today to Drive</span>
+        <div class="topbar-actions">
+          <button id="downloadTodayPdfBtn" class="btn btn-quiet">
+            <span data-icon="picture_as_pdf" data-size="sm"></span> Today's PDF
           </button>
-          <button id="optionsPageBtn" class="btn-icon" title="Settings">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="3"></circle>
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-            </svg>
+          <button id="quickSyncBtn" class="btn btn-primary">
+            <span data-icon="cloud_upload" data-size="sm"></span> Sync to Drive
+          </button>
+          <button id="optionsPageBtn" class="icon-btn" title="Settings" aria-label="Settings">
+            <span data-icon="settings" data-size="md"></span>
           </button>
         </div>
       </header>
 
-      <!-- TAB 1: OVERVIEW -->
-      <section id="tab-overview" class="tab-content active">
-        <!-- Quick Start Guide Banner for Non-Technical Users -->
-        <div class="card banner-card" style="margin-bottom: 20px; background: #FFDCEF;">
-          <div style="display:flex; align-items:center; gap:14px;">
-            <div style="font-size:24px;">💡</div>
-            <div>
-              <strong style="color:#2A0F14; font-size:15px; font-family:'Bricolage Grotesque','Figtree',sans-serif; font-weight:600;">How Tasker Works</strong>
-              <p style="font-size:12px; color:#544145; margin-top:2px;">
-                Tasker automatically measures active focus time across tabs, categorizes web activities, and calculates your daily productivity score. All data is saved strictly on your local device for 100% privacy.
-              </p>
-            </div>
-          </div>
-        </div>
+      <!-- ---------------- Overview ---------------- -->
+      <section id="tab-overview" class="tab active">
 
-        <!-- Coverage: what today's number does not include -->
-        <div class="card coverage-banner hidden" id="coverageBanner">
-          <div class="coverage-icon">◔</div>
-          <div class="coverage-text">
+        <div class="callout hidden" id="coverageBanner">
+          <span class="callout-icon"><span data-icon="visibility" data-size="md"></span></span>
+          <div>
             <strong id="coverageHeadline">Browser time only</strong>
             <p id="coverageDetail"></p>
           </div>
         </div>
 
-        <!-- Stat Cards Grid -->
-        <div class="stats-grid">
-          <div class="stat-card" title="Active time spent in Chrome tabs today. Time in other apps is not included.">
-            <div class="stat-icon indigo">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
-              </svg>
-            </div>
-            <div class="stat-info">
-              <span class="stat-label">Today's Chrome Time</span>
-              <span class="stat-value" id="overviewTodayTime">0h 0m</span>
-            </div>
+        <div class="stat-grid">
+          <div class="stat" title="Active time in Chrome tabs today. Time in other applications is not included.">
+            <span class="stat-icon"><span data-icon="schedule" data-size="md"></span></span>
+            <span class="t-label">Time in Chrome</span>
+            <span class="stat-value" id="overviewTodayTime">0h 0m</span>
           </div>
-
-          <div class="stat-card" title="Focus score calculated from productive work vs distractive browsing">
-            <div class="stat-icon emerald">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-                <polyline points="17 6 23 6 23 12"></polyline>
-              </svg>
-            </div>
-            <div class="stat-info">
-              <span class="stat-label">Productivity Index</span>
-              <span class="stat-value" id="overviewProductivity">—</span>
-            </div>
+          <div class="stat" title="A weighted average of where today's time went.">
+            <span class="stat-icon"><span data-icon="trending_up" data-size="md"></span></span>
+            <span class="t-label">Focus score</span>
+            <span class="stat-value" id="overviewProductivity">&mdash;</span>
           </div>
-
-          <div class="stat-card" title="Key milestones or accomplishment notes added by you">
-            <div class="stat-icon amber">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                <polyline points="22 4 12 14.01 9 11.01"></polyline>
-              </svg>
-            </div>
-            <div class="stat-info">
-              <span class="stat-label">Accomplishments Logged</span>
-              <span class="stat-value" id="overviewHighlightsCount">0 items</span>
-            </div>
+          <div class="stat" title="Accomplishments you logged today.">
+            <span class="stat-icon"><span data-icon="emoji_events" data-size="md"></span></span>
+            <span class="t-label">Accomplishments</span>
+            <span class="stat-value" id="overviewHighlightsCount">0</span>
           </div>
-
-          <div class="stat-card" title="Google Drive Cloud Sync status">
-            <div class="stat-icon sky">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-              </svg>
-            </div>
-            <div class="stat-info">
-              <span class="stat-label">Google Drive Status</span>
-              <span class="stat-value" id="overviewDriveStatus">Ready</span>
-            </div>
+          <div class="stat" title="Whether today's report has reached your Drive.">
+            <span class="stat-icon"><span data-icon="cloud_done" data-size="md"></span></span>
+            <span class="t-label">Drive</span>
+            <span class="stat-value" id="overviewDriveStatus">Ready</span>
           </div>
         </div>
 
-        <!-- Charts Row -->
-        <div class="dashboard-row">
-          <div class="card flex-2">
-            <div class="card-header">
-              <h3>Today's Category Time Allocation</h3>
-              <span class="card-subtitle">Breakdown across activity sectors</span>
+        <div class="row row-split">
+          <section class="card">
+            <div class="card-head">
+              <h3>Where today went</h3>
+              <span class="card-sub">Time by category</span>
             </div>
-            <div class="card-body">
-              <div class="chart-container" id="categoryChartContainer">
-                <!-- Dynamic SVG Bars -->
-              </div>
-            </div>
-          </div>
+            <div class="card-body" id="categoryChartContainer"></div>
+          </section>
 
-          <div class="card flex-1">
-            <div class="card-header">
-              <h3>Top Visited Platforms</h3>
-              <span class="card-subtitle">Highest duration websites</span>
+          <section class="card">
+            <div class="card-head">
+              <h3>Top sites</h3>
+              <span class="card-sub">Longest first</span>
             </div>
-            <div class="card-body">
-              <div class="domain-list-group" id="topDomainsGroup">
-                <!-- Dynamic Domain List -->
-              </div>
-            </div>
-          </div>
+            <div class="card-body" id="topDomainsGroup"></div>
+          </section>
         </div>
 
-        <!-- Repos & Tickets -->
-        <div class="dashboard-row hidden" id="workRollupRow">
-          <div class="card flex-2">
-            <div class="card-header">
-              <h3>Repos &amp; Tickets</h3>
-              <span class="card-subtitle">Time grouped by what it was spent on</span>
-            </div>
-            <div class="card-body">
-              <div class="rollup-list" id="workRollupList"></div>
-            </div>
+        <section class="card hidden" id="workRollupRow">
+          <div class="card-head">
+            <h3>Repositories &amp; tickets</h3>
+            <span class="card-sub">Time grouped by what it went into</span>
           </div>
-        </div>
+          <div class="card-body" id="workRollupList"></div>
+        </section>
 
-        <!-- What You Worked On -->
-        <div class="dashboard-row">
-          <div class="card flex-2">
-            <div class="card-header">
-              <h3>What You Worked On</h3>
-              <span class="card-subtitle">Specific activities, longest first</span>
-            </div>
-            <div class="card-body">
-              <div class="activity-list-group" id="todayActivityGroup">
-                <!-- Dynamic Activity List -->
-              </div>
+        <section class="card">
+          <div class="card-head">
+            <h3>What you worked on</h3>
+            <span class="card-sub">Specific activities, longest first</span>
+          </div>
+          <div class="card-body" id="todayActivityGroup"></div>
+        </section>
+      </section>
+
+      <!-- ---------------- Work profile ---------------- -->
+      <section id="tab-work-profile" class="tab">
+        <section class="card">
+          <div class="card-head">
+            <h3>What your browsing resembles</h3>
+            <span class="card-sub">Inferred on this device, from the tools you spend time in</span>
+          </div>
+          <div class="card-body">
+            <div id="workProfileBody">
+              <div class="wp-loading">Reading your recent activity&hellip;</div>
             </div>
           </div>
+        </section>
+
+        <div class="row">
+          <section class="card">
+            <div class="card-head">
+              <h3>How this is decided</h3>
+            </div>
+            <div class="card-body prose">
+              <p>
+                Tasker matches the sites and actions already in your local log against a catalogue
+                of recognisable work tools. Each tool contributes to several kinds of work at once,
+                weighted by how specific it is: a Kubernetes console says a lot, a search engine
+                says nothing and is not counted at all.
+              </p>
+              <p>
+                Time enters through a square root, so one tool you live in cannot drown out three
+                that each say something different, and a tool seen across many days counts for more
+                than the same hours spent in one sitting.
+              </p>
+              <p>
+                Where the market runs one job under many names &mdash; AI Engineer, Applied AI
+                Engineer, GenAI Engineer, LLM Engineer are the same tools in the same tabs &mdash;
+                Tasker reports the family and lists the other titles alongside it. Splitting those
+                into competing profiles would let a coin flip decide which title ended up next to
+                your name. A specialism gets its own profile only where the tooling genuinely
+                differs: vector stores for retrieval, eval harnesses for evaluation, attack tooling
+                for red teaming.
+              </p>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="card-head">
+              <h3>When it refuses to answer</h3>
+            </div>
+            <div class="card-body prose">
+              <ul class="rule-list">
+                <li><span data-icon="schedule" data-size="sm"></span> Under 45 minutes on recognised tools</li>
+                <li><span data-icon="hub" data-size="sm"></span> Fewer than two kinds of tool</li>
+                <li><span data-icon="public" data-size="sm"></span> Fewer than four distinct sites</li>
+                <li><span data-icon="today" data-size="sm"></span> Fewer than three separate days</li>
+                <li><span data-icon="warning" data-size="sm"></span> Two profiles scoring too closely &mdash; then it shows the shortlist instead of picking</li>
+              </ul>
+              <p class="prose-note">
+                Your own answer always wins. Set it in Settings and it replaces the inference
+                everywhere, labelled as stated by you.
+              </p>
+              <button type="button" class="btn btn-quiet" id="openProfileSettingsBtn">
+                <span data-icon="settings" data-size="sm"></span> Open work profile settings
+              </button>
+            </div>
+          </section>
         </div>
       </section>
 
-      <!-- TAB 2: MONTHLY RECAP -->
-      <section id="tab-monthly-recap" class="tab-content">
-        <div class="recap-control-bar card">
-          <div class="recap-control-left">
-            <label for="monthSelect">Select Month:</label>
-            <select id="monthSelect" class="select-input">
-              <!-- Dynamic Months -->
-            </select>
-          </div>
-          <div class="recap-control-right">
-            <button id="syncMonthToDriveBtn" class="btn-primary">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="17 8 12 3 7 8"></polyline>
-                <line x1="12" y1="3" x2="12" y2="15"></line>
-              </svg>
-              <span>Sync to Drive</span>
+      <!-- ---------------- Monthly recap ---------------- -->
+      <section id="tab-monthly-recap" class="tab">
+        <div class="control-bar">
+          <label class="control-field">
+            <span class="t-label">Month</span>
+            <select id="monthSelect" class="select"></select>
+          </label>
+          <div class="control-actions">
+            <button id="downloadMonthPdfBtn" class="btn btn-quiet">
+              <span data-icon="picture_as_pdf" data-size="sm"></span> Download PDF
             </button>
-            <button id="copyMonthMarkdownBtn" class="btn-secondary" title="Copy markdown to clipboard">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-              </svg>
-              <span>Copy Report</span>
+            <button id="exportCsvBtn" class="btn btn-quiet">
+              <span data-icon="download" data-size="sm"></span> Export CSV
             </button>
-            <button id="downloadMonthMarkdownBtn" class="btn-secondary">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="7 10 12 15 17 10"></polyline>
-                <line x1="12" y1="15" x2="12" y2="3"></line>
-              </svg>
-              <span>Download</span>
+            <button id="copyMonthMarkdownBtn" class="btn btn-quiet">
+              <span data-icon="content_copy" data-size="sm"></span> Copy markdown
+            </button>
+            <button id="syncMonthToDriveBtn" class="btn btn-primary">
+              <span data-icon="cloud_upload" data-size="sm"></span> Sync recap to Drive
             </button>
           </div>
         </div>
 
-        <!-- Monthly Recap Hero Summary Box -->
-        <div class="recap-hero-box">
-          <div class="recap-hero-left">
-            <span class="recap-tag">Monthly Accomplishments</span>
-            <h2 id="recapMonthTitle">August 2026 Recap</h2>
-            <p id="recapExecutiveSummary">
-              During August 2026, you dedicated significant focus time toward high-impact development and research workflows. Your top productivity area was Development & Code, maintaining an overall monthly focus score of 91%.
+        <!-- Shown instead of the recap when the selected month sits outside
+             the free history window. Hidden by default. -->
+        <section id="recapLock" class="lock-card" hidden>
+          <span class="lock-icon" data-icon="history" data-size="lg"></span>
+          <div class="lock-body">
+            <h2 id="recapLockTitle">This month is outside your history window</h2>
+            <p id="recapLockCopy"></p>
+            <p class="lock-note">
+              Nothing has been deleted &mdash; this month is still on your machine, and
+              unlocking reveals it straight away.
             </p>
+            <div class="lock-actions">
+              <button id="recapUnlockBtn" class="btn btn-primary">
+                <span data-icon="lock" data-size="sm"></span> Unlock full history
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- The upgrade ask. Raised only after a second month's recap has
+             actually been read; see TaskerLicense.shouldPromptUpgrade. -->
+        <section id="recapUpsell" class="upsell-card" hidden>
+          <button id="recapUpsellDismiss" class="upsell-dismiss" title="Not now" aria-label="Dismiss">
+            <span data-icon="close" data-size="sm"></span>
+          </button>
+          <span class="upsell-icon" data-icon="workspace_premium" data-size="lg"></span>
+          <div class="upsell-body">
+            <strong>You have been keeping this up</strong>
+            <p id="recapUpsellCopy"></p>
+          </div>
+          <a id="recapUpsellCta" class="btn btn-primary" href="#" target="_blank" rel="noopener">
+            See Tasker Pro
+          </a>
+        </section>
+
+        <section class="recap-hero">
+          <div class="recap-hero-copy">
+            <span class="recap-tag">Monthly recap</span>
+            <h2 id="recapMonthTitle">Recap</h2>
+            <p id="recapExecutiveSummary">Generating&hellip;</p>
           </div>
           <div class="recap-hero-stats">
-            <div class="recap-stat-pill">
-              <span class="label">Total Focus Time</span>
-              <span class="value" id="recapTotalTime">0h 0m</span>
+            <div class="recap-stat">
+              <span class="t-label">Total tracked</span>
+              <strong id="recapTotalTime">0h 0m</strong>
             </div>
-            <div class="recap-stat-pill">
-              <span class="label">Days Active</span>
-              <span class="value" id="recapDaysCount">0 days</span>
+            <div class="recap-stat">
+              <span class="t-label">Active days</span>
+              <strong id="recapDaysCount">0</strong>
             </div>
-            <div class="recap-stat-pill">
-              <span class="label">Monthly Score</span>
-              <span class="value" id="recapScore">91%</span>
+            <div class="recap-stat">
+              <span class="t-label">Focus score</span>
+              <strong id="recapScore">&mdash;</strong>
             </div>
+          </div>
+        </section>
+
+        <div class="row">
+          <section class="card">
+            <div class="card-head">
+              <h3>Milestones</h3>
+              <span class="card-sub">Logged by you, or picked up from sustained focus</span>
+            </div>
+            <div class="card-body">
+              <ul class="milestones" id="monthlyMilestonesList"></ul>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="card-head">
+              <h3>Category breakdown</h3>
+              <span class="card-sub">Where the month went</span>
+            </div>
+            <div class="card-body" id="monthlyCategoryBars"></div>
+          </section>
+        </div>
+
+        <section class="card">
+          <div class="card-head">
+            <h3>What you worked on this month</h3>
+            <span class="card-sub">Across the whole month, longest first</span>
+          </div>
+          <div class="card-body" id="monthlyActivityGroup"></div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <h3>Time by client</h3>
+            <span class="card-sub">Tag sites to a client in Settings to split the month up</span>
+          </div>
+          <div class="card-body" id="monthlyClients"></div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <h3>Markdown source</h3>
+            <span class="card-sub">The same content as the PDF, for pasting into notes</span>
+          </div>
+          <div class="card-body">
+            <pre id="monthlyMarkdownPreview" class="markdown-box"></pre>
+          </div>
+        </section>
+      </section>
+
+      <!-- ---------------- Daily logs ---------------- -->
+      <section id="tab-daily-logs" class="tab">
+        <div class="control-bar">
+          <label class="control-field">
+            <span class="t-label">Date</span>
+            <input type="date" id="dailyDatePicker" class="select">
+          </label>
+          <div class="control-actions">
+            <button id="downloadDayPdfBtn" class="btn btn-quiet">
+              <span data-icon="picture_as_pdf" data-size="sm"></span> Download PDF
+            </button>
+            <button id="syncDayToDriveBtn" class="btn btn-primary">
+              <span data-icon="cloud_upload" data-size="sm"></span> Sync day to Drive
+            </button>
           </div>
         </div>
 
-        <!-- Monthly Recap Detailed Sections Grid -->
-        <div class="dashboard-row">
-          <div class="card flex-1">
-            <div class="card-header">
-              <h3>🏆 Major Monthly Accomplishments & Highlights</h3>
-              <span class="card-subtitle">Key achievements automatically distilled or added by you</span>
+        <div class="row row-split">
+          <section class="card">
+            <div class="card-head">
+              <h3>That day in detail</h3>
             </div>
-            <div class="card-body">
-              <ul class="milestones-timeline" id="monthlyMilestonesList">
-                <!-- Dynamic Milestones -->
-              </ul>
-            </div>
-          </div>
+            <div class="card-body" id="dailyFocusDetails"></div>
+          </section>
 
-          <div class="card flex-1">
-            <div class="card-header">
-              <h3>📊 Monthly Category Distribution</h3>
-              <span class="card-subtitle">Where your time was allocated this month</span>
+          <section class="card">
+            <div class="card-head">
+              <h3>Journal</h3>
+              <span class="card-sub">Notes attached to this date</span>
             </div>
             <div class="card-body">
-              <div id="monthlyCategoryBars" class="category-bars-group">
-                <!-- Dynamic Monthly Category Bars -->
+              <div class="note-composer">
+                <textarea id="dailyNoteInput" rows="3" placeholder="Add a note for this date…"></textarea>
+                <button id="addDailyNoteBtn" class="btn btn-quiet">
+                  <span data-icon="add" data-size="sm"></span> Save note
+                </button>
               </div>
+              <ul class="notes" id="dailyNotesList"></ul>
             </div>
-          </div>
-        </div>
-
-        <!-- What You Worked On (month) -->
-        <div class="card">
-          <div class="card-header">
-            <h3>🔍 What You Worked On This Month</h3>
-            <span class="card-subtitle">Specific activities across the month, longest first</span>
-          </div>
-          <div class="card-body">
-            <div class="activity-list-group" id="monthlyActivityGroup">
-              <!-- Dynamic Activity List -->
-            </div>
-          </div>
-        </div>
-
-        <!-- Full Markdown Report Preview -->
-        <div class="card">
-          <div class="card-header">
-            <h3>📄 Raw Monthly Recap Report Preview (Markdown)</h3>
-          </div>
-          <div class="card-body">
-            <pre id="monthlyMarkdownPreview" class="markdown-preview-box"></pre>
-          </div>
+          </section>
         </div>
       </section>
 
-      <!-- TAB 3: DAILY ACTIVITY LOGS -->
-      <section id="tab-daily-logs" class="tab-content">
-        <div class="date-picker-bar card">
-          <div class="date-picker-group">
-            <label for="dailyDatePicker">Select Date:</label>
-            <input type="date" id="dailyDatePicker" class="date-input">
-          </div>
-          <button id="syncDayToDriveBtn" class="btn-primary">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-            </svg>
-            <span>Sync Day to Google Drive</span>
-          </button>
-        </div>
-
-        <div class="dashboard-row">
-          <div class="card flex-1">
-            <div class="card-header">
-              <h3>Daily Focus Overview</h3>
-            </div>
-            <div class="card-body" id="dailyFocusDetails">
-              <!-- Dynamic Daily Details -->
-            </div>
-          </div>
-
-          <div class="card flex-1">
-            <div class="card-header">
-              <h3>Custom Journal & Notes</h3>
-            </div>
-            <div class="card-body">
-              <div class="note-add-box">
-                <textarea id="dailyNoteInput" placeholder="Add custom note or journal entry for this date..." rows="3"></textarea>
-                <button id="addDailyNoteBtn" class="btn-secondary" style="align-self: flex-end; margin-top: 8px;">Save Note</button>
-              </div>
-              <ul class="notes-timeline" id="dailyNotesList" style="margin-top: 14px;">
-                <!-- Dynamic Notes List -->
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB 4: GOOGLE DRIVE SYNC -->
-      <section id="tab-drive-sync" class="tab-content">
-        <div class="card">
-          <div class="card-header">
-            <h3>Google Drive Cloud Integration</h3>
-            <span class="card-subtitle">Automatically backup and sync your notes, summaries, and monthly recaps.</span>
+      <!-- ---------------- Drive ---------------- -->
+      <section id="tab-drive-sync" class="tab">
+        <section class="card">
+          <div class="card-head">
+            <h3>Google Drive</h3>
+            <span class="card-sub">Where your reports are filed, and in what shape</span>
           </div>
           <div class="card-body">
-            <div class="drive-settings-panel">
-              <div class="info-banner">
-                <div class="info-icon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="16" x2="12" y2="12"></line>
-                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                  </svg>
-                </div>
-                <div class="info-text">
-                  <strong>Seamless Google Ecosystem Sync</strong>
-                  <p>Tasker creates a dedicated folder <code>Tasker Activity Logs</code> in your Google Drive to store all daily logs and monthly accomplishment recap markdown documents.</p>
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label>Target Google Drive Folder Name:</label>
-                <input type="text" id="driveFolderNameInput" class="text-input" value="Tasker Activity Logs">
-              </div>
-
-              <div class="form-group">
-                <label>Automatic Drive Sync Frequency:</label>
-                <select id="autoSyncFreqSelect" class="select-input">
-                  <option value="6">Every 6 hours</option>
-                  <option value="24" selected>Daily (Every 24 hours)</option>
-                  <option value="disabled">Manual Sync Only</option>
-                </select>
-              </div>
-
-              <div class="form-actions">
-                <button id="saveDriveSettingsBtn" class="btn-primary">Save Settings</button>
-                <button id="testDriveConnBtn" class="btn-secondary">Test Connection & Create Folder</button>
+            <div class="callout callout-plain">
+              <span class="callout-icon"><span data-icon="shield" data-size="md"></span></span>
+              <div>
+                <strong>Tasker only ever sees its own files</strong>
+                <p>
+                  The Drive permission is <code>drive.file</code>: it can create and update the
+                  reports it wrote, and nothing else in your Drive is readable to it.
+                </p>
               </div>
             </div>
+
+            <dl class="summary-list" id="driveSummary">
+              <div><dt>Folder</dt><dd id="driveSummaryFolder">Tasker Activity Logs</dd></div>
+              <div><dt>Format</dt><dd id="driveSummaryFormat">Branded PDF</dd></div>
+              <div><dt>Filing</dt><dd id="driveSummaryFiling">Daily Logs / Monthly Recaps subfolders</dd></div>
+              <div><dt>Automatic sync</dt><dd id="driveSummaryAuto">Off</dd></div>
+            </dl>
+
+            <div class="drive-actions">
+              <button id="testDriveConnBtn" class="btn btn-quiet">
+                <span data-icon="cloud_sync" data-size="sm"></span> Test connection &amp; create folders
+              </button>
+              <button id="openDriveSettingsBtn" class="btn btn-quiet">
+                <span data-icon="settings" data-size="sm"></span> Change these in Settings
+              </button>
+            </div>
+            <p class="drive-result hidden" id="driveResult"></p>
           </div>
-        </div>
+        </section>
       </section>
     </main>
   </div>
 
+  <div id="dashToast" class="toast hidden" role="status"></div>
+
+  <script src="../assets/icons/icons.js"></script>
   <script src="../utils/formatters.js"></script>
   <script src="../utils/storage.js"></script>
+  <script src="../utils/license.js"></script>
+  <script src="../utils/clients.js"></script>
+  <script src="../utils/ui.js"></script>
   <script src="dashboard.js"></script>
 </body>
 </html>

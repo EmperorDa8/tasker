@@ -149,9 +149,34 @@ const TaskerStorage = {
       // Sparse overrides: only what the user actually changed. Categories and
       // domains absent here keep following the built-in defaults.
       categoryWeights: {},
-      domainCategories: {}
+      domainCategories: {},
+      // Pro: who each domain's time belongs to, for invoicing.
+      //   clients:       [{ id, name }]
+      //   clientDomains: { 'github.com': '<client id>' }
+      clients: [],
+      clientDomains: {},
+      // Reports are written as branded PDFs by default: that is the artifact
+      // people actually forward. Markdown stays available for anyone piping
+      // logs into their own notes system.
+      //   'pdf' | 'markdown' | 'both'
+      driveFormat: 'pdf',
+      // Filing logs into Daily Logs / Monthly Recaps subfolders. Off would
+      // leave a flat folder that becomes unusable after a month of daily logs.
+      driveOrganizeFolders: true,
+      // Work profile inference. `override` is the user's own answer and always
+      // beats the inference; `enabled: false` turns the feature off entirely
+      // and nothing is computed.
+      workProfile: {
+        enabled: true,
+        override: null
+      }
     };
-    return { ...defaultSettings, ...(res.tasker_settings || {}) };
+    const merged = { ...defaultSettings, ...(res.tasker_settings || {}) };
+    // workProfile is the one nested object here, and the spread above would
+    // replace it wholesale - so a stored { override } written by an older
+    // version would arrive with `enabled` undefined and read as switched off.
+    merged.workProfile = { ...defaultSettings.workProfile, ...(merged.workProfile || {}) };
+    return merged;
   },
 
   /**
@@ -164,6 +189,7 @@ const TaskerStorage = {
     // Adopt the new scoring rules immediately rather than at the next reload,
     // so a slider moved in Options changes the score the user is looking at.
     Formatters.applyPreferences(updated);
+    if (typeof TaskerClients !== 'undefined') TaskerClients.applyPreferences(updated);
     this._prefsReady = Promise.resolve();
     return updated;
   },
@@ -181,6 +207,7 @@ const TaskerStorage = {
       this._prefsReady = (async () => {
         const settings = await this.getSettings();
         Formatters.applyPreferences(settings);
+        if (typeof TaskerClients !== 'undefined') TaskerClients.applyPreferences(settings);
       })();
     }
     return this._prefsReady;
@@ -324,6 +351,89 @@ const TaskerStorage = {
     const updated = list.filter(n => n.id !== noteId);
     await this.set({ [`notes_${dateKey}`]: updated });
     return updated;
+  },
+
+  /**
+   * The last `count` calendar days of activity, newest last.
+   *
+   * Read as one batched storage call rather than a loop of gets: the work
+   * profile inference needs three weeks at once, and 21 sequential reads on
+   * every popup open is 21 round trips for data that arrives in one.
+   *
+   * Days with no record are returned as null rather than skipped, so a caller
+   * can tell "nothing happened on Sunday" apart from "Sunday is missing".
+   */
+  async getRecentDays(count = 21) {
+    await this.ensurePreferences();
+
+    const today = new Date();
+    const dateKeys = [];
+    for (let back = count - 1; back >= 0; back--) {
+      const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - back);
+      dateKeys.push(Formatters.getDateKey(d));
+    }
+
+    const items = await this.get(dateKeys.map(k => `day_${k}`));
+    return dateKeys.map(dateKey => ({
+      dateKey,
+      day: items[`day_${dateKey}`] || null
+    }));
+  },
+
+  /**
+   * Every day between two YYYY-MM-DD keys inclusive, newest last.
+   *
+   * Read in one batched call rather than a loop of gets: a year-long export is
+   * 365 reads otherwise, all for data that arrives in one round trip.
+   *
+   * Days outside the licence's history window are omitted, so an export can
+   * never hand back months the dashboard declines to show.
+   */
+  async getDaysInRange(fromKey, toKey) {
+    await this.ensurePreferences();
+
+    const parse = (key) => {
+      const p = String(key || '').split('-');
+      if (p.length !== 3) return null;
+      const d = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+      return isNaN(d.getTime()) ? null : d;
+    };
+
+    let start = parse(fromKey);
+    const end = parse(toKey);
+    if (!start || !end || start > end) return [];
+
+    // A range is bounded so a malformed request cannot ask for ten years. When
+    // it has to bite, it moves the START forward rather than stopping early:
+    // truncating the other way would answer "export everything" with the oldest
+    // 400 days and quietly leave out this month.
+    const MAX_DAYS = 400;
+    const spanDays = Math.round((end - start) / 86400000) + 1;
+    if (spanDays > MAX_DAYS) {
+      start = new Date(end.getFullYear(), end.getMonth(), end.getDate() - (MAX_DAYS - 1));
+    }
+
+    const dateKeys = [];
+    const cursor = new Date(start.getTime());
+    while (cursor <= end) {
+      dateKeys.push(Formatters.getDateKey(cursor));
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    const visible = (typeof TaskerLicense !== 'undefined')
+      ? await (async () => {
+          if (await TaskerLicense.isPro()) return dateKeys;
+          return dateKeys.filter(k => TaskerLicense.isDateVisible(k));
+        })()
+      : dateKeys;
+
+    if (visible.length === 0) return [];
+
+    const items = await this.get(visible.map(k => `day_${k}`));
+    return visible.map(dateKey => ({
+      dateKey,
+      day: items[`day_${dateKey}`] || null
+    }));
   },
 
   /**
