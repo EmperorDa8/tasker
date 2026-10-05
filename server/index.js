@@ -245,6 +245,18 @@ function allowAttempt(bucket, ip) {
   return true;
 }
 
+/**
+ * An error for a failed Bachs call. Bachs' error_code is a fixed vocabulary
+ * (PRODUCT_NOT_FOUND, UNAUTHORIZED, ...), not user data, so it is safe to pass
+ * along - it is what tells a misconfigured deploy apart from an outage.
+ */
+function bachsError(status, json) {
+  const code = json && json.error_code;
+  const err = new Error(`bachs_${status}_${code || 'unknown'}`);
+  if (typeof code === 'string' && /^[A-Z][A-Z_]{2,60}$/.test(code)) err.bachsCode = code;
+  return err;
+}
+
 async function bachs(method, path, body, idempotencyKey) {
   const headers = { 'Authorization': `Bearer ${BACHS_API_KEY}`, 'Accept': 'application/json' };
   if (body) headers['Content-Type'] = 'application/json';
@@ -289,7 +301,7 @@ async function createBachsCheckout(user, installId, source) {
   }, reference);
 
   if ((status !== 200 && status !== 201) || !json || !json.checkout_id || !json.checkout_url) {
-    throw new Error(`bachs_${status}_${(json && json.error_code) || 'unknown'}`);
+    throw bachsError(status, json);
   }
   return { checkoutId: json.checkout_id, checkoutUrl: json.checkout_url, expiresAt: json.expires_at || null };
 }
@@ -318,7 +330,7 @@ async function verifyBachsCheckout(checkoutId) {
   const { status, json } = await bachs('GET', `/v1/checkout-sessions/${encodeURIComponent(checkoutId)}`);
 
   if (status === 404) return { valid: false, reason: 'not_found' };
-  if (status !== 200 || !json) throw new Error(`bachs_${status}_${(json && json.error_code) || 'unknown'}`);
+  if (status !== 200 || !json) throw bachsError(status, json);
 
   // Without this, any paid checkout in the same Bachs account would unlock Pro.
   const products = Array.isArray(json.products) ? json.products : [];
@@ -560,7 +572,11 @@ const server = http.createServer(async (req, res) => {
       // Never echo err.message: it can carry upstream detail the caller has no
       // business seeing. The log has it.
       console.warn(`${route} failed:`, err && err.message);
-      return send(res, 502, { error: 'service_unavailable', message: 'Something went wrong on our side. Try again shortly.' }, origin);
+      return send(res, 502, {
+        error: 'service_unavailable',
+        message: 'Something went wrong on our side. Try again shortly.',
+        ...(err && err.bachsCode ? { detail: err.bachsCode } : {})
+      }, origin);
     }
   });
 });

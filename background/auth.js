@@ -88,7 +88,8 @@ const TaskerAuth = {
       return serviceError('The Tasker service does not recognise this copy of the extension. ' +
         `Its ID (${chrome.runtime.id}) must be added to ALLOWED_EXTENSION_IDS.`, 'forbidden_origin');
     }
-    return serviceError(j.message || `Tasker returned ${res.status}.`, j.error || 'error');
+    const detail = j.detail ? ` (${j.detail})` : '';
+    return serviceError((j.message || `Tasker returned ${res.status}.`) + detail, j.error || 'error');
   },
 
   /* ------------------------------------------------------ sign up / in - */
