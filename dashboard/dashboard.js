@@ -45,6 +45,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     monthlyActivity: $('monthlyActivityGroup'),
     monthlyMarkdown: $('monthlyMarkdownPreview'),
 
+    exportCsv: $('exportCsvBtn'),
+    monthlyClients: $('monthlyClients'),
+
+    recapLock: $('recapLock'),
+    recapLockTitle: $('recapLockTitle'),
+    recapLockCopy: $('recapLockCopy'),
+    recapUnlock: $('recapUnlockBtn'),
+    recapUpsell: $('recapUpsell'),
+    recapUpsellCopy: $('recapUpsellCopy'),
+    recapUpsellCta: $('recapUpsellCta'),
+    recapUpsellDismiss: $('recapUpsellDismiss'),
+    // Everything in the recap tab that the lock card stands in for.
+    recapContent: Array.from(
+      document.querySelectorAll('#tab-monthly-recap > .recap-hero, #tab-monthly-recap > .row, #tab-monthly-recap > .card')
+    ),
+
     datePicker: $('dailyDatePicker'),
     downloadDayPdf: $('downloadDayPdfBtn'),
     syncDayToDrive: $('syncDayToDriveBtn'),
@@ -79,7 +95,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function send(action, payload) {
     const res = await chrome.runtime.sendMessage({ action, ...(payload || {}) });
-    if (!res || !res.success) throw new Error((res && res.error) || 'The extension did not respond');
+    if (!res || !res.success) {
+      const err = new Error((res && res.error) || 'The extension did not respond');
+      err.code = res && res.code;
+      throw err;
+    }
     return res.data;
   }
 
@@ -350,19 +370,110 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   /* ------------------------------------------------------- monthly recap - */
 
-  function populateMonthSelect() {
+  async function populateMonthSelect() {
     const now = new Date();
+    const pro = await TaskerLicense.isPro();
     el.monthSelect.textContent = '';
+
     for (let i = 0; i < 12; i++) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const key = Formatters.getMonthKey(d);
       const option = document.createElement('option');
       option.value = key;
-      option.textContent = Formatters.formatMonthDisplay(key);
+
+      // Locked months stay selectable. Hiding them would leave the user
+      // wondering where their year went; marking them explains it.
+      const locked = !pro && TaskerLicense.monthState(key) !== 'open';
+      option.textContent = Formatters.formatMonthDisplay(key) + (locked ? ' — locked' : '');
+
       if (i === 0) option.selected = true;
       el.monthSelect.appendChild(option);
     }
   }
+
+  /** Swap the recap body for the lock card, or back. */
+  function setRecapLocked(locked) {
+    el.recapContent.forEach(node => { node.hidden = locked; });
+    el.recapLock.hidden = !locked;
+    [el.downloadMonthPdf, el.copyMonthMarkdown, el.syncMonthToDrive, el.exportCsv]
+      .forEach(btn => { if (btn) btn.disabled = locked; });
+    if (locked) el.recapUpsell.hidden = true;
+  }
+
+  function renderRecapLock(monthKey, info) {
+    const label = Formatters.formatMonthDisplay(monthKey);
+    const days = TaskerLicense.FREE_HISTORY_DAYS;
+
+    el.recapLockTitle.textContent = `${label} is outside your ${days}-day window`;
+    el.recapLockCopy.textContent = info.state === 'partial'
+      // A clipped month would under-report itself, which is worse than saying so.
+      ? `Your free history covers the last ${days} days, which starts part-way through ` +
+        `${label}. A recap built from only part of the month would under-count it, so ` +
+        `Tasker holds it back rather than showing you a wrong total.`
+      : `Free installs can open the last ${days} days of history. ${label} is older than that.`;
+
+    setRecapLocked(true);
+  }
+
+  /**
+   * Raise the upgrade question, but only once the recap has proved useful.
+   */
+  async function maybeShowUpsell() {
+    if (!(await TaskerLicense.shouldPromptUpgrade())) {
+      el.recapUpsell.hidden = true;
+      return;
+    }
+    el.recapUpsellCopy.textContent =
+      `You have read recaps for more than one month now. Tasker Pro keeps every month ` +
+      `open instead of the last ${TaskerLicense.FREE_HISTORY_DAYS} days, and adds ` +
+      `client tagging and CSV export for invoicing.`;
+    // The href is the fallback if the click handler never runs; the handler
+    // below opens a real checkout.
+    el.recapUpsellCta.href = TaskerLicense.UPGRADE_URL;
+    el.recapUpsell.hidden = false;
+    TaskerIcons.hydrate(el.recapUpsell);
+  }
+
+  el.recapUpsellDismiss.addEventListener('click', async () => {
+    el.recapUpsell.hidden = true;
+    await TaskerLicense.dismissPrompt();
+  });
+
+  /**
+   * Open a checkout. If the payment service cannot be reached the buyer still
+   * gets somewhere useful - the pricing page - instead of a dead button.
+   */
+  async function startUpgrade() {
+    try {
+      await send('START_CHECKOUT');
+      toast('Checkout opened in a new tab. Pro unlocks here once you have paid.');
+    } catch (err) {
+      if (err.code === 'signin_required') {
+        // Buying needs an account, and the sign-in form lives in Settings.
+        toast('Sign in first \u2014 opening Settings.');
+        chrome.tabs.create({ url: chrome.runtime.getURL('options/options.html#sec-plan') });
+      } else {
+        toast(err.message, true);
+        window.open(TaskerLicense.UPGRADE_URL, '_blank', 'noopener');
+      }
+    }
+  }
+
+  el.recapUnlock.addEventListener('click', startUpgrade);
+
+  el.recapUpsellCta.addEventListener('click', (e) => {
+    e.preventDefault();
+    startUpgrade();
+  });
+
+  // The worker finishes the unlock after the buyer pays, in another tab, so the
+  // page has to notice on its own that what it is showing is now stale.
+  chrome.storage.onChanged.addListener((changes, area) => {
+    const license = changes[TaskerLicense.LICENSE_KEY];
+    if (area === 'local' && license && license.newValue && !license.oldValue) {
+      location.reload();
+    }
+  });
 
   function renderMilestones(milestones) {
     if (!milestones || milestones.length === 0) {
@@ -390,6 +501,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
       const recap = await send('GET_MONTHLY_RECAP', { monthKey });
+
+      if (recap && recap.locked) {
+        renderRecapLock(monthKey, recap);
+        return;
+      }
+      setRecapLocked(false);
+
       const stats = recap.monthStats;
       monthlyMarkdownText = recap.markdown || '';
 
@@ -412,10 +530,86 @@ document.addEventListener('DOMContentLoaded', async () => {
       renderActivities(el.monthlyActivity, stats.topActivities || [],
         'No detailed activity recorded for this month.');
       el.monthlyMarkdown.textContent = monthlyMarkdownText;
+
+      await renderClientRollup(monthKey);
+
+      // Counted only once the recap has actually rendered, so a failed load or
+      // a locked month never advances the user toward being asked to pay.
+      await TaskerLicense.recordRecapView(monthKey);
+      await maybeShowUpsell();
     } catch (err) {
       el.recapSummary.textContent = `Could not build the recap: ${err.message}`;
     }
   }
+
+  /** First and last day of a YYYY-MM, as date keys. */
+  function monthBounds(monthKey) {
+    const [y, m] = String(monthKey).split('-').map(n => parseInt(n, 10));
+    const last = new Date(y, m, 0).getDate();
+    const pad = n => String(n).padStart(2, '0');
+    return { from: `${y}-${pad(m)}-01`, to: `${y}-${pad(m)}-${pad(last)}` };
+  }
+
+  async function renderClientRollup(monthKey) {
+    const { from, to } = monthBounds(monthKey);
+    let data;
+    try {
+      data = await send('GET_CLIENT_ROLLUP', { from, to });
+    } catch (err) {
+      el.monthlyClients.innerHTML = emptyNote(err.message);
+      return;
+    }
+
+    const rows = data.clients || [];
+    const tagged = rows.filter(r => r.clientId !== TaskerClients.UNASSIGNED);
+
+    if (tagged.length === 0) {
+      el.monthlyClients.innerHTML = emptyNote(
+        'No sites are tagged to a client yet. Add clients in Settings and Tasker will ' +
+        'split each month by who the work was for.');
+      return;
+    }
+
+    const total = rows.reduce((sum, r) => sum + r.seconds, 0) || 1;
+
+    // Unassigned is drawn in a muted grey so it reads as a gap to be filled in
+    // rather than as another client competing for the month.
+    el.monthlyClients.innerHTML = rows.map((row) => {
+      const fraction = row.seconds / total;
+      const unassigned = row.clientId === TaskerClients.UNASSIGNED;
+      return meterRow(
+        row.name,
+        `${Formatters.formatDuration(row.seconds)} · ${Math.round(fraction * 100)}%`,
+        fraction,
+        unassigned ? 'var(--text-faint)' : 'var(--brand-ink)'
+      );
+    }).join('');
+    TaskerIcons.hydrate(el.monthlyClients);
+  }
+
+  el.exportCsv.addEventListener('click', async () => {
+    const { from, to } = monthBounds(currentMonthKey);
+    withPending(el.exportCsv, 'Building…', async () => {
+      try {
+        const res = await send('BUILD_CSV_EXPORT', { from, to });
+
+        // A data: URL would hit length limits on a long export; a Blob does not.
+        const blob = new Blob([res.csv], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = res.filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 30000);
+
+        toast(`Saved ${res.filename}`);
+      } catch (err) {
+        toast(err.message, true);
+      }
+    });
+  });
 
   el.monthSelect.addEventListener('change', (event) => {
     currentMonthKey = event.target.value;
@@ -489,6 +683,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function loadDailyLog(dateKey) {
     try {
       const summary = await send('GET_DAILY_SUMMARY', { dateKey });
+
+      if (summary && summary.locked) {
+        el.dailyFocusDetails.innerHTML = emptyNote(
+          `${Formatters.formatFullDate(dateKey)} is outside your ` +
+          `${TaskerLicense.FREE_HISTORY_DAYS}-day history window. The day is still stored ` +
+          `on this machine and opens again with Tasker Pro.`);
+        renderNotes([]);
+        return;
+      }
+
       const dayData = summary.dayData;
       const total = dayData.totalSeconds || 0;
 
@@ -536,6 +740,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   el.datePicker.value = currentDateKey;
+
+  // The picker itself refuses out-of-window dates for free installs, so the
+  // usual way of reaching a locked day is blocked before it is requested. The
+  // worker still checks, for anything that arrives another way.
+  (async () => {
+    if (!(await TaskerLicense.isPro())) {
+      el.datePicker.min = TaskerLicense.oldestVisibleDateKey();
+    }
+  })();
+
   el.datePicker.addEventListener('change', (event) => {
     currentDateKey = event.target.value;
     loadDailyLog(currentDateKey);

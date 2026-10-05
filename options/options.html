@@ -30,6 +30,7 @@
         <a class="side-link is-active" href="#sec-profile"><span data-icon="badge" data-size="sm"></span>Work profile</a>
         <a class="side-link" href="#sec-reports"><span data-icon="picture_as_pdf" data-size="sm"></span>Reports &amp; Drive</a>
         <a class="side-link" href="#sec-ai"><span data-icon="auto_awesome" data-size="sm"></span>Written summaries</a>
+        <a class="side-link" href="#sec-plan"><span data-icon="workspace_premium" data-size="sm"></span>Your plan</a>
         <a class="side-link" href="#sec-scoring"><span data-icon="tune" data-size="sm"></span>Focus scoring</a>
         <a class="side-link" href="#sec-privacy"><span data-icon="shield" data-size="sm"></span>Privacy</a>
         <a class="side-link" href="#sec-shortcut"><span data-icon="keyboard" data-size="sm"></span>Shortcut</a>
@@ -219,6 +220,106 @@
         </div>
       </section>
 
+      <!-- ---------------- Plan ---------------- -->
+      <section class="card" id="sec-plan">
+        <div class="card-head">
+          <span class="card-icon"><span data-icon="workspace_premium" data-size="lg"></span></span>
+          <div>
+            <h2>Your plan</h2>
+            <p>Free covers the last 90 days. Pro opens everything you have tracked.</p>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="plan-state" id="planState">
+            <span class="plan-badge" id="planBadge">Free</span>
+            <p id="planCopy">
+              Tasker is recording every day either way &mdash; the free plan simply shows
+              the most recent 90 of them.
+            </p>
+          </div>
+
+          <div class="field" id="accountSignedOut">
+            <label for="accountEmail">Account</label>
+            <div class="field-inline">
+              <input type="email" id="accountEmail" class="input" autocomplete="username"
+                     placeholder="you@example.com" spellcheck="false">
+              <input type="password" id="accountPassword" class="input" autocomplete="current-password"
+                     placeholder="Password (8+ characters)">
+            </div>
+            <div class="field-inline">
+              <button id="signInBtn" class="btn btn-primary">Sign in</button>
+              <button id="signUpBtn" class="btn btn-quiet">Create account</button>
+              <button id="forgotBtn" class="btn btn-quiet">Forgot password</button>
+            </div>
+            <span class="field-help">
+              Only needed for Pro, so your purchase follows you to a new computer. Tracking
+              never needs an account, and your browsing history never leaves your device.
+            </span>
+            <p class="plan-result" id="accountResult" hidden></p>
+          </div>
+
+          <div class="field" id="accountSignedIn" hidden>
+            <label>Account</label>
+            <div class="field-inline">
+              <strong id="accountEmailShown"></strong>
+              <button id="signOutBtn" class="btn btn-quiet">Sign out</button>
+            </div>
+            <span class="field-help" id="signOutHelp">
+              Signing out removes Pro from this device. Sign in again to bring it back &mdash;
+              your purchase is not affected.
+            </span>
+          </div>
+
+          <div id="planActivate">
+            <div class="field">
+              <label>Upgrade</label>
+              <div class="field-inline">
+                <button id="upgradeBtn" class="btn btn-primary">Upgrade to Pro</button>
+                <button id="reopenCheckoutBtn" class="btn btn-quiet" hidden>Reopen checkout</button>
+              </div>
+              <span class="field-help">
+                Opens a secure checkout in a new tab. Pay by card, bank transfer or mobile
+                money &mdash; Pro unlocks here by itself once the payment clears.
+                <a href="https://emperorda8.github.io/tasker-extension/#pro"
+                target="_blank" rel="noopener">See what it unlocks</a>.
+              </span>
+              <p class="plan-result" id="checkoutStatus" hidden></p>
+            </div>
+
+            <div class="field">
+              <label for="licenseReference">Already paid? Restore Pro</label>
+              <div class="field-inline">
+                <input type="text" id="licenseReference" class="input" spellcheck="false"
+                       placeholder="chk_..." autocomplete="off">
+                <button id="activateLicenseBtn" class="btn btn-quiet">Restore</button>
+              </div>
+              <span class="field-help">
+                Bought Pro on the website? Paste the order reference from the page you landed on, or from
+                your receipt, to attach it to this account. If you paid from inside Tasker there is nothing to do &mdash;
+                signing in on any computer brings Pro with it.
+              </span>
+              <p class="plan-result" id="planResult" hidden></p>
+            </div>
+          </div>
+
+          <div class="field" id="clientField">
+            <label>Clients</label>
+            <span class="field-help">
+              Tag the sites you work in, and Tasker can total your hours per client and
+              export them as CSV for invoicing. A site with no tag is reported as
+              <em>Unassigned</em> rather than guessed at.
+            </span>
+            <div id="clientList" class="client-list"></div>
+            <div class="field-inline">
+              <input type="text" id="newClientName" class="input" placeholder="Client name" autocomplete="off">
+              <button id="addClientBtn" class="btn btn-quiet">Add client</button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
       <!-- ---------------- Focus scoring ---------------- -->
       <section class="card" id="sec-scoring">
         <div class="card-head">
@@ -351,7 +452,7 @@
               <span data-icon="delete" data-size="sm"></span> Delete all local history
             </button>
           </div>
-          <span class="field-help">History older than 180 days is pruned automatically.</span>
+          <span class="field-help">On the free plan, history older than 180 days is pruned automatically. Pro keeps everything.</span>
         </div>
       </section>
 
@@ -368,6 +469,7 @@
   <script src="../assets/icons/icons.js"></script>
   <script src="../utils/formatters.js"></script>
   <script src="../utils/storage.js"></script>
+  <script src="../utils/license.js"></script>
   <script src="../utils/ui.js"></script>
   <script src="options.js"></script>
 </body>

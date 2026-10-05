@@ -234,6 +234,70 @@
   box-shadow: var(--el-focus);
 }
 
+/* ------------------------------------------------------------------ plan - */
+
+.plan-state {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  border-radius: var(--r-md);
+  background: var(--bg-sunken);
+}
+
+.plan-badge {
+  flex: none;
+  padding: 4px 12px;
+  border-radius: var(--r-full);
+  background: var(--bg-inset);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  font-weight: 500;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+}
+
+.plan-badge.is-pro { background: var(--brand-ink); color: var(--brand-gold); }
+
+.plan-state p {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  color: var(--text-body);
+  max-width: 72ch;
+}
+
+.plan-result {
+  margin-top: 2px;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  color: var(--ok);
+}
+
+.plan-result.is-error { color: var(--danger); }
+
+.client-list { display: flex; flex-direction: column; gap: var(--sp-2); }
+
+.client-row {
+  padding: var(--sp-3);
+  border-radius: var(--r-md);
+  background: var(--bg-sunken);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.client-row-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.client-row-head strong { font-size: var(--fs-md); color: var(--text-strong); }
+.client-row .input { max-width: none; background: var(--bg-raised); }
+.client-remove { height: 28px; padding: 0 10px; font-size: var(--fs-sm); }
+
 /* --------------------------------------------------------------- switches - */
 
 .switch-row { display: flex; align-items: flex-start; gap: var(--sp-3); }

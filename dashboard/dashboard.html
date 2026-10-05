@@ -226,6 +226,9 @@
             <button id="downloadMonthPdfBtn" class="btn btn-quiet">
               <span data-icon="picture_as_pdf" data-size="sm"></span> Download PDF
             </button>
+            <button id="exportCsvBtn" class="btn btn-quiet">
+              <span data-icon="download" data-size="sm"></span> Export CSV
+            </button>
             <button id="copyMonthMarkdownBtn" class="btn btn-quiet">
               <span data-icon="content_copy" data-size="sm"></span> Copy markdown
             </button>
@@ -234,6 +237,41 @@
             </button>
           </div>
         </div>
+
+        <!-- Shown instead of the recap when the selected month sits outside
+             the free history window. Hidden by default. -->
+        <section id="recapLock" class="lock-card" hidden>
+          <span class="lock-icon" data-icon="history" data-size="lg"></span>
+          <div class="lock-body">
+            <h2 id="recapLockTitle">This month is outside your history window</h2>
+            <p id="recapLockCopy"></p>
+            <p class="lock-note">
+              Nothing has been deleted &mdash; this month is still on your machine, and
+              unlocking reveals it straight away.
+            </p>
+            <div class="lock-actions">
+              <button id="recapUnlockBtn" class="btn btn-primary">
+                <span data-icon="lock" data-size="sm"></span> Unlock full history
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- The upgrade ask. Raised only after a second month's recap has
+             actually been read; see TaskerLicense.shouldPromptUpgrade. -->
+        <section id="recapUpsell" class="upsell-card" hidden>
+          <button id="recapUpsellDismiss" class="upsell-dismiss" title="Not now" aria-label="Dismiss">
+            <span data-icon="close" data-size="sm"></span>
+          </button>
+          <span class="upsell-icon" data-icon="workspace_premium" data-size="lg"></span>
+          <div class="upsell-body">
+            <strong>You have been keeping this up</strong>
+            <p id="recapUpsellCopy"></p>
+          </div>
+          <a id="recapUpsellCta" class="btn btn-primary" href="#" target="_blank" rel="noopener">
+            See Tasker Pro
+          </a>
+        </section>
 
         <section class="recap-hero">
           <div class="recap-hero-copy">
@@ -283,6 +321,14 @@
             <span class="card-sub">Across the whole month, longest first</span>
           </div>
           <div class="card-body" id="monthlyActivityGroup"></div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <h3>Time by client</h3>
+            <span class="card-sub">Tag sites to a client in Settings to split the month up</span>
+          </div>
+          <div class="card-body" id="monthlyClients"></div>
         </section>
 
         <section class="card">
@@ -385,6 +431,8 @@
   <script src="../assets/icons/icons.js"></script>
   <script src="../utils/formatters.js"></script>
   <script src="../utils/storage.js"></script>
+  <script src="../utils/license.js"></script>
+  <script src="../utils/clients.js"></script>
   <script src="../utils/ui.js"></script>
   <script src="dashboard.js"></script>
 </body>

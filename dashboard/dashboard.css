@@ -174,6 +174,8 @@
   font-family: inherit;
   font-size: var(--fs-md);
   font-weight: 600;
+  /* .btn is also used on anchors, which the UA underlines by default. */
+  text-decoration: none;
   cursor: pointer;
   white-space: nowrap;
   transition: all var(--dur-fast) var(--ease-out);
@@ -521,6 +523,119 @@
   background: var(--accent-yellow-soft);
   color: var(--text-strong);
   border: 1px solid var(--border-soft);
+}
+
+/* ------------------------------------------------- history window lock - */
+
+/* Stands in for the whole recap when the month is out of window. Deliberately
+   calm rather than alarming: nothing has gone wrong and nothing is lost. */
+.lock-card {
+  display: flex;
+  gap: var(--sp-5);
+  padding: var(--sp-6);
+  border-radius: var(--r-xl);
+  background: var(--bg-raised);
+  border: 1px solid var(--border-hairline);
+  box-shadow: var(--el-1);
+}
+
+.lock-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--r-lg);
+  background: var(--bg-sunken);
+  color: var(--text-muted);
+}
+
+.lock-body { min-width: 0; }
+
+.lock-body h2 {
+  font-size: var(--fs-2xl);
+  font-weight: 700;
+  letter-spacing: var(--ls-heading);
+  color: var(--text-strong);
+}
+
+.lock-body p {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-md);
+  line-height: var(--lh-normal);
+  color: var(--text-body);
+  max-width: 68ch;
+}
+
+.lock-note {
+  font-size: var(--fs-sm) !important;
+  color: var(--text-muted) !important;
+}
+
+.lock-actions { margin-top: var(--sp-4); }
+
+/* ------------------------------------------------------- upgrade prompt - */
+
+.upsell-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-4) var(--sp-5);
+  border-radius: var(--r-lg);
+  background: var(--brand-gold-tint);
+  border: 1px solid var(--border-soft);
+}
+
+.upsell-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--r-md);
+  background: var(--brand-ink);
+  color: var(--brand-gold);
+}
+
+.upsell-body { flex: 1; min-width: 0; }
+
+.upsell-body strong {
+  display: block;
+  font-size: var(--fs-md);
+  font-weight: 700;
+  color: var(--text-strong);
+}
+
+.upsell-body p {
+  margin-top: 2px;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  color: var(--text-body);
+  max-width: 76ch;
+}
+
+.upsell-card .btn { flex: none; }
+
+.upsell-dismiss {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: var(--r-xs);
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+}
+
+.upsell-dismiss:hover { background: var(--bg-hover); color: var(--text-strong); }
+
+@media (max-width: 720px) {
+  .lock-card, .upsell-card { flex-direction: column; align-items: flex-start; }
 }
 
 .recap-hero-copy { min-width: 0; flex: 1 1 380px; }
