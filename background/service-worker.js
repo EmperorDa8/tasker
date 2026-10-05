@@ -6,11 +6,15 @@ try {
   importScripts(
     '../utils/formatters.js',
     '../utils/storage.js',
+    '../utils/license.js',
+    '../utils/clients.js',
     '../utils/roleDetector.js',
     '../utils/pdf.js',
     '../utils/reportBuilder.js',
     './tracker.js',
     './summarizer.js',
+    './auth.js',
+    './payments.js',
     './driveSync.js'
   );
 } catch (e) {
@@ -27,14 +31,26 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   // Create auto sync alarm (every 6 hours)
   chrome.alarms.create('tasker_auto_drive_sync', { periodInMinutes: 360 });
 
-  // Prune historical storage older than 180 days on install/update
-  await TaskerStorage.pruneOldData(180);
+  await pruneHistory();
+
+  await TaskerPayments.ensureAlarms();
 });
+
+/**
+ * Free installs keep 180 days: the 90 they can open plus 90 more, so upgrading
+ * hands back months that already exist. Pro is "every month you have tracked",
+ * so Pro is never pruned - unlimitedStorage is already declared for this.
+ */
+async function pruneHistory() {
+  if (await TaskerLicense.isPro()) return;
+  await TaskerStorage.pruneOldData(180);
+}
 
 // Browser Startup Listener
 chrome.runtime.onStartup.addListener(async () => {
   console.log('Tasker Browser Startup initiated.');
   await initTracker();
+  await TaskerPayments.ensureAlarms();
 });
 
 // Initialize Activity Tracker.
@@ -151,10 +167,20 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     return;
   }
 
+  if (alarm.name === TaskerPayments.POLL_ALARM) {
+    await TaskerPayments.poll();
+    return;
+  }
+
+  if (alarm.name === TaskerPayments.RECHECK_ALARM) {
+    await TaskerPayments.recheck();
+    return;
+  }
+
   if (alarm.name === 'tasker_auto_drive_sync') {
     // Retention runs on the recurring alarm, not only on install/update, so
     // history cannot grow unbounded for users who go a long time between updates.
-    await TaskerStorage.pruneOldData(180);
+    await pruneHistory();
 
     const settings = await TaskerStorage.getSettings();
     if (settings.autoSyncDrive) {
@@ -176,7 +202,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (!message || typeof message.action !== 'string') return;
   handleAsyncMessage(message, sender)
     .then(res => sendResponse({ success: true, data: res }))
-    .catch(err => sendResponse({ success: false, error: err.message || String(err) }));
+    .catch(err => sendResponse({ success: false, error: err.message || String(err), code: err.code || null }));
   return true; // Keep channel open for async response
 });
 
@@ -251,11 +277,89 @@ async function handleAsyncMessage(message, sender) {
     }
 
     case 'GET_DAILY_SUMMARY': {
+      if (!(await TaskerLicense.isPro()) && !TaskerLicense.isDateVisible(dateKey)) {
+        return { dateKey, locked: true, oldestVisible: TaskerLicense.oldestVisibleDateKey() };
+      }
       return await ActivitySummarizer.generateDailySummary(dateKey);
     }
 
     case 'GET_MONTHLY_RECAP': {
+      // Checked here rather than in the dashboard so the limit holds for any
+      // caller, and so a locked month never costs an AI summary call.
+      const access = await TaskerLicense.monthAccess(monthKey);
+      if (!access.allowed) {
+        return { monthKey, locked: true, state: access.state, oldestVisible: access.oldestVisible };
+      }
       return await ActivitySummarizer.generateMonthlyRecap(monthKey);
+    }
+
+    case 'GET_CLIENT_ROLLUP': {
+      // Read-only, so it stays available on free: seeing that the split exists
+      // is the argument for buying the export that acts on it.
+      await TaskerStorage.ensurePreferences();
+      const days = await TaskerStorage.getDaysInRange(message.from, message.to);
+      return {
+        from: message.from,
+        to: message.to,
+        clients: TaskerClients.rollUp(days),
+        isPro: await TaskerLicense.isPro()
+      };
+    }
+
+    case 'BUILD_CSV_EXPORT': {
+      if (!(await TaskerLicense.isPro())) {
+        throw new Error('CSV export is part of Tasker Pro.');
+      }
+      await TaskerStorage.ensurePreferences();
+      const days = await TaskerStorage.getDaysInRange(message.from, message.to);
+      return {
+        filename: TaskerClients.csvFileName(message.from, message.to),
+        csv: TaskerClients.buildCsv(days)
+      };
+    }
+
+    case 'AUTH_STATE': {
+      const [account, pending] = [await TaskerAuth.state(), await TaskerLicense.getPending()];
+      return { ...account, hasPendingCheckout: !!pending };
+    }
+
+    case 'AUTH_SIGN_UP':
+    case 'AUTH_SIGN_IN': {
+      const result = message.action === 'AUTH_SIGN_UP'
+        ? await TaskerAuth.signUp(message.email, message.password)
+        : await TaskerAuth.signIn(message.email, message.password);
+      if (result.needsConfirmation) return result;
+
+      // Signing in on a new machine should simply bring Pro with it. A failure
+      // here is not a failed sign-in, so it never surfaces as one.
+      let isPro = false;
+      try { isPro = (await TaskerPayments.syncFromAccount()).isPro; } catch (e) { /* retried daily */ }
+      return { ...result, isPro };
+    }
+
+    case 'AUTH_SIGN_OUT': {
+      await TaskerAuth.signOut();
+      // The licence belongs to the account, so it leaves the device with it.
+      await TaskerLicense.deactivate();
+      await TaskerLicense.clearPending();
+      TaskerPayments._stopWatching();
+      return { signedOut: true };
+    }
+
+    case 'AUTH_RECOVER': {
+      await TaskerAuth.recover(message.email);
+      return { sent: true };
+    }
+
+    case 'START_CHECKOUT': {
+      return await TaskerPayments.start();
+    }
+
+    case 'ACTIVATE_LICENSE': {
+      // The extension asks the service, and the service asks Bachs. Nothing in
+      // this message - not the reference, not a "valid" flag - is trusted on its
+      // own: Pro switches on only when the service says the checkout was paid.
+      return await TaskerPayments.restore(message.reference);
     }
 
     case 'OPEN_DASHBOARD': {
@@ -334,6 +438,9 @@ async function handleAsyncMessage(message, sender) {
     case 'BUILD_DAILY_PDF': {
       // Bytes rather than a Blob: structured clone cannot carry a Blob across
       // the message boundary, and an array of numbers survives it intact.
+      if (!(await TaskerLicense.isPro()) && !TaskerLicense.isDateVisible(dateKey)) {
+        throw new Error(`${Formatters.formatFullDate(dateKey)} is outside your ${TaskerLicense.FREE_HISTORY_DAYS}-day history window.`);
+      }
       const summary = await ActivitySummarizer.generateDailySummary(dateKey);
       const doc = TaskerReports.buildDailyReport({
         dateKey,
@@ -349,6 +456,12 @@ async function handleAsyncMessage(message, sender) {
     }
 
     case 'BUILD_MONTHLY_PDF': {
+      // Same gate as the recap itself. Without it the PDF button would hand
+      // back exactly the month the recap tab had just declined to show.
+      const pdfAccess = await TaskerLicense.monthAccess(monthKey);
+      if (!pdfAccess.allowed) {
+        throw new Error(`${Formatters.formatMonthDisplay(monthKey)} is outside your ${TaskerLicense.FREE_HISTORY_DAYS}-day history window.`);
+      }
       const recap = await ActivitySummarizer.generateMonthlyRecap(monthKey);
       const doc = TaskerReports.buildMonthlyReport({
         monthKey,
